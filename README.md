@@ -37,7 +37,7 @@ It installs on a phone or tablet like an app ("Add to Home Screen") and keeps wo
 
 ## Built with
 
-Plain HTML, CSS and JavaScript, a service worker for offline use, and AI-assisted development (Claude).
+Plain HTML, CSS and JavaScript, a service worker for offline use.
 
 ---
 
