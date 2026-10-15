@@ -1,17 +1,16 @@
 {
-  "name": "Emergency Field Hospital",
-  "short_name": "Field Hospital",
-  "description": "Offline-first patient flow for a six-tent field hospital. Demo with fictional data.",
+  "name": "EMT TentCare",
+  "short_name": "TentCare",
+  "description": "Emergency medical tents – know every patient's status. Offline-first patient flow for a six-tent field hospital. Demo with fictional data.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0f766e",
-  "theme_color": "#0f766e",
+  "background_color": "#f6f0e7",
+  "theme_color": "#113a60",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

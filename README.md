@@ -1,6 +1,8 @@
-# Emergency Field Hospital
+<p align="center"><img src="logo.png" alt="EMT TentCare" width="320"></p>
 
-A patient flow system for a six-tent field hospital, built to keep working when the internet doesn't.
+# EMT TentCare
+
+Emergency medical tents: know every patient's status. A patient flow system for a six-tent field hospital, built to keep working when the internet doesn't.
 
 **Try it:** https://mahassira.github.io/emergency-field-hospital/
 
