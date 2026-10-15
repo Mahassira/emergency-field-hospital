@@ -31,6 +31,18 @@ All passwords are `demo123`.
 
 Plus a Lab & X-ray unit that serves all of them.
 
+## Built for Microsoft 365 and Power Platform
+
+This demo runs on its own with fictional data. The real version is designed to plug into the hospital's or organisation's Microsoft 365 environment:
+
+- **Sign in with work email.** Staff use their organisation's Microsoft work account (Microsoft Entra ID). No separate usernames or passwords to manage, and access ends when someone leaves the organisation.
+- **Every action tied to a work email.** Each registration, note, test request, referral, admission and discharge is recorded against the staff member's organisational email, so the patient file is a full audit trail.
+- **Microsoft Dataverse as the database.** Patients, lab and X-ray requests, beds and the activity log live in Dataverse, with security roles deciding who can see and change what.
+- **Power Platform around it.** Power Automate for alerts, such as telling the ward a bed is needed. Power BI for daily reports to management, the health cluster and donors.
+- **Still offline-first.** Devices keep working with no internet and sync to Dataverse when the connection comes back.
+
+The live demo link above does not connect to Microsoft services. It saves everything on your own device.
+
 ## Offline
 
 It installs on a phone or tablet like an app ("Add to Home Screen") and keeps working with no connection. Everything is saved on the device. In a real deployment, the export would sync to a central server when the network comes back.
