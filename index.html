@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Emergency Field Hospital</title>
+<meta name="description" content="Offline-first patient flow system for a six-tent field hospital. Demo with fictional data.">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f4f6f5; --surface:#ffffff; --surface-2:#eef2f1; --line:#dde3e1;
+  --text:#14201d; --muted:#5d6b67; --primary:#0f766e; --primary-ink:#ffffff; --primary-soft:#d7efec;
+  --red:#d92d20; --red-soft:#fde8e6; --amber:#c27803; --amber-soft:#fdf1d8; --green:#15803d; --green-soft:#dcf3e3;
+  --grey:#6b7280; --grey-soft:#eceff1;
+  --radius:12px; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--primary)}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+
+/* top bar */
+.top{background:var(--primary);color:var(--primary-ink);position:sticky;top:0;z-index:20}
+.top .wrap{display:flex;align-items:center;gap:12px;min-height:56px}
+.brand{font-weight:700;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
+.brand svg{width:22px;height:22px}
+.top .spacer{flex:1}
+.who{font-size:13px;opacity:.9;text-align:right;line-height:1.2}
+.pill{font-size:12px;padding:3px 9px;border-radius:999px;font-weight:600;white-space:nowrap}
+.pill.on{background:rgba(255,255,255,.18)}
+.pill.off{background:#fff;color:var(--red)}
+.top button.link{background:none;border:0;color:#fff;opacity:.9;cursor:pointer;padding:6px;font-size:13px;text-decoration:underline}
+.nav{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:56px;z-index:19}
+.nav .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav .wrap::-webkit-scrollbar{display:none}
+.nav button{background:none;border:0;padding:12px 12px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap;cursor:pointer}
+.nav button.active{color:var(--primary);border-bottom-color:var(--primary)}
+.nav .count{display:inline-block;min-width:20px;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--surface-2);font-size:12px;color:var(--text)}
+
+main{padding:20px 0 60px}
+h1{font-size:22px;margin:0 0 4px}
+h2{font-size:17px;margin:0 0 10px}
+h3{font-size:15px;margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 18px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.mt{margin-top:16px}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--radius);background:var(--surface)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:9px 14px;font-weight:600;cursor:pointer;min-height:40px}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--red);border-color:#f3c3be}
+.btn.sm{padding:6px 10px;min-height:32px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* tiles */
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.tile .n{font-size:28px;font-weight:700;line-height:1.1}
+.tile .l{color:var(--muted);font-size:13px}
+.tile.red .n{color:var(--red)}
+
+/* triage */
+.tri{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.3px}
+.tri::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.tri.red{color:var(--red);background:var(--red-soft)}
+.tri.yellow{color:var(--amber);background:var(--amber-soft)}
+.tri.green{color:var(--green);background:var(--green-soft)}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--muted)}
+.badge.warn{background:var(--amber-soft);color:var(--amber)}
+.badge.ok{background:var(--green-soft);color:var(--green)}
+.badge.info{background:var(--primary-soft);color:var(--primary)}
+
+/* patient list */
+.plist{display:grid;gap:10px}
+.pcard{display:flex;gap:12px;align-items:stretch;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px 12px 0;cursor:pointer;text-align:left;width:100%}
+.pcard:hover{border-color:#b9c7c3}
+.pcard .bar{width:5px;border-radius:0 4px 4px 0;flex:none}
+.pcard .bar.red{background:var(--red)} .pcard .bar.yellow{background:var(--amber)} .pcard .bar.green{background:var(--green)} .pcard .bar.none{background:var(--line)}
+.pcard .main{flex:1;min-width:0}
+.pcard .name{font-weight:700}
+.pcard .meta{color:var(--muted);font-size:13px}
+.pcard .cc{margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard .side{text-align:right;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+
+/* tent bars */
+.tentrow{display:grid;grid-template-columns:150px 1fr 60px;gap:10px;align-items:center;padding:6px 0;cursor:pointer}
+.track{height:10px;background:var(--surface-2);border-radius:999px;overflow:hidden;display:flex}
+.track span{display:block;height:100%}
+.track .w{background:#9bd3cc} .track .c{background:var(--primary)}
+
+/* ward */
+.beds{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px}
+.bed{border:1px solid var(--line);border-radius:10px;padding:8px;min-height:64px;background:var(--surface);text-align:left;cursor:default;font-size:12px}
+.bed .num{font-weight:700;font-size:13px;color:var(--muted)}
+.bed.occ{cursor:pointer;background:var(--primary-soft);border-color:#a8d8d2}
+.bed.occ .who{color:var(--text);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bed.free .who{color:var(--green);font-weight:600;margin-top:2px}
+
+/* forms */
+label{display:block;font-size:13px;font-weight:600;margin:0 0 4px;color:var(--muted)}
+input[type=text],input[type=number],input[type=password],input[type=tel],select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;min-height:42px}
+textarea{min-height:84px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--primary-soft);border-color:var(--primary)}
+.field{margin-bottom:12px}
+.fgrid{display:grid;gap:0 12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.choice{display:flex;gap:8px;flex-wrap:wrap}
+.choice input{position:absolute;opacity:0;pointer-events:none}
+.choice label{margin:0;border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;color:var(--text);background:#fff}
+.choice input:checked+label{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.choice.tri-pick input:checked+label.r{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+.choice.tri-pick input:checked+label.y{border-color:var(--amber);background:var(--amber-soft);color:var(--amber)}
+.choice.tri-pick input:checked+label.g{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+
+/* patient header */
+.phead{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between}
+.phead h1{margin-bottom:2px}
+.vitals{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.vitals div{background:var(--surface-2);border-radius:10px;padding:8px 10px}
+.vitals b{display:block;font-size:16px}
+.vitals span{font-size:12px;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;padding:0 0 14px 22px;border-left:2px solid var(--line);margin-left:6px}
+.timeline li:last-child{border-left-color:transparent}
+.timeline li::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--primary)}
+.timeline .t{font-size:12px;color:var(--muted)}
+.note{border-left:3px solid var(--primary-soft);padding:6px 0 6px 12px;margin-bottom:10px}
+.order{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.order:last-child{border-bottom:0}
+
+/* login */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:linear-gradient(160deg,#0f766e 0%,#0b5d57 55%,#08433f 100%)}
+.login .box{background:var(--surface);border-radius:16px;padding:24px;width:100%;max-width:420px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.login h1{display:flex;align-items:center;gap:10px;font-size:21px}
+.login h1 svg{width:28px;height:28px}
+.accounts{display:grid;gap:6px;margin-top:8px}
+.accounts button{display:flex;justify-content:space-between;width:100%;text-align:left;background:var(--surface-2);border:1px solid transparent;border-radius:10px;padding:9px 12px;cursor:pointer}
+.accounts button:hover{border-color:var(--line)}
+.accounts code{font-size:12px;color:var(--muted)}
+.disclaimer{font-size:12px;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.err{color:var(--red);font-size:13px;margin:4px 0 10px;min-height:18px}
+
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(10,20,18,.45);display:flex;align-items:flex-end;justify-content:center;z-index:50;padding:0}
+.modal{background:var(--surface);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom))}
+@media(min-width:640px){.scrim{align-items:center;padding:20px}.modal{border-radius:16px}}
+.modal .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.x{background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);padding:4px 8px}
+
+.band{border:2px dashed var(--line);border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.band .mrn{font-size:26px;font-weight:800;letter-spacing:1px;font-family:ui-monospace,Menlo,Consolas,monospace}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#14201d;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:90vw}
+.banner{background:var(--amber-soft);color:#7a4b02;font-size:13px;padding:8px 0}
+.banner .wrap{display:flex;gap:8px;align-items:center}
+
+@media(max-width:560px){
+  .brand .bname{font-size:14px;line-height:1.15;max-width:120px}
+  .vitals{grid-template-columns:repeat(3,1fr)}
+  .tentrow{grid-template-columns:110px 1fr 44px}
+  .who .role{display:none}
+}
+@media print{
+  body *{visibility:hidden}
+  .printable,.printable *{visibility:visible}
+  .printable{position:fixed;left:0;top:0;width:100%}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+
+<script>
+/* ---------- config ---------- */
+const KEY = 'fieldcare_v1';
+const USER_KEY = 'fieldcare_user';
+const BEDS = 50;
+
+const TENTS = [
+  { id: 'REG',  no: 1, name: 'Registration & Triage' },
+  { id: 'ER',   no: 2, name: 'Emergency' },
+  { id: 'OPD',  no: 3, name: 'Outpatient Clinics' },
+  { id: 'MAT',  no: 4, name: 'Maternity & Delivery' },
+  { id: 'OT',   no: 5, name: 'Operating Theatre' },
+  { id: 'WARD', no: 6, name: 'Inpatient Ward' }
+];
+const CLINICAL = ['ER', 'OPD', 'MAT', 'OT'];
+
+const TESTS = {
+  'Laboratory': ['Complete blood count (CBC)', 'Blood glucose', 'Haemoglobin', 'Blood group & crossmatch', 'Urinalysis', 'Pregnancy test'],
+  'Imaging': ['Chest X-ray', 'Limb X-ray', 'Abdominal ultrasound', 'Obstetric ultrasound']
+};
+
+const USERS = {
+  reception: { name: 'Reem Al-Masri', role: 'reception', title: 'Registration clerk' },
+  doctor:    { name: 'Dr. Khaled Nasser', role: 'doctor', title: 'Physician' },
+  lab:       { name: 'Tariq Younis', role: 'lab', title: 'Lab & X-ray technician' },
+  nurse:     { name: 'Huda Saleem', role: 'nurse', title: 'Ward nurse' },
+  admin:     { name: 'Site Manager', role: 'admin', title: 'Administrator' }
+};
+const PASSWORD = 'demo123';
+
+const OUTCOMES = ['Discharged home', 'Transferred to another facility', 'Left against medical advice'];
+
+/* ---------- state ---------- */
+let S = null;
+let me = null;
+let view = { name: 'login' };
+
+function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function drop(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+function save() { store(KEY, JSON.stringify(S)); }
+function load() {
+  try {
+    const d = JSON.parse(read(KEY));
+    if (d && d.v === 1) return d;
+  } catch (e) {}
+  return seed();
+}
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nowISO = () => new Date().toISOString();
+const minsAgo = m => new Date(Date.now() - m * 60000).toISOString();
+const tent = id => TENTS.find(t => t.id === id) || { id: 'DIAG', no: '', name: 'Lab & X-ray' };
+const tentLabel = id => id === 'DIAG' ? 'Lab & X-ray' : `Tent ${tent(id).no} · ${tent(id).name}`;
+const pat = id => S.patients.find(p => p.id === id);
+const isToday = iso => new Date(iso).toDateString() === new Date().toDateString();
+
+function fmtTime(iso) {
+  const d = new Date(iso);
+  const t = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return isToday(iso) ? t : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ', ' + t;
+}
+function since(iso) {
+  const m = Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000));
+  if (m < 60) return m + ' min';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + ' h ' + (m % 60) + ' min';
+  return Math.floor(h / 24) + ' d';
+}
+function nextId() {
+  S.seq += 1;
+  return 'FH-' + String(S.seq).padStart(4, '0');
+}
+function log(pid, text, by) {
+  S.log.unshift({ t: nowISO(), pid, text, by: by || (me ? me.name : 'System') });
+}
+function pendingOrders(pid) { return S.orders.filter(o => o.pid === pid && o.status === 'requested'); }
+function freeBeds() { return S.beds.map((b, i) => b ? null : i + 1).filter(Boolean); }
+const triOrder = { red: 0, yellow: 1, green: 2 };
+
+function toast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+
+/* ---------- seed data (fictional) ---------- */
+function seed() {
+  S = { v: 1, seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null) };
+  const V = (bp, hr, t, s, rr) => ({ bp, hr, temp: t, spo2: s, rr });
+
+  function add(p) {
+    const id = nextId();
+    const patient = Object.assign({
+      id, sex: 'M', phone: '', shelter: '', vitals: V('', '', '', '', ''),
+      state: 'waiting', bed: null, notes: [], outcome: null,
+      createdAt: minsAgo(p.ago || 30), movedAt: minsAgo(Math.max(0, (p.ago || 30) - 10))
+    }, p);
+    delete patient.ago;
+    S.patients.push(patient);
+    S.log.push({ t: patient.createdAt, pid: id, text: `Registered at Tent 1. Triage: ${patient.triage}.`, by: 'Reem Al-Masri' });
+    if (patient.location !== 'REG') {
+      S.log.push({ t: patient.movedAt, pid: id, text: `Referred to ${tentLabel(patient.location === 'WARD' ? 'ER' : patient.location)}.`, by: 'Reem Al-Masri' });
+    }
+    return patient;
+  }
+  function order(p, group, test, status, result, ago) {
+    const o = { id: 'OR-' + (S.orders.length + 1001), pid: p.id, group, test, status, result: result || '', from: p.location, at: minsAgo(ago), doneAt: status === 'done' ? minsAgo(Math.max(1, ago - 25)) : null };
+    S.orders.push(o);
+    S.log.push({ t: o.at, pid: p.id, text: `${test} requested.`, by: 'Dr. Khaled Nasser' });
+    if (status === 'done') S.log.push({ t: o.doneAt, pid: p.id, text: `${test} result: ${result}`, by: 'Tariq Younis' });
+  }
+  function admit(p, bed, ago) {
+    p.location = 'WARD'; p.state = 'admitted'; p.bed = bed; S.beds[bed - 1] = p.id;
+    S.log.push({ t: minsAgo(ago), pid: p.id, text: `Admitted to Tent 6, bed ${bed}.`, by: 'Dr. Khaled Nasser' });
+  }
+
+  const a = add({ name: 'Ahmad Saleh', age: 34, complaint: 'Shrapnel wound, left leg', triage: 'red', location: 'OT', state: 'waiting', vitals: V('100/65', 118, 37.2, 95, 22), shelter: 'Al-Mawasi', ago: 95 });
+  a.notes.push({ t: minsAgo(70), by: 'Dr. Khaled Nasser', tent: 'ER', dx: 'Open fracture, left tibia, with retained fragment', plan: 'IV antibiotics, tetanus, analgesia. Refer to theatre for debridement and fixation.' });
+  order(a, 'Imaging', 'Limb X-ray', 'done', 'Fracture of left tibia, metallic foreign body visible.', 85);
+
+  const b = add({ name: 'Mariam Odeh', age: 27, sex: 'F', complaint: 'Labour pains, 39 weeks', triage: 'yellow', location: 'MAT', state: 'in-care', vitals: V('118/76', 92, 36.9, 98, 18), shelter: 'Deir al-Balah', ago: 60 });
+  order(b, 'Imaging', 'Obstetric ultrasound', 'done', 'Single live foetus, cephalic, normal fluid.', 50);
+
+  const c = add({ name: 'Yousef Hamdan', age: 8, complaint: 'Fever and cough for 4 days', triage: 'green', location: 'OPD', state: 'waiting', vitals: V('', 104, 38.6, 96, 26), shelter: 'Nuseirat', ago: 40 });
+  order(c, 'Laboratory', 'Complete blood count (CBC)', 'requested', '', 20);
+
+  const d = add({ name: 'Lina Abed', age: 45, sex: 'F', complaint: 'Shortness of breath', triage: 'red', location: 'ER', state: 'in-care', vitals: V('142/90', 112, 37.8, 89, 30), shelter: 'Khan Younis', ago: 35 });
+  order(d, 'Imaging', 'Chest X-ray', 'requested', '', 15);
+
+  const e = add({ name: 'Omar Najjar', age: 61, complaint: 'Dizziness, known diabetic', triage: 'yellow', location: 'ER', state: 'waiting', vitals: V('150/95', 96, 36.7, 97, 18), shelter: 'Deir al-Balah', ago: 50 });
+  order(e, 'Laboratory', 'Blood glucose', 'done', 'Glucose 312 mg/dL', 45);
+
+  add({ name: 'Huda Shaheen', age: 19, sex: 'F', complaint: 'Burn on right forearm', triage: 'yellow', location: 'ER', state: 'waiting', vitals: V('120/80', 100, 37.0, 99, 20), shelter: 'Al-Mawasi', ago: 25 });
+  add({ name: 'Amal Darwish', age: 38, sex: 'F', complaint: 'Headache and high blood pressure', triage: 'green', location: 'OPD', state: 'waiting', vitals: V('165/100', 84, 36.8, 98, 16), shelter: 'Nuseirat', ago: 30 });
+  add({ name: 'Salma Issa', age: 33, sex: 'F', complaint: 'Antenatal check, 30 weeks', triage: 'green', location: 'MAT', state: 'waiting', vitals: V('110/70', 80, 36.6, 99, 16), shelter: 'Khan Younis', ago: 20 });
+  add({ name: 'Karim Zaqout', age: 12, complaint: 'Laceration, right hand', triage: 'green', location: 'OPD', state: 'waiting', vitals: V('', 90, 36.9, 99, 18), shelter: 'Al-Mawasi', ago: 12 });
+
+  const ward = [
+    ['Sami Barakat', 52, 'M', 'Post-op, abdominal surgery', 'yellow', 3, 'Laparotomy for abdominal injury', 'Monitor drain output, IV fluids, pain control.'],
+    ['Noor Jaber', 30, 'F', 'Post-caesarean recovery', 'yellow', 7, 'Lower-segment caesarean section, healthy baby girl', 'Observe vitals 4-hourly, mobilise tomorrow.'],
+    ['Khalil Mansour', 70, 'M', 'Pneumonia', 'yellow', 12, 'Community-acquired pneumonia', 'IV antibiotics, oxygen to keep SpO2 above 94%.'],
+    ['Rana Haddad', 5, 'F', 'Dehydration, diarrhoea', 'yellow', 15, 'Moderate dehydration, acute gastroenteritis', 'IV rehydration, then oral fluids.'],
+    ['Fadi Qassem', 23, 'M', 'Fractured arm, post-op', 'yellow', 21, 'Closed fracture of right radius, fixed in theatre', 'Elevate arm, check circulation hourly.'],
+    ['Hana Kurd', 41, 'F', 'Infected wound, left foot', 'yellow', 24, 'Wound infection after injury', 'Daily dressing, IV antibiotics.'],
+    ['Mahmoud Abu Taha', 66, 'M', 'Heart failure', 'red', 28, 'Acute heart failure', 'Diuretics, fluid restriction, daily weight.'],
+    ['Dina Sharif', 29, 'F', 'Post-delivery bleeding', 'red', 33, 'Postpartum haemorrhage, stabilised', 'Transfusion completed. Monitor Hb.'],
+    ['Ziad Hijazi', 17, 'M', 'Burns, chest and arms', 'red', 40, 'Partial-thickness burns, about 15% body surface', 'Fluids, dressings, pain control.'],
+    ['Layla Mansour', 9, 'F', 'Severe asthma attack', 'yellow', 44, 'Acute severe asthma', 'Nebulisers 4-hourly, steroids.']
+  ];
+  ward.forEach((w, i) => {
+    const p = add({ name: w[0], age: w[1], sex: w[2], complaint: w[3], triage: w[4], location: 'ER', state: 'in-care', vitals: V('124/78', 88, 37.1, 96, 18), shelter: ['Deir al-Balah', 'Nuseirat', 'Khan Younis', 'Al-Mawasi'][i % 4], ago: 600 + i * 180 });
+    p.notes.push({ t: minsAgo(560 + i * 180), by: 'Dr. Khaled Nasser', tent: 'ER', dx: w[6], plan: w[7] });
+    admit(p, w[5], 540 + i * 180);
+  });
+
+  const z = add({ name: 'Bilal Awad', age: 15, complaint: 'Cut on forehead', triage: 'green', location: 'OPD', state: 'in-care', vitals: V('115/72', 86, 36.8, 99, 16), shelter: 'Nuseirat', ago: 180 });
+  z.notes.push({ t: minsAgo(160), by: 'Dr. Khaled Nasser', tent: 'OPD', dx: 'Superficial laceration, forehead', plan: 'Wound cleaned and sutured. Remove stitches in 5 days.' });
+  z.state = 'discharged'; z.outcome = 'Discharged home';
+  S.log.push({ t: minsAgo(150), pid: z.id, text: 'Discharged home.', by: 'Dr. Khaled Nasser' });
+
+  S.log.sort((x, y) => y.t.localeCompare(x.t));
+  save();
+  return S;
+}
+
+/* ---------- permissions & navigation ---------- */
+function navFor(role) {
+  const tabs = {
+    reception: ['register', 'today', 'search'],
+    doctor: ['tent:ER', 'tent:OPD', 'tent:MAT', 'tent:OT', 'ward', 'search'],
+    lab: ['orders', 'search'],
+    nurse: ['ward', 'search'],
+    admin: ['dash', 'register', 'tent:ER', 'tent:OPD', 'tent:MAT', 'tent:OT', 'orders', 'ward', 'search']
+  };
+  return tabs[role];
+}
+function homeFor(role) {
+  const t = navFor(role)[0];
+  return t.startsWith('tent:') ? { name: 'tent', id: t.slice(5) } : { name: t };
+}
+function canAct(p) {
+  if (!p || p.state === 'discharged') return false;
+  if (me.role === 'admin') return true;
+  if (me.role === 'doctor') return CLINICAL.includes(p.location) || p.location === 'WARD';
+  if (me.role === 'nurse') return p.location === 'WARD';
+  return false;
+}
+function go(name, id) {
+  view = { name, id };
+  closeModal();
+  render();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- login ---------- */
+function loginView() {
+  const accts = Object.entries(USERS).map(([u, x]) =>
+    `<button type="button" onclick="quick('${u}')"><span><b>${esc(x.title)}</b><br><span class="small muted">${esc(x.name)}</span></span><code>${u} / ${PASSWORD}</code></button>`
+  ).join('');
+  return `
+  <div class="login"><div class="box">
+    <h1>${logo()}Emergency Field Hospital</h1>
+    <p class="sub">Patient flow for a six-tent field hospital. Works without internet.</p>
+    <form onsubmit="doLogin(event)">
+      <div class="field"><label for="u">Username</label><input id="u" type="text" autocomplete="username" autocapitalize="none" required></div>
+      <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+      <div class="err" id="err"></div>
+      <button class="btn primary" style="width:100%">Sign in</button>
+    </form>
+    <h3 class="mt">Demo accounts</h3>
+    <div class="accounts">${accts}</div>
+    <div class="disclaimer">Demo only. All patients and staff are fictional. This is not a medical device and must not be used for real patient care.</div>
+  </div></div>`;
+}
+function quick(u) { $('#u').value = u; $('#pw').value = PASSWORD; }
+function doLogin(e) {
+  e.preventDefault();
+  const u = $('#u').value.trim().toLowerCase();
+  if (USERS[u] && $('#pw').value === PASSWORD) {
+    me = Object.assign({ username: u }, USERS[u]);
+    store(USER_KEY, u);
+    view = homeFor(me.role);
+    render();
+  } else {
+    $('#err').textContent = 'Wrong username or password. Use one of the demo accounts below.';
+  }
+}
+function logout() { drop(USER_KEY); me = null; view = { name: 'login' }; render(); }
+function resetDemo() {
+  if (!confirm('Reset all demo data? Every change made on this device will be lost.')) return;
+  seed(); toast('Demo data reset'); go(homeFor(me.role).name, homeFor(me.role).id);
+}
+
+/* ---------- shell ---------- */
+function logo() {
+  return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 20h18M5 20V11l7-6 7 6v9" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v6M9 13h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+}
+function tabLabel(t) {
+  const active = S.patients.filter(p => p.state !== 'discharged');
+  if (t.startsWith('tent:')) {
+    const id = t.slice(5);
+    const n = active.filter(p => p.location === id).length;
+    return `${tent(id).name}<span class="count">${n}</span>`;
+  }
+  const labels = { dash: 'Dashboard', register: 'Register patient', today: "Today's patients", orders: 'Lab & X-ray', ward: 'Ward', search: 'Search' };
+  let extra = '';
+  if (t === 'orders') extra = `<span class="count">${S.orders.filter(o => o.status === 'requested').length}</span>`;
+  if (t === 'ward') extra = `<span class="count">${S.beds.filter(Boolean).length}/${BEDS}</span>`;
+  return labels[t] + extra;
+}
+function shell(inner) {
+  const online = navigator.onLine;
+  const tabs = navFor(me.role).map(t => {
+    const isActive = t.startsWith('tent:') ? (view.name === 'tent' && view.id === t.slice(5)) : view.name === t;
+    const [n, id] = t.split(':');
+    return `<button class="${isActive ? 'active' : ''}" onclick="go('${n}'${id ? `,'${id}'` : ''})">${tabLabel(t)}</button>`;
+  }).join('');
+  return `
+  <header class="top"><div class="wrap">
+    <div class="brand">${logo()}<span class="bname">Emergency Field Hospital</span></div>
+    <span class="pill ${online ? 'on' : 'off'}" id="net">${online ? 'Online' : 'Offline · saved on device'}</span>
+    <div class="spacer"></div>
+    <div class="who"><b>${esc(me.name)}</b><br><span class="role">${esc(me.title)}</span></div>
+    <button class="link" onclick="logout()">Sign out</button>
+  </div></header>
+  <nav class="nav"><div class="wrap">${tabs}</div></nav>
+  <main><div class="wrap">${inner}
+    <p class="small muted mt">Demo with fictional data. Changes stay on this device. <a href="#" onclick="resetDemo();return false">Reset demo data</a></p>
+  </div></main>`;
+}
+
+/* ---------- views ---------- */
+function patientCard(p, opts = {}) {
+  const pend = pendingOrders(p.id).length;
+  const done = S.orders.filter(o => o.pid === p.id && o.status === 'done' && o.doneAt > (p.movedAt || p.createdAt)).length;
+  const badges = [
+    p.state === 'in-care' ? '<span class="badge info">In care</span>' : '',
+    p.state === 'waiting' ? '<span class="badge">Waiting</span>' : '',
+    p.state === 'admitted' ? `<span class="badge info">Bed ${p.bed}</span>` : '',
+    p.state === 'discharged' ? `<span class="badge">${esc(p.outcome || 'Discharged')}</span>` : '',
+    pend ? `<span class="badge warn">${pend} result${pend > 1 ? 's' : ''} pending</span>` : '',
+    !pend && done ? '<span class="badge ok">Results ready</span>' : ''
+  ].join(' ');
+  return `<button class="pcard" onclick="go('patient','${p.id}')">
+    <span class="bar ${p.triage || 'none'}"></span>
+    <span class="main">
+      <span class="name">${esc(p.name)}</span>
+      <div class="meta">${p.id} · ${p.age} y · ${p.sex === 'F' ? 'Female' : 'Male'}${opts.showTent ? ' · ' + esc(tentLabel(p.location)) : ''}</div>
+      <div class="cc">${esc(p.complaint)}</div>
+      <div class="row" style="gap:6px;margin-top:6px">${badges}</div>
+    </span>
+    <span class="side"><span class="tri ${p.triage}">${p.triage}</span><span>${p.state === 'discharged' ? fmtTime(p.createdAt) : 'here ' + since(p.movedAt || p.createdAt)}</span></span>
+  </button>`;
+}
+function sortQueue(list) {
+  return list.sort((a, b) => (triOrder[a.triage] - triOrder[b.triage]) || (a.movedAt || a.createdAt).localeCompare(b.movedAt || b.createdAt));
+}
+
+function dashView() {
+  const active = S.patients.filter(p => p.state !== 'discharged');
+  const occ = S.beds.filter(Boolean).length;
+  const today = S.patients.filter(p => isToday(p.createdAt)).length;
+  const dischargedToday = S.log.filter(l => isToday(l.t) && /^Discharged|^Transferred|^Left/.test(l.text)).length;
+  const red = active.filter(p => p.triage === 'red').length;
+  const pend = S.orders.filter(o => o.status === 'requested').length;
+  const rows = TENTS.filter(t => t.id !== 'REG').map(t => {
+    const here = active.filter(p => p.location === t.id);
+    const max = t.id === 'WARD' ? BEDS : Math.max(8, ...TENTS.map(x => active.filter(p => p.location === x.id && x.id !== 'WARD').length));
+    const w = here.filter(p => p.state === 'waiting').length;
+    const c = here.length - w;
+    const target = t.id === 'WARD' ? "go('ward')" : `go('tent','${t.id}')`;
+    return `<div class="tentrow" onclick="${target}">
+      <div><b>Tent ${t.no}</b><div class="small muted">${t.name}</div></div>
+      <div class="track"><span class="c" style="width:${c / max * 100}%"></span><span class="w" style="width:${w / max * 100}%"></span></div>
+      <div style="text-align:right"><b>${here.length}</b>${t.id === 'WARD' ? `<span class="small muted">/${BEDS}</span>` : ''}</div>
+    </div>`;
+  }).join('');
+  const feed = S.log.slice(0, 12).map(l => {
+    const p = pat(l.pid);
+    return `<li><div class="t">${fmtTime(l.t)} · ${esc(l.by)}</div><a href="#" onclick="go('patient','${l.pid}');return false"><b>${esc(p ? p.name : l.pid)}</b></a> ${esc(l.text)}</li>`;
+  }).join('');
+  return `
+    <h1>Field hospital overview</h1>
+    <p class="sub">Live picture of all six tents, from this device's data.</p>
+    <div class="grid g3">
+      <div class="tile"><div class="n">${active.length}</div><div class="l">Patients in the hospital</div></div>
+      <div class="tile red"><div class="n">${red}</div><div class="l">Red (immediate) cases</div></div>
+      <div class="tile"><div class="n">${occ}<span class="small muted">/${BEDS}</span></div><div class="l">Ward beds occupied</div></div>
+      <div class="tile"><div class="n">${pend}</div><div class="l">Lab & X-ray results pending</div></div>
+      <div class="tile"><div class="n">${today}</div><div class="l">Registered today</div></div>
+      <div class="tile"><div class="n">${dischargedToday}</div><div class="l">Discharged or transferred today</div></div>
+    </div>
+    <div class="grid g2 mt">
+      <div class="card"><h2>Patients by tent</h2>${rows}
+        <div class="row small muted mt" style="gap:16px"><span><span class="badge" style="background:var(--primary)">&nbsp;</span> In care / admitted</span><span><span class="badge" style="background:#9bd3cc">&nbsp;</span> Waiting</span></div>
+      </div>
+      <div class="card"><h2>Latest activity</h2><ul class="timeline">${feed}</ul></div>
+    </div>
+    <div class="row mt"><button class="btn" onclick="exportData()">Export data (JSON)</button><span class="small muted">In a real deployment, this file would sync to the central server when the connection returns.</span></div>`;
+}
+
+function registerView() {
+  const triPick = ['red', 'yellow', 'green'].map((t, i) =>
+    `<input type="radio" name="triage" id="t-${t}" value="${t}" ${t === 'green' ? 'checked' : ''}><label for="t-${t}" class="${t[0]}">${['Red · immediate', 'Yellow · urgent', 'Green · non-urgent'][i]}</label>`).join('');
+  const dest = CLINICAL.map((id, i) =>
+    `<input type="radio" name="dest" id="d-${id}" value="${id}" ${i === 0 ? 'checked' : ''}><label for="d-${id}">Tent ${tent(id).no} · ${tent(id).name}</label>`).join('');
+  return `
+    <h1>Register a patient</h1>
+    <p class="sub">Tent 1 · Registration & Triage. The patient gets a file number and goes straight to the chosen tent's queue.</p>
+    <form class="card" onsubmit="doRegister(event)">
+      <h2>Patient</h2>
+      <div class="field"><label for="r-name">Full name</label><input id="r-name" type="text" required></div>
+      <div class="fgrid">
+        <div class="field"><label for="r-age">Age (years)</label><input id="r-age" type="number" min="0" max="120" required></div>
+        <div class="field"><label>Sex</label><div class="choice"><input type="radio" name="sex" id="s-f" value="F" checked><label for="s-f">Female</label><input type="radio" name="sex" id="s-m" value="M"><label for="s-m">Male</label></div></div>
+        <div class="field"><label for="r-phone">Phone (optional)</label><input id="r-phone" type="tel"></div>
+        <div class="field"><label for="r-shelter">Shelter or area</label><input id="r-shelter" type="text" placeholder="e.g. Al-Mawasi"></div>
+      </div>
+      <div class="field"><label for="r-cc">Main complaint</label><input id="r-cc" type="text" required placeholder="What brought the patient in?"></div>
+      <h2 class="mt">Triage</h2>
+      <div class="field choice tri-pick">${triPick}</div>
+      <div class="fgrid">
+        <div class="field"><label for="v-bp">BP</label><input id="v-bp" type="text" placeholder="120/80"></div>
+        <div class="field"><label for="v-hr">Pulse</label><input id="v-hr" type="number" placeholder="bpm"></div>
+        <div class="field"><label for="v-temp">Temp °C</label><input id="v-temp" type="number" step="0.1"></div>
+        <div class="field"><label for="v-spo2">SpO₂ %</label><input id="v-spo2" type="number"></div>
+        <div class="field"><label for="v-rr">Resp. rate</label><input id="v-rr" type="number"></div>
+      </div>
+      <h2 class="mt">Send to</h2>
+      <div class="field choice">${dest}</div>
+      <button class="btn primary mt">Register and send</button>
+    </form>`;
+}
+function readVitals() {
+  return { bp: $('#v-bp').value.trim(), hr: $('#v-hr').value, temp: $('#v-temp').value, spo2: $('#v-spo2').value, rr: $('#v-rr').value };
+}
+function doRegister(e) {
+  e.preventDefault();
+  const f = e.target;
+  const p = {
+    id: nextId(), name: $('#r-name').value.trim(), age: Number($('#r-age').value), sex: f.sex.value,
+    phone: $('#r-phone').value.trim(), shelter: $('#r-shelter').value.trim(), complaint: $('#r-cc').value.trim(),
+    triage: f.triage.value, vitals: readVitals(), location: f.dest.value, state: 'waiting', bed: null,
+    notes: [], outcome: null, createdAt: nowISO(), movedAt: nowISO()
+  };
+  S.patients.push(p);
+  log(p.id, `Registered at Tent 1. Triage: ${p.triage}.`);
+  log(p.id, `Referred to ${tentLabel(p.location)}.`);
+  save();
+  view = { name: 'patient', id: p.id };
+  render();
+  wristband(p.id);
+}
+
+function todayView() {
+  const list = S.patients.filter(p => isToday(p.createdAt)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return `<div class="row between"><div><h1>Today's patients</h1><p class="sub">${list.length} registered today. Tap a patient to see where they are now.</p></div><button class="btn primary" onclick="go('register')">+ Register patient</button></div>
+    <div class="plist">${list.map(p => patientCard(p, { showTent: true })).join('') || '<div class="empty">No patients registered today yet.</div>'}</div>`;
+}
+
+function tentView(id) {
+  const t = tent(id);
+  const here = S.patients.filter(p => p.location === id && p.state !== 'discharged');
+  const waiting = sortQueue(here.filter(p => p.state === 'waiting'));
+  const care = sortQueue(here.filter(p => p.state !== 'waiting'));
+  return `<h1>Tent ${t.no} · ${t.name}</h1>
+    <p class="sub">${here.length} patient${here.length === 1 ? '' : 's'}. Queue is sorted by triage colour, then by waiting time.</p>
+    <div class="grid g2">
+      <section><h2>Waiting (${waiting.length})</h2><div class="plist">${waiting.map(p => patientCard(p)).join('') || '<div class="empty">Nobody waiting.</div>'}</div></section>
+      <section><h2>In care (${care.length})</h2><div class="plist">${care.map(p => patientCard(p)).join('') || '<div class="empty">Nobody in care.</div>'}</div></section>
+    </div>`;
+}
+
+function ordersView() {
+  const pend = S.orders.filter(o => o.status === 'requested').sort((a, b) => {
+    const pa = pat(a.pid), pb = pat(b.pid);
+    return (triOrder[pa.triage] - triOrder[pb.triage]) || a.at.localeCompare(b.at);
+  });
+  const done = S.orders.filter(o => o.status === 'done').sort((a, b) => b.doneAt.localeCompare(a.doneAt)).slice(0, 10);
+  const row = (o, isDone) => {
+    const p = pat(o.pid);
+    return `<div class="order">
+      <div><div><span class="tri ${p.triage}">${p.triage}</span> <b>${esc(o.test)}</b></div>
+        <div class="small muted"><a href="#" onclick="go('patient','${p.id}');return false">${esc(p.name)}</a> · ${p.id} · from ${esc(tentLabel(o.from))} · ${isDone ? 'done ' + fmtTime(o.doneAt) : 'requested ' + since(o.at) + ' ago'}</div>
+        ${isDone ? `<div class="small" style="margin-top:4px">${esc(o.result)}</div>` : ''}</div>
+      ${isDone ? '' : (me.role === 'lab' || me.role === 'admin') ? `<button class="btn primary sm" onclick="resultForm('${o.id}')">Enter result</button>` : ''}
+    </div>`;
+  };
+  return `<h1>Lab & X-ray</h1>
+    <p class="sub">Requests from every tent. Results go straight back to the patient's file.</p>
+    <div class="grid g2">
+      <div class="card"><h2>Pending (${pend.length})</h2>${pend.map(o => row(o, false)).join('') || '<div class="muted">No pending requests.</div>'}</div>
+      <div class="card"><h2>Recently completed</h2>${done.map(o => row(o, true)).join('') || '<div class="muted">Nothing completed yet.</div>'}</div>
+    </div>`;
+}
+
+function wardView() {
+  const occ = S.beds.filter(Boolean).length;
+  const cells = S.beds.map((pid, i) => {
+    if (!pid) return `<div class="bed free"><div class="num">Bed ${i + 1}</div><div class="who">Free</div></div>`;
+    const p = pat(pid);
+    return `<button class="bed occ" onclick="go('patient','${pid}')"><div class="num">Bed ${i + 1} <span class="tri ${p.triage}" style="padding:0 5px;font-size:10px"></span></div><div class="who">${esc(p.name)}</div></button>`;
+  }).join('');
+  return `<h1>Tent 6 · Inpatient Ward</h1>
+    <p class="sub">${occ} of ${BEDS} beds occupied, ${BEDS - occ} free. Tap a bed to open the patient.</p>
+    <div class="beds">${cells}</div>`;
+}
+
+function searchView() {
+  return `<h1>Find a patient</h1>
+    <div class="field"><input id="q" type="text" placeholder="Name or file number (e.g. FH-0003)" oninput="doSearch()" autofocus></div>
+    <div class="plist" id="results"></div>`;
+}
+function doSearch() {
+  const q = $('#q').value.trim().toLowerCase();
+  const list = S.patients.filter(p => !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 30);
+  $('#results').innerHTML = list.map(p => patientCard(p, { showTent: true })).join('') || '<div class="empty">No patient found.</div>';
+}
+
+function patientView(id) {
+  const p = pat(id);
+  if (!p) return '<div class="empty">Patient not found.</div>';
+  const v = p.vitals || {};
+  const act = canAct(p);
+  const ords = S.orders.filter(o => o.pid === id).sort((a, b) => b.at.localeCompare(a.at));
+  const tl = S.log.filter(l => l.pid === id);
+  const where = p.state === 'discharged' ? esc(p.outcome || 'Discharged') : `${esc(tentLabel(p.location))}${p.bed ? ' · bed ' + p.bed : ''}`;
+
+  let buttons = '';
+  if (act) {
+    if (p.state === 'waiting') buttons += `<button class="btn primary" onclick="startCare('${id}')">Start consultation</button>`;
+    buttons += `<button class="btn" onclick="noteForm('${id}')">Add clinical note</button>`;
+    buttons += `<button class="btn" onclick="vitalsForm('${id}')">Update vitals</button>`;
+    buttons += `<button class="btn" onclick="orderForm('${id}')">Request lab / X-ray</button>`;
+    buttons += `<button class="btn" onclick="referForm('${id}')">Refer to another tent</button>`;
+    if (p.location !== 'WARD') buttons += `<button class="btn" onclick="admitForm('${id}')">Admit to ward</button>`;
+    buttons += `<button class="btn danger" onclick="dischargeForm('${id}')">Discharge</button>`;
+  }
+  buttons += `<button class="btn" onclick="wristband('${id}')">Wristband</button>`;
+
+  const vit = [['BP', v.bp], ['Pulse', v.hr && v.hr + ' bpm'], ['Temp', v.temp && v.temp + ' °C'], ['SpO₂', v.spo2 && v.spo2 + '%'], ['Resp.', v.rr && v.rr + '/min']]
+    .map(([l, x]) => `<div><span>${l}</span><b>${esc(x || '–')}</b></div>`).join('');
+
+  const notes = p.notes.slice().reverse().map(n =>
+    `<div class="note"><div class="small muted">${fmtTime(n.t)} · ${esc(n.by)} · Tent ${tent(n.tent).no}</div><div><b>${esc(n.dx)}</b></div>${n.plan ? `<div>${esc(n.plan)}</div>` : ''}</div>`).join('');
+
+  const orderRows = ords.map(o => `<div class="order"><div><b>${esc(o.test)}</b><div class="small muted">${fmtTime(o.at)} · from ${esc(tentLabel(o.from))}</div>${o.status === 'done' ? `<div class="small" style="margin-top:4px">${esc(o.result)}</div>` : ''}</div><div>${o.status === 'done' ? '<span class="badge ok">Result ready</span>' : '<span class="badge warn">Pending</span>'}</div></div>`).join('');
+
+  return `
+    <div class="card">
+      <div class="phead">
+        <div>
+          <div class="small muted">${p.id}</div>
+          <h1>${esc(p.name)}</h1>
+          <div class="muted">${p.age} years · ${p.sex === 'F' ? 'Female' : 'Male'}${p.shelter ? ' · ' + esc(p.shelter) : ''}${p.phone ? ' · ' + esc(p.phone) : ''}</div>
+        </div>
+        <div style="text-align:right"><span class="tri ${p.triage}">${p.triage}</span><div class="small mt"><b>${where}</b></div><div class="small muted">Arrived ${fmtTime(p.createdAt)}</div></div>
+      </div>
+      <div class="mt"><span class="muted small">Main complaint</span><div><b>${esc(p.complaint)}</b></div></div>
+      <div class="vitals mt">${vit}</div>
+      <div class="actions mt">${buttons}</div>
+      ${!act && p.state !== 'discharged' && me.role !== 'admin' ? `<p class="small muted mt">You can view this file. Actions are available to staff in ${esc(tentLabel(p.location))}.</p>` : ''}
+    </div>
+    <div class="grid g2 mt">
+      <div class="card"><h2>Clinical notes</h2>${notes || '<div class="muted">No notes yet.</div>'}
+        <h2 class="mt">Lab & X-ray</h2>${orderRows || '<div class="muted">No requests yet.</div>'}</div>
+      <div class="card"><h2>Patient journey</h2><ul class="timeline">${tl.map(l => `<li><div class="t">${fmtTime(l.t)} · ${esc(l.by)}</div>${esc(l.text)}</li>`).join('')}</ul></div>
+    </div>`;
+}
+
+/* ---------- actions ---------- */
+function modal(title, body) {
+  $('#modal-root').innerHTML = `<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="mhead"><h2 style="margin:0">${esc(title)}</h2><button class="x" onclick="closeModal()" aria-label="Close">×</button></div>${body}</div></div>`;
+  const first = $('#modal-root input:not([type=radio]), #modal-root select, #modal-root textarea');
+  if (first) first.focus();
+}
+function closeModal() { $('#modal-root').innerHTML = ''; }
+function done(msg) { save(); closeModal(); render(); toast(msg); }
+
+function startCare(id) {
+  const p = pat(id); p.state = 'in-care';
+  log(id, `Consultation started in ${tentLabel(p.location)}.`);
+  done('Consultation started');
+}
+function noteForm(id) {
+  modal('Clinical note', `<form onsubmit="saveNote(event,'${id}')">
+    <div class="field"><label for="n-dx">Diagnosis or finding</label><input id="n-dx" type="text" required></div>
+    <div class="field"><label for="n-plan">Treatment and plan</label><textarea id="n-plan"></textarea></div>
+    <button class="btn primary">Save note</button></form>`);
+}
+function saveNote(e, id) {
+  e.preventDefault();
+  const p = pat(id);
+  const dx = $('#n-dx').value.trim();
+  p.notes.push({ t: nowISO(), by: me.name, tent: p.location, dx, plan: $('#n-plan').value.trim() });
+  if (p.state === 'waiting') p.state = 'in-care';
+  log(id, `Note: ${dx}.`);
+  done('Note saved');
+}
+function vitalsForm(id) {
+  const v = pat(id).vitals || {};
+  modal('Update vitals', `<form onsubmit="saveVitals(event,'${id}')"><div class="fgrid">
+    <div class="field"><label for="v-bp">BP</label><input id="v-bp" type="text" value="${esc(v.bp)}"></div>
+    <div class="field"><label for="v-hr">Pulse</label><input id="v-hr" type="number" value="${esc(v.hr)}"></div>
+    <div class="field"><label for="v-temp">Temp °C</label><input id="v-temp" type="number" step="0.1" value="${esc(v.temp)}"></div>
+    <div class="field"><label for="v-spo2">SpO₂ %</label><input id="v-spo2" type="number" value="${esc(v.spo2)}"></div>
+    <div class="field"><label for="v-rr">Resp. rate</label><input id="v-rr" type="number" value="${esc(v.rr)}"></div>
+    </div><button class="btn primary">Save vitals</button></form>`);
+}
+function saveVitals(e, id) {
+  e.preventDefault();
+  const p = pat(id); p.vitals = readVitals();
+  const v = p.vitals;
+  log(id, `Vitals: BP ${v.bp || '–'}, pulse ${v.hr || '–'}, temp ${v.temp || '–'}, SpO2 ${v.spo2 || '–'}.`);
+  done('Vitals updated');
+}
+function orderForm(id) {
+  const opts = Object.entries(TESTS).map(([g, list]) => `<optgroup label="${g}">${list.map(t => `<option value="${g}|${t}">${t}</option>`).join('')}</optgroup>`).join('');
+  modal('Request lab / X-ray', `<form onsubmit="saveOrder(event,'${id}')">
+    <div class="field"><label for="o-test">Test</label><select id="o-test">${opts}</select></div>
+    <p class="small muted">The request appears in the Lab & X-ray list straight away.</p>
+    <button class="btn primary">Send request</button></form>`);
+}
+function saveOrder(e, id) {
+  e.preventDefault();
+  const p = pat(id);
+  const [group, test] = $('#o-test').value.split('|');
+  S.orders.push({ id: 'OR-' + (S.orders.length + 1001), pid: id, group, test, status: 'requested', result: '', from: p.location, at: nowISO(), doneAt: null });
+  log(id, `${test} requested.`);
+  done('Request sent to Lab & X-ray');
+}
+function resultForm(oid) {
+  const o = S.orders.find(x => x.id === oid); const p = pat(o.pid);
+  modal('Enter result', `<form onsubmit="saveResult(event,'${oid}')">
+    <p><b>${esc(o.test)}</b><br><span class="small muted">${esc(p.name)} · ${p.id} · from ${esc(tentLabel(o.from))}</span></p>
+    <div class="field"><label for="res">Result</label><textarea id="res" required></textarea></div>
+    <button class="btn primary">Send result to the patient's file</button></form>`);
+}
+function saveResult(e, oid) {
+  e.preventDefault();
+  const o = S.orders.find(x => x.id === oid);
+  o.status = 'done'; o.result = $('#res').value.trim(); o.doneAt = nowISO();
+  log(o.pid, `${o.test} result: ${o.result}`);
+  done('Result sent');
+}
+function referForm(id) {
+  const p = pat(id);
+  const opts = CLINICAL.filter(t => t !== p.location).map(t => `<option value="${t}">${tentLabel(t)}</option>`).join('');
+  modal('Refer to another tent', `<form onsubmit="saveRefer(event,'${id}')">
+    <div class="field"><label for="ref">Send to</label><select id="ref">${opts}</select></div>
+    <div class="field"><label for="ref-why">Reason</label><input id="ref-why" type="text" placeholder="e.g. needs surgery"></div>
+    <button class="btn primary">Refer patient</button></form>`);
+}
+function saveRefer(e, id) {
+  e.preventDefault();
+  const p = pat(id);
+  const to = $('#ref').value, why = $('#ref-why').value.trim();
+  if (p.bed) { S.beds[p.bed - 1] = null; p.bed = null; }
+  p.location = to; p.state = 'waiting'; p.movedAt = nowISO();
+  log(id, `Referred to ${tentLabel(to)}${why ? ': ' + why : ''}.`);
+  done('Patient referred');
+}
+function admitForm(id) {
+  const free = freeBeds();
+  if (!free.length) { modal('Ward is full', '<p>All 50 beds are occupied. Discharge or transfer a patient first.</p>'); return; }
+  modal('Admit to ward', `<form onsubmit="saveAdmit(event,'${id}')">
+    <p class="muted">${free.length} of ${BEDS} beds free in Tent 6.</p>
+    <div class="field"><label for="bed">Bed</label><select id="bed">${free.map(b => `<option value="${b}">Bed ${b}</option>`).join('')}</select></div>
+    <button class="btn primary">Admit patient</button></form>`);
+}
+function saveAdmit(e, id) {
+  e.preventDefault();
+  const p = pat(id); const bed = Number($('#bed').value);
+  p.location = 'WARD'; p.state = 'admitted'; p.bed = bed; p.movedAt = nowISO(); S.beds[bed - 1] = id;
+  log(id, `Admitted to Tent 6, bed ${bed}.`);
+  done(`Admitted to bed ${bed}`);
+}
+function dischargeForm(id) {
+  modal('Discharge patient', `<form onsubmit="saveDischarge(event,'${id}')">
+    <div class="field"><label>Outcome</label><div class="choice">${OUTCOMES.map((o, i) => `<input type="radio" name="out" id="out${i}" value="${o}" ${i === 0 ? 'checked' : ''}><label for="out${i}">${o}</label>`).join('')}</div></div>
+    <div class="field"><label for="dis-note">Discharge note</label><textarea id="dis-note" placeholder="Medication, follow-up, advice"></textarea></div>
+    <button class="btn primary">Confirm discharge</button></form>`);
+}
+function saveDischarge(e, id) {
+  e.preventDefault();
+  const p = pat(id);
+  const out = e.target.out.value, note = $('#dis-note').value.trim();
+  if (p.bed) { S.beds[p.bed - 1] = null; }
+  log(id, `${out}${p.bed ? ' from bed ' + p.bed : ''}.${note ? ' ' + note : ''}`);
+  p.bed = null; p.state = 'discharged'; p.outcome = out; p.movedAt = nowISO();
+  done('Patient discharged');
+}
+function wristband(id) {
+  const p = pat(id);
+  modal('Patient wristband', `<div class="band printable">
+      <div><div class="mrn">${p.id}</div><div><b>${esc(p.name)}</b></div><div class="small muted">${p.age} y · ${p.sex === 'F' ? 'F' : 'M'} · ${fmtTime(p.createdAt)}</div></div>
+      <span class="tri ${p.triage}">${p.triage}</span></div>
+    <p class="small muted">Print on a wristband label, or write the file number on the patient's band. Staff search by this number.</p>
+    <div class="row"><button class="btn primary" onclick="window.print()">Print</button><button class="btn" onclick="closeModal()">Done</button></div>`);
+}
+function exportData() {
+  const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'field-hospital-export-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* ---------- render ---------- */
+function render() {
+  const app = $('#app');
+  if (!me) { app.innerHTML = loginView(); return; }
+  let inner = '';
+  switch (view.name) {
+    case 'dash': inner = dashView(); break;
+    case 'register': inner = registerView(); break;
+    case 'today': inner = todayView(); break;
+    case 'tent': inner = tentView(view.id); break;
+    case 'orders': inner = ordersView(); break;
+    case 'ward': inner = wardView(); break;
+    case 'search': inner = searchView(); break;
+    case 'patient': inner = patientView(view.id); break;
+    default: view = homeFor(me.role); return render();
+  }
+  app.innerHTML = shell(inner);
+  if (view.name === 'search') doSearch();
+}
+
+function updateNet() {
+  const el = $('#net');
+  if (!el) return;
+  el.className = 'pill ' + (navigator.onLine ? 'on' : 'off');
+  el.textContent = navigator.onLine ? 'Online' : 'Offline · saved on device';
+}
+window.addEventListener('online', updateNet);
+window.addEventListener('offline', updateNet);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ---------- boot ---------- */
+S = load();
+const savedUser = read(USER_KEY);
+if (savedUser && USERS[savedUser]) { me = Object.assign({ username: savedUser }, USERS[savedUser]); view = homeFor(me.role); }
+render();
+setInterval(() => { if (me && !$('#modal-root').innerHTML && view.name !== 'register' && view.name !== 'search') render(); }, 60000);
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
