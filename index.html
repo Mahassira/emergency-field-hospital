@@ -98,6 +98,8 @@ h3{font-size:14px;margin:0 0 8px;color:var(--primary)}
 .tile .l{color:var(--muted);font-size:12.5px;line-height:1.3}
 .tile.red .tic{background:var(--red-soft);color:var(--red)}
 .tile.red .n{color:var(--red)}
+.tile.amber .tic{background:var(--amber-soft);color:var(--amber)}
+.tile.amber .n{color:var(--amber)}
 
 /* triage */
 .tri{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
@@ -321,6 +323,77 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
   .order .btn{width:100%}
 }
 @media(min-width:721px){.login .logo{width:220px}}
+
+/* ---------- v2: data lists, attendance, responsive ---------- */
+.kv{display:grid;grid-template-columns:minmax(130px,36%) 1fr}
+.kv>div{padding:9px 0;border-bottom:1px solid var(--surface-2);font-size:14.5px;min-width:0;overflow-wrap:anywhere}
+.kv>div:nth-child(odd){color:var(--muted);font-size:13px;font-weight:600;padding-right:12px}
+.kv>div:nth-last-child(-n+2){border-bottom:0}
+.kv .none{color:#b3a891}
+.alertbar{display:flex;align-items:center;gap:8px;background:var(--red-soft);color:var(--red);border-radius:11px;padding:9px 12px;font-weight:700;font-size:14px;margin-top:12px}
+.alertbar .ic{color:var(--red)}
+.badge.preg{background:#f6e3f1;color:#9c2a7d}
+.badge.allergy{background:var(--red-soft);color:var(--red)}
+.pgrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:14px;margin-top:14px}
+.pgrid>div{display:grid;gap:14px;align-content:start}
+.vitals{grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 12px;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-weight:600;font-size:13px;color:var(--muted);cursor:pointer}
+.chips button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.srow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 13px;cursor:pointer;box-shadow:var(--shadow)}
+.srow:hover{border-color:#c9b99f}
+.srow .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;flex:none;background:var(--surface-2);color:var(--muted)}
+.srow .av.present{background:var(--green-soft);color:var(--green)}
+.srow .av.late{background:var(--amber-soft);color:var(--amber)}
+.srow .av.absent{background:var(--red-soft);color:var(--red)}
+.srow .av.leave{background:#ece6f6;color:#6b4fa3}
+.srow .av.out{background:var(--primary-soft);color:var(--primary)}
+.srow .sm{flex:1;min-width:0}
+.srow .sm b{color:var(--primary)}
+.srow .sm .meta{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .st{text-align:right;font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:none}
+.badge.present{background:var(--green-soft);color:var(--green)}
+.badge.late{background:var(--amber-soft);color:var(--amber)}
+.badge.absent{background:var(--red-soft);color:var(--red)}
+.badge.leave{background:#ece6f6;color:#6b4fa3}
+.badge.out{background:var(--primary-soft);color:var(--primary)}
+.badge.expected{background:var(--surface-2);color:var(--muted)}
+.slist{display:grid;gap:8px;grid-template-columns:minmax(0,1fr)}
+.srow{min-width:0;font:inherit;color:inherit}
+.myshift{display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap;background:var(--primary);color:#fff;border-radius:16px;padding:14px 16px;margin-bottom:14px}
+.myshift b{font-size:16px}
+.myshift .small{color:rgba(255,255,255,.75)}
+.myshift .btn{background:#fff;color:var(--primary);border-color:#fff}
+.myshift .btn .ic{color:var(--accent)}
+.fu{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--surface-2);flex-wrap:wrap}
+.fu:last-child{border-bottom:0}
+.fu .acts{display:flex;gap:6px}
+.checkline{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--text);margin:0}
+.checkline input{width:20px;height:20px;accent-color:var(--primary)}
+@media(max-width:900px){.pgrid{grid-template-columns:1fr}}
+@media(max-width:720px){
+  .kv{grid-template-columns:minmax(110px,42%) 1fr}
+  .kv>div{font-size:14px;padding:8px 0}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .vitals{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .vitals span{font-size:11px}
+  .fu .acts{width:100%}
+  .fu .acts .btn{flex:1}
+}
+@media(min-width:1100px){
+  .top .wrap{max-width:none;padding:0 24px}
+  .nav{position:fixed;top:60px;left:0;bottom:0;width:248px;border-bottom:0;border-right:1px solid var(--line);overflow-y:auto;z-index:18}
+  .nav .wrap{flex-direction:column;align-items:stretch;padding:16px 12px;gap:3px;max-width:none;overflow:visible}
+  .nav button{border-bottom:0;border-radius:11px;padding:11px 12px;justify-content:flex-start;font-size:14.5px}
+  .nav button:hover{background:var(--surface-2)}
+  .nav button.active{background:var(--accent-soft);color:var(--primary)}
+  .nav .count{margin-left:auto}
+  main{margin-left:248px}
+  main .wrap{max-width:1200px;padding:0 32px}
+  .toast{left:calc(50% + 124px)}
+}
 @media print{
   body *{visibility:hidden}
   .printable,.printable *{visibility:visible}
@@ -375,6 +448,9 @@ const ICONS = {
   menu: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
   back: '<path d="M15 5l-7 7 7 7"/>',
   grid: '<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>',
+  usercheck: '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="m16 11 2 2 4-4"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  enter: '<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M9 17l5-5-5-5M14 12H3"/>',
   reset: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/>'
 };
 const TENT_IC = { REG: 'userplus', ER: 'pulse', OPD: 'steth', MAT: 'heart', OT: 'scissors', WARD: 'bed', DIAG: 'flask' };
@@ -388,15 +464,23 @@ const TESTS = {
 };
 
 const USERS = {
-  reception: { name: 'Reem Al-Masri', role: 'reception', title: 'Registration clerk' },
-  doctor:    { name: 'Dr. Khaled Nasser', role: 'doctor', title: 'Physician' },
-  lab:       { name: 'Tariq Younis', role: 'lab', title: 'Lab & X-ray technician' },
-  nurse:     { name: 'Huda Saleem', role: 'nurse', title: 'Ward nurse' },
-  admin:     { name: 'Site Manager', role: 'admin', title: 'Administrator' }
+  reception: { name: 'Reem Al-Masri', role: 'reception', title: 'Registration clerk', sid: 'ST-01' },
+  doctor:    { name: 'Dr. Khaled Nasser', role: 'doctor', title: 'Physician', sid: 'ST-03' },
+  lab:       { name: 'Tariq Younis', role: 'lab', title: 'Lab & X-ray technician', sid: 'ST-15' },
+  nurse:     { name: 'Huda Saleem', role: 'nurse', title: 'Ward nurse', sid: 'ST-09' },
+  admin:     { name: 'Site Manager', role: 'admin', title: 'Administrator', sid: 'ST-24' }
 };
 const PASSWORD = 'demo123';
 
-const OUTCOMES = ['Discharged home', 'Transferred to another facility', 'Left against medical advice'];
+const VISIT_OUTCOMES = ['Discharged with medication', 'Discharged without medication', 'Transferred to another facility', 'Left against medical advice'];
+const SYSTEMS = ['General', 'Respiratory', 'Cardiovascular', 'Abdominal', 'Musculoskeletal', 'Neurological', 'Skin & wounds', 'Obstetric & gynaecological', 'ENT & eyes'];
+const EMERG_CAT = ['Trauma', 'Medical', 'Surgical', 'Obstetric', 'Paediatric', 'Burns', 'Mental health', 'Not an emergency'];
+const SRH = ['None', 'Antenatal care', 'Delivery care', 'Postnatal care', 'Family planning', 'GBV clinical care'];
+const PROCEDURES = ['None', 'Laceration repair', 'Wound dressing', 'Splint or cast', 'Fracture reduction', 'IV fluids', 'Incision and drainage', 'Nebulisation', 'Urinary catheter'];
+const RESPONSES = ['Improving', 'Healing', 'Stable', 'No change', 'Deteriorating'];
+const REFERRALS = ['None', 'Diagnostic test', 'Specialist consultation', 'Another facility', 'Nutrition programme', 'Mental health support'];
+const ROLE_GROUPS = [['all', 'All'], ['Doctor', 'Doctors'], ['Nurse', 'Nurses & midwives'], ['Lab & X-ray', 'Lab & X-ray'], ['Registration', 'Registration'], ['Support', 'Support']];
+const STATUS_LABEL = { present: 'Present', late: 'Late', absent: 'Absent', leave: 'On leave', out: 'Checked out', expected: 'Expected' };
 
 /* ---------- state ---------- */
 let S = null;
@@ -405,7 +489,9 @@ let view = { name: 'login' };
 let prevView = null;
 let curActions = [];
 const tentTab = {};
-const MOBILE_PRIMARY = { admin: ['dash', 'tent:ER', 'orders', 'ward'] };
+const MOBILE_PRIMARY = { admin: ['dash', 'tent:ER', 'ward', 'attend'] };
+let attTab = 'staff';
+let attRole = 'all';
 
 function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -415,7 +501,7 @@ function save() { store(KEY, JSON.stringify(S)); }
 function load() {
   try {
     const d = JSON.parse(read(KEY));
-    if (d && d.v === 1) return d;
+    if (d && d.v === 2) { S = d; ensureAttendance(); return d; }
   } catch (e) {}
   return seed();
 }
@@ -429,6 +515,11 @@ const tent = id => TENTS.find(t => t.id === id) || { id: 'DIAG', no: '', name: '
 const tentLabel = id => id === 'DIAG' ? 'Lab & X-ray' : `Tent ${tent(id).no} · ${tent(id).name}`;
 const pat = id => S.patients.find(p => p.id === id);
 const isToday = iso => new Date(iso).toDateString() === new Date().toDateString();
+const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const addDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return dayKey(d); };
+const fmtDay = k => { const [y, m, d] = k.split('-').map(Number); const dt = new Date(y, m - 1, d); return k === dayKey() ? 'Today' : dt.toLocaleDateString([], { day: 'numeric', month: 'short' }); };
+const lastUpdated = pid => { const l = S.log.find(x => x.pid === pid); return l ? l.t : null; };
+const dash = v => v === undefined || v === null || v === '' ? '<span class="none">—</span>' : esc(v);
 
 function fmtTime(iso) {
   const d = new Date(iso);
@@ -464,13 +555,13 @@ function toast(msg) {
 
 /* ---------- seed data (fictional) ---------- */
 function seed() {
-  S = { v: 1, seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null) };
-  const V = (bp, hr, t, s, rr) => ({ bp, hr, temp: t, spo2: s, rr });
+  S = { v: 2, seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), staff: [], att: null, followups: [] };
+  const V = (bp, hr, t, s, rr, height, weight, muac) => ({ bp, hr, temp: t, spo2: s, rr, height: height || '', weight: weight || '', muac: muac || '' });
 
   function add(p) {
     const id = nextId();
     const patient = Object.assign({
-      id, sex: 'M', phone: '', shelter: '', vitals: V('', '', '', '', ''),
+      id, sex: 'M', pregnant: false, allergies: 'None known', phone: '', shelter: '', vitals: V('', '', '', '', ''), clinical: {}, outcomeDetail: {}, doctor: '',
       state: 'waiting', bed: null, notes: [], outcome: null,
       createdAt: minsAgo(p.ago || 30), movedAt: minsAgo(Math.max(0, (p.ago || 30) - 10))
     }, p);
@@ -493,25 +584,28 @@ function seed() {
     S.log.push({ t: minsAgo(ago), pid: p.id, text: `Admitted to Tent 6, bed ${bed}.`, by: 'Dr. Khaled Nasser' });
   }
 
-  const a = add({ name: 'Ahmad Saleh', age: 34, complaint: 'Shrapnel wound, left leg', triage: 'red', location: 'OT', state: 'waiting', vitals: V('100/65', 118, 37.2, 95, 22), shelter: 'Al-Mawasi', ago: 95 });
+  const a = add({ name: 'Ahmad Saleh', age: 34, complaint: 'Shrapnel wound, left leg', triage: 'red', location: 'OT', state: 'waiting', vitals: V('100/65', 118, 37.2, 95, 22, 176, 72), shelter: 'Al-Mawasi', doctor: 'Dr. Khaled Nasser', ago: 95,
+    clinical: { history: 'No known illnesses', system: 'Musculoskeletal', exam: 'Open wound left shin, deformity, foot pulses present', dx: 'Open fracture, left tibia, with retained fragment', category: 'Trauma', srh: 'None', poc: 'Ceftriaxone 2 g IV, tetanus toxoid, morphine 5 mg IV', procedures: 'Wound dressing', transfusion: false, response: 'Stable' } });
   a.notes.push({ t: minsAgo(70), by: 'Dr. Khaled Nasser', tent: 'ER', dx: 'Open fracture, left tibia, with retained fragment', plan: 'IV antibiotics, tetanus, analgesia. Refer to theatre for debridement and fixation.' });
   order(a, 'Imaging', 'Limb X-ray', 'done', 'Fracture of left tibia, metallic foreign body visible.', 85);
 
-  const b = add({ name: 'Mariam Odeh', age: 27, sex: 'F', complaint: 'Labour pains, 39 weeks', triage: 'yellow', location: 'MAT', state: 'in-care', vitals: V('118/76', 92, 36.9, 98, 18), shelter: 'Deir al-Balah', ago: 60 });
+  const b = add({ name: 'Mariam Odeh', age: 27, sex: 'F', pregnant: true, complaint: 'Labour pains, 39 weeks', triage: 'yellow', location: 'MAT', state: 'in-care', vitals: V('118/76', 92, 36.9, 98, 18, 162, 70, 26), shelter: 'Deir al-Balah', doctor: 'Dr. Rasha Hamdan', ago: 60,
+    clinical: { history: 'Second pregnancy, previous normal delivery', system: 'Obstetric & gynaecological', exam: 'Cervix 5 cm, regular contractions', dx: 'Active labour, term', category: 'Obstetric', srh: 'Delivery care', poc: '', procedures: 'IV fluids', transfusion: false, response: 'Stable' } });
   order(b, 'Imaging', 'Obstetric ultrasound', 'done', 'Single live foetus, cephalic, normal fluid.', 50);
 
-  const c = add({ name: 'Yousef Hamdan', age: 8, complaint: 'Fever and cough for 4 days', triage: 'green', location: 'OPD', state: 'waiting', vitals: V('', 104, 38.6, 96, 26), shelter: 'Nuseirat', ago: 40 });
+  const c = add({ name: 'Yousef Hamdan', age: 8, complaint: 'Fever and cough for 4 days', triage: 'green', location: 'OPD', state: 'waiting', vitals: V('', 104, 38.6, 96, 26, 124, 22, 16.5), shelter: 'Nuseirat', ago: 40 });
   order(c, 'Laboratory', 'Complete blood count (CBC)', 'requested', '', 20);
 
-  const d = add({ name: 'Lina Abed', age: 45, sex: 'F', complaint: 'Shortness of breath', triage: 'red', location: 'ER', state: 'in-care', vitals: V('142/90', 112, 37.8, 89, 30), shelter: 'Khan Younis', ago: 35 });
+  const d = add({ name: 'Lina Abed', age: 45, sex: 'F', allergies: 'Penicillin', complaint: 'Shortness of breath', triage: 'red', location: 'ER', state: 'in-care', vitals: V('142/90', 112, 37.8, 89, 30, 158, 81), shelter: 'Khan Younis', doctor: 'Dr. Khaled Nasser', ago: 35,
+    clinical: { history: 'Asthma since childhood', system: 'Respiratory', exam: 'Wheeze both lungs, using neck muscles to breathe', dx: 'Acute asthma, suspected chest infection', category: 'Medical', srh: 'None', poc: 'Salbutamol nebuliser, hydrocortisone 100 mg IV', procedures: 'Nebulisation', transfusion: false, response: 'Improving' } });
   order(d, 'Imaging', 'Chest X-ray', 'requested', '', 15);
 
-  const e = add({ name: 'Omar Najjar', age: 61, complaint: 'Dizziness, known diabetic', triage: 'yellow', location: 'ER', state: 'waiting', vitals: V('150/95', 96, 36.7, 97, 18), shelter: 'Deir al-Balah', ago: 50 });
+  const e = add({ name: 'Omar Najjar', age: 61, allergies: 'Sulfa drugs', complaint: 'Dizziness, known diabetic', triage: 'yellow', location: 'ER', state: 'waiting', vitals: V('150/95', 96, 36.7, 97, 18, 170, 88), shelter: 'Deir al-Balah', ago: 50 });
   order(e, 'Laboratory', 'Blood glucose', 'done', 'Glucose 312 mg/dL', 45);
 
   add({ name: 'Huda Shaheen', age: 19, sex: 'F', complaint: 'Burn on right forearm', triage: 'yellow', location: 'ER', state: 'waiting', vitals: V('120/80', 100, 37.0, 99, 20), shelter: 'Al-Mawasi', ago: 25 });
   add({ name: 'Amal Darwish', age: 38, sex: 'F', complaint: 'Headache and high blood pressure', triage: 'green', location: 'OPD', state: 'waiting', vitals: V('165/100', 84, 36.8, 98, 16), shelter: 'Nuseirat', ago: 30 });
-  add({ name: 'Salma Issa', age: 33, sex: 'F', complaint: 'Antenatal check, 30 weeks', triage: 'green', location: 'MAT', state: 'waiting', vitals: V('110/70', 80, 36.6, 99, 16), shelter: 'Khan Younis', ago: 20 });
+  add({ name: 'Salma Issa', age: 33, sex: 'F', pregnant: true, complaint: 'Antenatal check, 30 weeks', triage: 'green', location: 'MAT', state: 'waiting', vitals: V('110/70', 80, 36.6, 99, 16, 160, 66, 25), shelter: 'Khan Younis', ago: 20 });
   add({ name: 'Karim Zaqout', age: 12, complaint: 'Laceration, right hand', triage: 'green', location: 'OPD', state: 'waiting', vitals: V('', 90, 36.9, 99, 18), shelter: 'Al-Mawasi', ago: 12 });
 
   const ward = [
@@ -529,13 +623,56 @@ function seed() {
   ward.forEach((w, i) => {
     const p = add({ name: w[0], age: w[1], sex: w[2], complaint: w[3], triage: w[4], location: 'ER', state: 'in-care', vitals: V('124/78', 88, 37.1, 96, 18), shelter: ['Deir al-Balah', 'Nuseirat', 'Khan Younis', 'Al-Mawasi'][i % 4], ago: 600 + i * 180 });
     p.notes.push({ t: minsAgo(560 + i * 180), by: 'Dr. Khaled Nasser', tent: 'ER', dx: w[6], plan: w[7] });
+    const cat = ['Surgical', 'Obstetric', 'Medical', 'Paediatric', 'Trauma', 'Trauma', 'Medical', 'Obstetric', 'Burns', 'Paediatric'][i];
+    const sys = ['Abdominal', 'Obstetric & gynaecological', 'Respiratory', 'Abdominal', 'Musculoskeletal', 'Skin & wounds', 'Cardiovascular', 'Obstetric & gynaecological', 'Skin & wounds', 'Respiratory'][i];
+    p.clinical = { history: ['None', 'Two previous caesareans', 'Smoker, high blood pressure', 'None', 'None', 'Diabetes', 'Heart failure for 3 years', 'None', 'None', 'Asthma'][i], system: sys, exam: w[3], dx: w[6], category: cat, srh: i === 1 ? 'Postnatal care' : i === 7 ? 'Postnatal care' : 'None', poc: '', procedures: ['IV fluids', 'IV fluids', 'Nebulisation', 'IV fluids', 'Splint or cast', 'Wound dressing', 'Urinary catheter', 'IV fluids', 'Wound dressing', 'Nebulisation'][i], transfusion: i === 7, response: ['Improving', 'Healing', 'Improving', 'Improving', 'Healing', 'Healing', 'Stable', 'Improving', 'Stable', 'Improving'][i] };
+    p.doctor = i % 3 === 0 ? 'Dr. Khaled Nasser' : i % 3 === 1 ? 'Dr. Rasha Hamdan' : 'Dr. Samer Odeh';
+    p.vitals = V('124/78', 88, 37.1, 96, 18, w[1] < 12 ? 110 + w[1] * 4 : 160 + (i * 3) % 20, w[1] < 12 ? 14 + w[1] * 2 : 58 + (i * 7) % 30, w[1] < 12 ? 14.5 : '');
+    if (i === 3) p.allergies = 'None known';
+    if (i === 6) p.allergies = 'Aspirin';
     admit(p, w[5], 540 + i * 180);
   });
 
   const z = add({ name: 'Bilal Awad', age: 15, complaint: 'Cut on forehead', triage: 'green', location: 'OPD', state: 'in-care', vitals: V('115/72', 86, 36.8, 99, 16), shelter: 'Nuseirat', ago: 180 });
   z.notes.push({ t: minsAgo(160), by: 'Dr. Khaled Nasser', tent: 'OPD', dx: 'Superficial laceration, forehead', plan: 'Wound cleaned and sutured. Remove stitches in 5 days.' });
-  z.state = 'discharged'; z.outcome = 'Discharged home';
-  S.log.push({ t: minsAgo(150), pid: z.id, text: 'Discharged home.', by: 'Dr. Khaled Nasser' });
+  z.clinical = { history: 'None', system: 'Skin & wounds', exam: '3 cm clean cut above right eyebrow', dx: 'Superficial laceration, forehead', category: 'Trauma', srh: 'None', poc: 'Paracetamol 500 mg', procedures: 'Laceration repair', transfusion: false, response: 'Healing' };
+  z.doctor = 'Dr. Khaled Nasser';
+  z.state = 'discharged'; z.outcome = 'Discharged with medication';
+  z.outcomeDetail = { visit: 'Discharged with medication', meds: 'Paracetamol 500 mg, three times a day for 3 days', referral: 'None', refNote: '', note: 'Remove stitches in 5 days', followup: addDays(5) };
+  S.log.push({ t: minsAgo(150), pid: z.id, text: 'Discharged with medication. Follow-up booked.', by: 'Dr. Khaled Nasser' });
+  S.followups.push({ id: 'FU-1', pid: z.id, date: addDays(5), reason: 'Remove stitches', status: 'expected' });
+
+  const past = [
+    ['Jana Smith', 29, 'F', true, 'Broken arm after a fall', 'Fractured right forearm', 'Trauma', 'Musculoskeletal', 'Swelling and pain, right forearm', 'Previous fracture, asthma', 'Splint or cast', 'Ibuprofen 400 mg', 'Postnatal care', 'Penicillin', 'today', 'attended', 'Fracture check and X-ray'],
+    ['Rami Khalil', 44, 'M', false, 'Infected cut, left hand', 'Cellulitis, left hand', 'Medical', 'Skin & wounds', 'Red, warm, swollen hand', 'None', 'Incision and drainage', 'Amoxicillin-clavulanate 625 mg', 'None', 'None known', 'today', 'expected', 'Wound check'],
+    ['Nadia Farouk', 24, 'F', false, 'Postnatal check, day 7', 'Normal postnatal recovery', 'Obstetric', 'Obstetric & gynaecological', 'Uterus well contracted, no bleeding', 'First baby', 'None', 'Iron and folic acid', 'Postnatal care', 'None known', 'today', 'expected', 'Postnatal visit'],
+    ['Yahya Saeed', 6, 'M', false, 'Diarrhoea for 3 days', 'Acute watery diarrhoea, mild dehydration', 'Paediatric', 'Abdominal', 'Dry lips, drinks eagerly', 'None', 'None', 'ORS and zinc', 'None', 'None known', 'today', 'missed', 'Hydration check'],
+    ['Samira Ali', 52, 'F', false, 'High blood pressure', 'Hypertension, poorly controlled', 'Medical', 'Cardiovascular', 'BP 170/105, no chest pain', 'Hypertension for 6 years', 'None', 'Amlodipine 5 mg', 'None', 'None known', 'yesterday', 'missed', 'Blood pressure review']
+  ];
+  past.forEach((r, i) => {
+    const p = add({ name: r[0], age: r[1], sex: r[2], pregnant: false, complaint: r[4], triage: 'green', location: i % 2 ? 'OPD' : 'ER', state: 'discharged', vitals: V(i === 4 ? '170/105' : '120/80', 70 + i * 6, 36.5 + i * .2, 98, 16, r[1] < 12 ? 116 : 160 + i * 4, r[1] < 12 ? 20 : 60 + i * 5, r[1] < 12 ? 15 : ''), shelter: ['Al-Mawasi', 'Nuseirat', 'Khan Younis', 'Deir al-Balah'][i % 4], allergies: r[13], ago: 1440 * (i + 3) });
+    p.clinical = { history: r[9], system: r[7], exam: r[8], dx: r[5], category: r[6], srh: r[12], poc: r[11], procedures: r[10], transfusion: false, response: i === 4 ? 'No change' : 'Healing' };
+    p.doctor = i % 2 ? 'Dr. Samer Odeh' : 'Dr. Khaled Nasser';
+    p.outcome = 'Discharged with medication';
+    const due = r[14] === 'today' ? addDays(0) : addDays(-1);
+    p.outcomeDetail = { visit: 'Discharged with medication', meds: r[11], referral: i === 0 ? 'Diagnostic test' : 'None', refNote: i === 0 ? 'X-ray at follow-up' : '', note: '', followup: due };
+    p.notes.push({ t: minsAgo(1440 * (i + 3) - 30), by: p.doctor, tent: p.location, dx: r[5], plan: r[11] });
+    S.log.push({ t: minsAgo(1440 * (i + 3) - 60), pid: p.id, text: 'Discharged with medication. Follow-up booked.', by: p.doctor });
+    S.followups.push({ id: 'FU-' + (i + 2), pid: p.id, date: due, reason: r[16], status: r[15], at: r[15] === 'attended' ? minsAgo(90) : null });
+  });
+
+  S.staff = [
+    ['ST-01', 'Reem Al-Masri', 'Registration', 'REG', 'Day'], ['ST-02', 'Ola Shurrab', 'Registration', 'REG', 'Night'],
+    ['ST-03', 'Dr. Khaled Nasser', 'Doctor', 'ER', 'Day'], ['ST-04', 'Dr. Rasha Hamdan', 'Doctor', 'MAT', 'Day'], ['ST-05', 'Dr. Samer Odeh', 'Doctor', 'OPD', 'Day'],
+    ['ST-06', 'Dr. Iyad Barghouti', 'Doctor', 'OT', 'Day'], ['ST-07', 'Dr. Mona Saqqa', 'Doctor', 'ER', 'Night'], ['ST-08', 'Dr. Fares Lubbad', 'Doctor', 'WARD', 'Day'],
+    ['ST-09', 'Huda Saleem', 'Nurse', 'WARD', 'Day'], ['ST-10', 'Ahmed Kassab', 'Nurse', 'ER', 'Day'], ['ST-11', 'Asmaa Hijazi', 'Nurse', 'WARD', 'Night'],
+    ['ST-12', 'Khadija Rayyan', 'Nurse', 'MAT', 'Day'], ['ST-13', 'Nour Zaher', 'Nurse', 'OT', 'Day'], ['ST-14', 'Wafa Abu Shamala', 'Nurse', 'OPD', 'Day'],
+    ['ST-15', 'Tariq Younis', 'Lab & X-ray', 'DIAG', 'Day'], ['ST-16', 'Basel Qudra', 'Lab & X-ray', 'DIAG', 'Night'],
+    ['ST-17', 'Rawan Sabbah', 'Nurse', 'MAT', 'Day', 'Midwife'], ['ST-18', 'Lubna Jarour', 'Nurse', 'MAT', 'Night', 'Midwife'],
+    ['ST-19', 'Mahmoud Halabi', 'Support', 'WARD', 'Day', 'Cleaner'], ['ST-20', 'Ismail Hamad', 'Support', 'REG', 'Day', 'Guard'], ['ST-21', 'Yasser Matar', 'Support', 'REG', 'Day', 'Driver'],
+    ['ST-22', 'Saeed Abu Nada', 'Support', 'OT', 'Night', 'Cleaner'], ['ST-23', 'Hiba Awad', 'Nurse', 'ER', 'Day'], ['ST-24', 'Site Manager', 'Support', 'REG', 'Day', 'Administrator']
+  ].map(r => ({ id: r[0], name: r[1], group: r[2], tent: r[3], shift: r[4], title: r[5] || (r[2] === 'Doctor' ? 'Physician' : r[2] === 'Lab & X-ray' ? 'Technician' : r[2] === 'Registration' ? 'Registration clerk' : r[2]) }));
+  seedAttendance();
 
   S.log.sort((x, y) => y.t.localeCompare(x.t));
   save();
@@ -543,13 +680,136 @@ function seed() {
 }
 
 /* ---------- permissions & navigation ---------- */
+/* ---------- attendance ---------- */
+function seedAttendance() {
+  const rec = {};
+  const plan = { 'ST-05': ['late', 35], 'ST-06': ['absent'], 'ST-14': ['absent'], 'ST-21': ['leave'], 'ST-23': ['late', 50] };
+  S.staff.forEach((st, i) => {
+    const p = plan[st.id];
+    if (p && p[0] === 'absent') rec[st.id] = { status: 'absent' };
+    else if (p && p[0] === 'leave') rec[st.id] = { status: 'leave' };
+    else if (p && p[0] === 'late') rec[st.id] = { status: 'present', late: true, in: minsAgo(p[1] + 60) };
+    else if (st.shift === 'Night') rec[st.id] = i % 2 ? { status: 'out', in: minsAgo(900), out: minsAgo(300) } : { status: 'expected' };
+    else rec[st.id] = { status: 'present', in: minsAgo(120 + (i * 7) % 60) };
+  });
+  S.att = { date: dayKey(), rec };
+}
+function ensureAttendance() {
+  if (!S.att || S.att.date !== dayKey()) { seedAttendance(); save(); }
+}
+function attOf(sid) { return (S.att && S.att.rec[sid]) || { status: 'expected' }; }
+function attStatus(sid) { const r = attOf(sid); return r.status === 'present' && r.late ? 'late' : r.status; }
+function myStaff() { return me && me.sid ? S.staff.find(x => x.id === me.sid) : null; }
+function canEditAtt(sid) { return me.role === 'admin' || me.role === 'reception' || me.sid === sid; }
+function lateNow(shift) {
+  const d = new Date(), m = d.getHours() * 60 + d.getMinutes();
+  return shift === 'Night' ? (m > 20 * 60 + 15 || m < 8 * 60) : (m > 8 * 60 + 15 && m < 20 * 60);
+}
+function setAtt(sid, status) {
+  const st = S.staff.find(x => x.id === sid);
+  const r = Object.assign({}, attOf(sid));
+  if (status === 'present') { r.status = 'present'; r.in = nowISO(); r.out = null; r.late = lateNow(st.shift); }
+  else if (status === 'out') { r.status = 'out'; r.out = nowISO(); }
+  else { S.att.rec[sid] = { status }; save(); closeModal(); render(); toast(`${st.name}: ${STATUS_LABEL[status].toLowerCase()}`); return; }
+  S.att.rec[sid] = r; save(); closeModal(); render();
+  toast(status === 'present' ? `${st.name} checked in${r.late ? ' (late)' : ''}` : `${st.name} checked out`);
+}
+function staffSheet(sid) {
+  const st = S.staff.find(x => x.id === sid); const r = attOf(sid); const s = attStatus(sid);
+  const opts = [];
+  if (canEditAtt(sid)) {
+    if (s !== 'present' && s !== 'late') opts.push(['enter', 'Check in now', `setAtt('${sid}','present')`, '']);
+    if (s === 'present' || s === 'late') opts.push(['exit', 'Check out now', `setAtt('${sid}','out')`, '']);
+    if (me.role === 'admin' || me.role === 'reception') {
+      if (s !== 'absent') opts.push(['alert', 'Mark absent', `setAtt('${sid}','absent')`, 'danger']);
+      if (s !== 'leave') opts.push(['calendar', 'Mark on leave', `setAtt('${sid}','leave')`, '']);
+      if (s !== 'expected') opts.push(['reset', 'Reset to expected', `setAtt('${sid}','expected')`, '']);
+    }
+  }
+  sheet(st.name, `<div class="acct"><span class="avatar">${initials(st.name)}</span><div><b>${esc(st.title)}</b><div class="small muted">${esc(tentLabel(st.tent))} · ${st.shift} shift</div><div class="small">${esc(attLine(sid))}</div></div></div>
+    ${opts.length ? `<div class="sheetlist">${opts.map(o => `<button class="${o[3]}" onclick="${o[2]}">${ic(o[0])}${o[1]}</button>`).join('')}</div>` : '<p class="small muted">Only the registration desk and the site manager can change other staff members\' attendance.</p>'}`);
+}
+function attLine(sid) {
+  const r = attOf(sid), s = attStatus(sid);
+  if (s === 'present' || s === 'late') return `${STATUS_LABEL[s]} · in since ${fmtTime(r.in)}`;
+  if (s === 'out') return `Checked out at ${fmtTime(r.out)}`;
+  return STATUS_LABEL[s];
+}
+function setFollow(id, status) {
+  const f = S.followups.find(x => x.id === id); const p = pat(f.pid);
+  f.status = status; f.at = status === 'attended' ? nowISO() : null;
+  log(p.id, status === 'attended' ? `Attended follow-up visit: ${f.reason}.` : `Missed follow-up visit: ${f.reason}.`);
+  save(); render(); toast(`${p.name}: ${status === 'attended' ? 'attended' : 'marked as missed'}`);
+}
+
+function attendView() {
+  const staffCounts = k => S.staff.filter(st => attStatus(st.id) === k).length;
+  const onDuty = staffCounts('present') + staffCounts('late');
+  const tile = (icon, n, l, cls) => `<div class="tile ${cls || ''}"><span class="tic">${ic(icon)}</span><div><div class="n">${n}</div><div class="l">${l}</div></div></div>`;
+  const seg = `<div class="seg"><button class="${attTab === 'staff' ? 'on' : ''}" onclick="attTab='staff';render()">Staff · ${onDuty}/${S.staff.length}</button><button class="${attTab === 'patients' ? 'on' : ''}" onclick="attTab='patients';render()">Patients</button></div>`;
+  if (attTab === 'staff') {
+    const mine = myStaff();
+    const ms = mine ? attStatus(mine.id) : null;
+    const myCard = mine ? `<div class="myshift"><div><div class="small">My shift · ${mine.shift} · ${esc(tentLabel(mine.tent))}</div><b>${esc(attLine(mine.id))}</b></div>${ms === 'present' || ms === 'late' ? `<button class="btn" onclick="setAtt('${mine.id}','out')">${ic('exit')}Check out</button>` : `<button class="btn" onclick="setAtt('${mine.id}','present')">${ic('enter')}Check in</button>`}</div>` : '';
+    const list = S.staff.filter(st => attRole === 'all' || st.group === attRole)
+      .sort((a, b) => ['absent', 'late', 'expected', 'present', 'leave', 'out'].indexOf(attStatus(a.id)) - ['absent', 'late', 'expected', 'present', 'leave', 'out'].indexOf(attStatus(b.id)) || a.name.localeCompare(b.name));
+    const rows = list.map(st => {
+      const k = attStatus(st.id), r = attOf(st.id);
+      const time = k === 'present' || k === 'late' ? 'in ' + fmtTime(r.in) : k === 'out' ? 'out ' + fmtTime(r.out) : st.shift + ' shift';
+      return `<button class="srow" onclick="staffSheet('${st.id}')"><span class="av ${k}">${initials(st.name)}</span><span class="sm"><b>${esc(st.name)}</b><div class="meta">${esc(st.title)} · ${esc(tent(st.tent).id === 'DIAG' ? 'Lab & X-ray' : tent(st.tent).name)} · ${st.shift}</div></span><span class="st"><span class="badge ${k}">${STATUS_LABEL[k]}</span><span>${time}</span></span></button>`;
+    }).join('');
+    const chips = ROLE_GROUPS.map(([k, l]) => `<button class="${attRole === k ? 'on' : ''}" onclick="attRole='${k}';render()">${l}</button>`).join('');
+    return `<h1>Attendance</h1>
+      <p class="sub">${fmtDay(S.att.date)} · who is on duty, late, absent or on leave. Tap a name to check them in or out.</p>
+      ${seg}${myCard}
+      <div class="tiles">
+        ${tile('usercheck', `${onDuty}<span class="small muted">/${S.staff.length}</span>`, 'On duty now')}
+        ${tile('clock', staffCounts('late'), 'Arrived late', 'amber')}
+        ${tile('alert', staffCounts('absent'), 'Absent', 'red')}
+        ${tile('calendar', staffCounts('leave'), 'On leave')}
+        ${tile('users', staffCounts('expected'), 'Expected later')}
+      </div>
+      <div class="chips mt">${chips}</div>
+      <div class="slist">${rows || empty('No staff in this group.')}</div>`;
+  }
+  const active = S.patients.filter(p => p.state !== 'discharged');
+  const fuToday = S.followups.filter(f => f.date <= dayKey() && (f.date === dayKey() || f.status !== 'attended'));
+  const fc = k => fuToday.filter(f => f.status === k).length;
+  const byTent = TENTS.filter(t => t.id !== 'REG').map(t => {
+    const n = active.filter(p => p.location === t.id).length;
+    return `<div class="fu" style="cursor:pointer" onclick="${t.id === 'WARD' ? "go('ward')" : `go('tent','${t.id}')`}"><div><b>Tent ${t.no} · ${t.name}</b><div class="small muted">${t.id === 'WARD' ? 'admitted' : 'waiting or in care'}</div></div><b style="font-size:18px;color:var(--primary)">${n}</b></div>`;
+  }).join('');
+  const canMark = me.role !== 'lab';
+  const fuRows = S.followups.slice().sort((a, b) => a.date.localeCompare(b.date)).map(f => {
+    const p = pat(f.pid);
+    const st = f.status === 'expected' && f.date < dayKey() ? 'missed' : f.status;
+    const badge = { attended: '<span class="badge present">Attended</span>', missed: '<span class="badge absent">Missed</span>', expected: '<span class="badge expected">Expected</span>' }[st];
+    return `<div class="fu"><div><a href="#" onclick="go('patient','${p.id}');return false"><b>${esc(p.name)}</b></a> <span class="small muted">${p.id}</span><div class="small muted">${esc(f.reason)} · due ${fmtDay(f.date)}${f.at ? ' · came ' + fmtTime(f.at) : ''}</div></div>
+      <div class="row" style="gap:8px">${badge}${canMark && f.status === 'expected' ? `<span class="acts"><button class="btn sm" onclick="setFollow('${f.id}','attended')">${ic('check', 'sm')}Attended</button><button class="btn sm danger" onclick="setFollow('${f.id}','missed')">Missed</button></span>` : ''}</div></div>`;
+  }).join('');
+  return `<h1>Attendance</h1>
+    <p class="sub">Patients in the hospital right now, and follow-up visits that were attended or missed.</p>
+    ${seg}
+    <div class="tiles">
+      ${tile('users', active.length, 'In the hospital now')}
+      ${tile('bed', S.beds.filter(Boolean).length + `<span class="small muted">/${BEDS}</span>`, 'Admitted to the ward')}
+      ${tile('calendar', fuToday.length, 'Follow-ups due or overdue')}
+      ${tile('check', fc('attended'), 'Attended')}
+      ${tile('alert', fc('missed') + S.followups.filter(f => f.status === 'expected' && f.date < dayKey()).length, 'Missed', 'red')}
+    </div>
+    <div class="grid g2 mt">
+      <div class="card"><div class="secthead">${ic('tent')}<h2>Present now, by tent</h2></div>${byTent}</div>
+      <div class="card"><div class="secthead">${ic('calendar')}<h2>Follow-up visits</h2></div>${fuRows || '<div class="muted">No follow-ups booked.</div>'}</div>
+    </div>`;
+}
+
 function navFor(role) {
   const tabs = {
-    reception: ['register', 'today', 'search'],
-    doctor: ['tent:ER', 'tent:OPD', 'tent:MAT', 'tent:OT', 'ward', 'search'],
-    lab: ['orders', 'search'],
-    nurse: ['ward', 'search'],
-    admin: ['dash', 'register', 'tent:ER', 'tent:OPD', 'tent:MAT', 'tent:OT', 'orders', 'ward', 'search']
+    reception: ['register', 'today', 'attend', 'search'],
+    doctor: ['tent:ER', 'tent:OPD', 'tent:MAT', 'tent:OT', 'ward', 'attend', 'search'],
+    lab: ['orders', 'attend', 'search'],
+    nurse: ['ward', 'attend', 'search'],
+    admin: ['dash', 'register', 'tent:ER', 'tent:OPD', 'tent:MAT', 'tent:OT', 'orders', 'ward', 'attend', 'search']
   };
   return tabs[role];
 }
@@ -636,11 +896,12 @@ function tabLabel(t) {
   }
   const L = {
     dash: ['dash', 'Dashboard', 'Home'], register: ['userplus', 'Register patient', 'Register'], today: ['users', "Today's patients", 'Today'],
-    orders: ['flask', 'Lab & X-ray', 'Lab'], ward: ['bed', 'Ward', 'Ward'], search: ['search', 'Search', 'Search']
+    orders: ['flask', 'Lab & X-ray', 'Lab'], ward: ['bed', 'Ward', 'Ward'], attend: ['usercheck', 'Attendance', 'Attendance'], search: ['search', 'Search', 'Search']
   }[t];
   let count = null;
   if (t === 'orders') count = S.orders.filter(o => o.status === 'requested').length;
   if (t === 'ward') count = `${S.beds.filter(Boolean).length}/${BEDS}`;
+  if (t === 'attend') { const a = S.staff.filter(st => ['absent'].includes(attStatus(st.id))).length; count = a ? a : null; }
   return { icon: L[0], long: L[1], short: L[2], count };
 }
 
@@ -654,6 +915,7 @@ function screenTitle() {
     case 'orders': return 'Lab & X-ray';
     case 'ward': return 'Ward · ' + BEDS + ' beds';
     case 'search': return 'Find a patient';
+    case 'attend': return 'Attendance';
     case 'patient': return 'Patient file';
     default: return 'EMT TentCare';
   }
@@ -676,6 +938,8 @@ function moreSheet() {
 function accountSheet() {
   sheet('Account', `<div class="acct"><span class="avatar">${initials(me.name)}</span><div><b>${esc(me.name)}</b><div class="small muted">${esc(me.title)}</div><div class="small muted">${navigator.onLine ? 'Online' : 'Offline · data saved on this device'}</div></div></div>
     <div class="sheetlist">
+      ${myStaff() ? (['present', 'late'].includes(attStatus(me.sid)) ? `<button onclick="setAtt('${me.sid}','out')">${ic('exit')}Check out of my shift</button>` : `<button onclick="setAtt('${me.sid}','present')">${ic('enter')}Check in for my shift</button>`) : ''}
+      <button onclick="closeModal();attTab='staff';go('attend')">${ic('usercheck')}Attendance</button>
       <button onclick="closeModal();resetDemo()">${ic('reset')}Reset demo data</button>
       <button class="danger" onclick="logout()">${ic('logout')}Sign out</button>
     </div>`);
@@ -721,7 +985,9 @@ function patientCard(p, opts = {}) {
     p.state === 'admitted' ? `<span class="badge info">Bed ${p.bed}</span>` : '',
     p.state === 'discharged' ? `<span class="badge">${esc(p.outcome || 'Discharged')}</span>` : '',
     pend ? `<span class="badge warn">${pend} result${pend > 1 ? 's' : ''} pending</span>` : '',
-    !pend && done ? '<span class="badge ok">Results ready</span>' : ''
+    !pend && done ? '<span class="badge ok">Results ready</span>' : '',
+    p.pregnant ? '<span class="badge preg">Pregnant</span>' : '',
+    p.allergies && !/^none/i.test(p.allergies) ? '<span class="badge allergy">Allergy</span>' : ''
   ].join(' ');
   return `<button class="pcard" onclick="go('patient','${p.id}')">
     <span class="bar ${p.triage || 'none'}"></span>
@@ -767,13 +1033,15 @@ function dashView() {
   return `
     <h1>Field hospital overview</h1>
     <p class="sub">Live picture of all six tents, from this device's data.</p>
-    <div class="grid g3">
+    <div class="tiles">
       ${tile('users', active.length, 'Patients in the hospital')}
       ${tile('alert', red, 'Red (immediate) cases', 'red')}
       ${tile('bed', `${occ}<span class="small muted">/${BEDS}</span>`, 'Ward beds occupied')}
       ${tile('flask', pend, 'Lab & X-ray results pending')}
       ${tile('userplus', today, 'Registered today')}
       ${tile('exit', dischargedToday, 'Discharged or transferred today')}
+      ${tile('usercheck', `${S.staff.filter(st => ['present', 'late'].includes(attStatus(st.id))).length}<span class="small muted">/${S.staff.length}</span>`, 'Staff on duty')}
+      ${tile('calendar', S.followups.filter(f => f.date === dayKey()).length, 'Follow-ups due today')}
     </div>
     <div class="grid g2 mt">
       <div class="card"><div class="secthead">${ic('tent')}<h2>Patients by tent</h2></div>${rows}
@@ -797,11 +1065,15 @@ function registerView() {
       <div class="field"><label for="r-name">Full name</label><input id="r-name" type="text" required></div>
       <div class="fgrid">
         <div class="field"><label for="r-age">Age (years)</label><input id="r-age" type="number" min="0" max="120" required></div>
-        <div class="field"><label>Sex</label><div class="choice"><input type="radio" name="sex" id="s-f" value="F" checked><label for="s-f">Female</label><input type="radio" name="sex" id="s-m" value="M"><label for="s-m">Male</label></div></div>
+        <div class="field" style="grid-column:span 2"><label>Gender</label><div class="choice"><input type="radio" name="sex" id="s-f" value="F" checked><label for="s-f">Female</label><input type="radio" name="sex" id="s-fp" value="FP"><label for="s-fp">Female · pregnant</label><input type="radio" name="sex" id="s-m" value="M"><label for="s-m">Male</label></div></div>
         <div class="field"><label for="r-phone">Phone (optional)</label><input id="r-phone" type="tel"></div>
         <div class="field"><label for="r-shelter">Shelter or area</label><input id="r-shelter" type="text" placeholder="e.g. Al-Mawasi"></div>
       </div>
-      <div class="field"><label for="r-cc">Main complaint</label><input id="r-cc" type="text" required placeholder="What brought the patient in?"></div>
+      <div class="fgrid">
+        <div class="field"><label for="r-cc">Condition · main complaint</label><input id="r-cc" type="text" required placeholder="What brought the patient in?"></div>
+        <div class="field"><label for="r-all">Allergies</label><input id="r-all" type="text" placeholder="e.g. Penicillin, or None known"></div>
+      </div>
+      <p class="small muted" style="margin:-4px 0 0">Admission date: ${fmtDay(dayKey())}, recorded automatically.</p>
       <div class="formsec">${ic('alert')}<h2>Triage</h2></div>
       <div class="field choice tri-pick">${triPick}</div>
       <div class="fgrid">
@@ -810,6 +1082,9 @@ function registerView() {
         <div class="field"><label for="v-temp">Temp °C</label><input id="v-temp" type="number" step="0.1"></div>
         <div class="field"><label for="v-spo2">SpO₂ %</label><input id="v-spo2" type="number"></div>
         <div class="field"><label for="v-rr">Resp. rate</label><input id="v-rr" type="number"></div>
+        <div class="field"><label for="v-height">Height cm</label><input id="v-height" type="number"></div>
+        <div class="field"><label for="v-weight">Weight kg</label><input id="v-weight" type="number" step="0.1"></div>
+        <div class="field"><label for="v-muac">MUAC cm</label><input id="v-muac" type="number" step="0.1" placeholder="children, pregnancy"></div>
       </div>
       <div class="formsec">${ic('tent')}<h2>Send to</h2></div>
       <div class="field choice">${dest}</div>
@@ -817,13 +1092,16 @@ function registerView() {
     </form>`;
 }
 function readVitals() {
-  return { bp: $('#v-bp').value.trim(), hr: $('#v-hr').value, temp: $('#v-temp').value, spo2: $('#v-spo2').value, rr: $('#v-rr').value };
+  const g = id => { const el = $(id); return el ? el.value.trim() : ''; };
+  return { bp: g('#v-bp'), hr: g('#v-hr'), temp: g('#v-temp'), spo2: g('#v-spo2'), rr: g('#v-rr'), height: g('#v-height'), weight: g('#v-weight'), muac: g('#v-muac') };
 }
+
 function doRegister(e) {
   e.preventDefault();
   const f = e.target;
   const p = {
-    id: nextId(), name: $('#r-name').value.trim(), age: Number($('#r-age').value), sex: f.sex.value,
+    id: nextId(), name: $('#r-name').value.trim(), age: Number($('#r-age').value), sex: f.sex.value === 'M' ? 'M' : 'F', pregnant: f.sex.value === 'FP',
+    allergies: $('#r-all').value.trim() || 'None known', clinical: {}, outcomeDetail: {}, doctor: '',
     phone: $('#r-phone').value.trim(), shelter: $('#r-shelter').value.trim(), complaint: $('#r-cc').value.trim(),
     triage: f.triage.value, vitals: readVitals(), location: f.dest.value, state: 'waiting', bed: null,
     notes: [], outcome: null, createdAt: nowISO(), movedAt: nowISO()
@@ -899,12 +1177,12 @@ function wardView() {
 
 function searchView() {
   return `<h1>Find a patient</h1>
-    <div class="field"><input id="q" type="text" placeholder="Name or file number (e.g. FH-0003)" oninput="doSearch()" autofocus></div>
+    <div class="field"><input id="q" type="text" placeholder="Name, file number or diagnosis" oninput="doSearch()" autofocus></div>
     <div class="plist" id="results"></div>`;
 }
 function doSearch() {
   const q = $('#q').value.trim().toLowerCase();
-  const list = S.patients.filter(p => !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q))
+  const list = S.patients.filter(p => !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q) || ((p.clinical && p.clinical.dx) || '').toLowerCase().includes(q))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 30);
   $('#results').innerHTML = list.map(p => patientCard(p, { showTent: true })).join('') || empty('No patient found.');
 }
@@ -913,6 +1191,8 @@ function patientView(id) {
   const p = pat(id);
   if (!p) return empty('Patient not found.');
   const v = p.vitals || {};
+  const cl = p.clinical || {};
+  const od = p.outcomeDetail || {};
   const act = canAct(p);
   const ords = S.orders.filter(o => o.pid === id).sort((a, b) => b.at.localeCompare(a.at));
   const tl = S.log.filter(l => l.pid === id);
@@ -921,7 +1201,7 @@ function patientView(id) {
   const A = [];
   if (act) {
     if (p.state === 'waiting') A.push(['steth', 'Start consultation', `startCare('${id}')`, 'primary']);
-    A.push(['note', 'Add clinical note', `noteForm('${id}')`, '']);
+    A.push(['note', 'Clinical assessment', `noteForm('${id}')`, '']);
     A.push(['pulse', 'Update vitals', `vitalsForm('${id}')`, '']);
     A.push(['flask', 'Request lab / X-ray', `orderForm('${id}')`, '']);
     A.push(['refer', 'Refer to another tent', `referForm('${id}')`, '']);
@@ -935,7 +1215,7 @@ function patientView(id) {
   let buttons = '';
   if (act) {
     if (p.state === 'waiting') buttons += `<button class="btn primary" onclick="startCare('${id}')">${ic('steth')}Start consultation</button>`;
-    buttons += `<button class="btn" onclick="noteForm('${id}')">${ic('note')}Add clinical note</button>`;
+    buttons += `<button class="btn" onclick="noteForm('${id}')">${ic('note')}Clinical assessment</button>`;
     buttons += `<button class="btn" onclick="vitalsForm('${id}')">${ic('pulse')}Update vitals</button>`;
     buttons += `<button class="btn" onclick="orderForm('${id}')">${ic('flask')}Request lab / X-ray</button>`;
     buttons += `<button class="btn" onclick="referForm('${id}')">${ic('refer')}Refer to another tent</button>`;
@@ -944,7 +1224,7 @@ function patientView(id) {
   }
   buttons += `<button class="btn" onclick="wristband('${id}')">${ic('tag')}Wristband</button>`;
 
-  const vit = [['BP', v.bp], ['Pulse', v.hr && v.hr + ' bpm'], ['Temp', v.temp && v.temp + ' °C'], ['SpO₂', v.spo2 && v.spo2 + '%'], ['Resp.', v.rr && v.rr + '/min']]
+  const vit = [['BP', v.bp], ['Heart rate', v.hr && v.hr + ' bpm'], ['Resp. rate', v.rr && v.rr + '/min'], ['SpO₂', v.spo2 && v.spo2 + '%'], ['Temp', v.temp && v.temp + ' °C'], ['Height', v.height && v.height + ' cm'], ['Weight', v.weight && v.weight + ' kg'], ['MUAC', v.muac && v.muac + ' cm']]
     .map(([l, x]) => `<div><span>${l}</span><b>${esc(x || '–')}</b></div>`).join('');
 
   const notes = p.notes.slice().reverse().map(n =>
@@ -959,19 +1239,58 @@ function patientView(id) {
           <div class="mrnline">${p.id}</div>
           <h1>${esc(p.name)}</h1>
           <div class="muted">${p.age} years · ${p.sex === 'F' ? 'Female' : 'Male'}${p.shelter ? ' · ' + esc(p.shelter) : ''}${p.phone ? ' · ' + esc(p.phone) : ''}</div>
+          ${p.pregnant ? '<div class="mt" style="margin-top:8px"><span class="badge preg">Pregnant</span></div>' : ''}
         </div>
         <div class="pmeta" style="text-align:right"><span class="tri ${p.triage}">${p.triage}</span><div class="mt"><span class="where">${ic(p.state === 'discharged' ? 'exit' : (TENT_IC[p.location] || 'tent'), 'sm')}${where}</span></div><div class="small muted">Arrived ${fmtTime(p.createdAt)}</div></div>
       </div>
-      <div class="mt"><span class="muted small">Main complaint</span><div><b>${esc(p.complaint)}</b></div></div>
+      ${p.allergies && !/^none/i.test(p.allergies) ? `<div class="alertbar">${ic('alert', 'sm')}Allergy: ${esc(p.allergies)}</div>` : ''}
+      <div class="mt"><span class="muted small">Condition · main complaint</span><div><b>${esc(p.complaint)}</b></div></div>
       <div class="vitals mt">${vit}</div>
       <div class="actions mt d-only">${buttons}</div>
       ${!act && p.state !== 'discharged' && me.role !== 'admin' ? `<p class="small muted mt">You can view this file. Actions are available to staff in ${esc(tentLabel(p.location))}.</p>` : ''}
     </div>
     ${actionbar}
-    <div class="grid g2 mt">
-      <div class="card"><div class="secthead">${ic('note')}<h2>Clinical notes</h2></div>${notes || '<div class="muted">No notes yet.</div>'}
-        <div class="secthead mt">${ic('flask')}<h2>Lab & X-ray</h2></div>${orderRows || '<div class="muted">No requests yet.</div>'}</div>
-      <div class="card"><div class="secthead">${ic('clock')}<h2>Patient journey</h2></div><ul class="timeline">${tl.map(l => `<li><div class="t">${fmtTime(l.t)} · ${esc(l.by)}</div>${esc(l.text)}</li>`).join('')}</ul></div>
+    <div class="pgrid">
+      <div>
+        <div class="card"><div class="secthead">${ic('steth')}<h2>Clinical assessment</h2></div>
+          <div class="kv">
+            <div>History</div><div>${dash(cl.history)}</div>
+            <div>System examined</div><div>${dash(cl.system)}</div>
+            <div>Physical findings</div><div>${dash(cl.exam)}</div>
+            <div>Diagnosis</div><div>${cl.dx ? '<b>' + esc(cl.dx) + '</b>' : dash('')}</div>
+            <div>Emergency category</div><div>${dash(cl.category)}</div>
+            <div>Sexual & reproductive health</div><div>${dash(cl.srh)}</div>
+            <div>Medication given here</div><div>${dash(cl.poc)}</div>
+            <div>Procedure</div><div>${dash(cl.procedures)}</div>
+            <div>Blood transfusion</div><div>${cl.dx ? (cl.transfusion ? 'Yes' : 'No') : dash('')}</div>
+            <div>Response</div><div>${dash(cl.response)}</div>
+          </div>
+        </div>
+        <div class="card"><div class="secthead">${ic('flask')}<h2>Lab & imaging</h2></div>${orderRows || '<div class="muted">No tests or imaging requested.</div>'}</div>
+        <div class="card"><div class="secthead">${ic('exit')}<h2>Outcome & referral</h2></div>
+          <div class="kv">
+            <div>Visit outcome</div><div>${od.visit ? '<b>' + esc(od.visit) + '</b>' : '<span class="none">Still in care</span>'}</div>
+            <div>Medication to take home</div><div>${dash(od.meds)}</div>
+            <div>Referral</div><div>${dash(od.referral)}</div>
+            <div>Referral note</div><div>${dash(od.refNote)}</div>
+            <div>Outcome note</div><div>${dash(od.note)}</div>
+            <div>Follow-up visit</div><div>${od.followup ? fmtDay(od.followup) : dash('')}</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card"><div class="secthead">${ic('users')}<h2>Care team</h2></div>
+          <div class="kv">
+            <div>Admission date</div><div>${new Date(p.createdAt).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+            <div>Assigned doctor</div><div>${dash(p.doctor)}</div>
+            <div>Assigned tent</div><div>${p.state === 'discharged' ? '<span class="none">Discharged</span>' : esc(tentLabel(p.location)) + (p.bed ? ' · bed ' + p.bed : '')}</div>
+            <div>Allergies</div><div>${dash(p.allergies)}</div>
+            <div>Last updated</div><div>${lastUpdated(p.id) ? fmtTime(lastUpdated(p.id)) : dash('')}</div>
+          </div>
+        </div>
+        <div class="card"><div class="secthead">${ic('note')}<h2>Notes</h2></div>${notes || '<div class="muted">No notes yet.</div>'}</div>
+        <div class="card"><div class="secthead">${ic('clock')}<h2>Patient journey</h2></div><ul class="timeline">${tl.map(l => `<li><div class="t">${fmtTime(l.t)} · ${esc(l.by)}</div>${esc(l.text)}</li>`).join('')}</ul></div>
+      </div>
     </div>`;
 }
 
@@ -994,24 +1313,45 @@ function done(msg) { save(); closeModal(); render(); toast(msg); }
 
 function startCare(id) {
   const p = pat(id); p.state = 'in-care';
+  if (me.role === 'doctor' || me.role === 'admin') p.doctor = p.doctor || me.name;
   log(id, `Consultation started in ${tentLabel(p.location)}.`);
   done('Consultation started');
 }
+
 function noteForm(id) {
-  modal('Clinical note', `<form onsubmit="saveNote(event,'${id}')">
-    <div class="field"><label for="n-dx">Diagnosis or finding</label><input id="n-dx" type="text" required></div>
-    <div class="field"><label for="n-plan">Treatment and plan</label><textarea id="n-plan"></textarea></div>
-    <button class="btn primary">Save note</button></form>`);
+  const p = pat(id), c = p.clinical || {};
+  const opt = (list, cur) => list.map(x => `<option ${x === cur ? 'selected' : ''}>${esc(x)}</option>`).join('');
+  modal('Clinical assessment', `<form onsubmit="saveNote(event,'${id}')">
+    <div class="field"><label for="n-hist">History · past illnesses, operations, medicines</label><textarea id="n-hist" style="min-height:64px">${esc(c.history)}</textarea></div>
+    <div class="fgrid">
+      <div class="field"><label for="n-sys">System examined</label><select id="n-sys">${opt(SYSTEMS, c.system)}</select></div>
+      <div class="field"><label for="n-cat">Emergency category</label><select id="n-cat">${opt(EMERG_CAT, c.category)}</select></div>
+    </div>
+    <div class="field"><label for="n-exam">Physical findings</label><textarea id="n-exam" style="min-height:64px">${esc(c.exam)}</textarea></div>
+    <div class="field"><label for="n-dx">Diagnosis</label><input id="n-dx" type="text" required value="${esc(c.dx)}"></div>
+    <div class="fgrid">
+      <div class="field"><label for="n-proc">Procedure</label><select id="n-proc">${opt(PROCEDURES, c.procedures || 'None')}</select></div>
+      <div class="field"><label for="n-srh">Sexual & reproductive health</label><select id="n-srh">${opt(SRH, c.srh || 'None')}</select></div>
+      <div class="field"><label for="n-resp">Response</label><select id="n-resp">${opt(RESPONSES, c.response || 'Stable')}</select></div>
+    </div>
+    <div class="field"><label for="n-poc">Medication given here</label><input id="n-poc" type="text" value="${esc(c.poc)}" placeholder="Drug, dose, route"></div>
+    <div class="field"><label class="checkline"><input type="checkbox" id="n-tx" ${c.transfusion ? 'checked' : ''}> Blood transfusion given</label></div>
+    <div class="field"><label for="n-plan">Plan</label><textarea id="n-plan" style="min-height:64px"></textarea></div>
+    <button class="btn primary">Save assessment</button></form>`);
 }
+
 function saveNote(e, id) {
   e.preventDefault();
   const p = pat(id);
-  const dx = $('#n-dx').value.trim();
-  p.notes.push({ t: nowISO(), by: me.name, tent: p.location, dx, plan: $('#n-plan').value.trim() });
+  const g = k => $(k).value.trim();
+  p.clinical = { history: g('#n-hist'), system: g('#n-sys'), exam: g('#n-exam'), dx: g('#n-dx'), category: g('#n-cat'), procedures: g('#n-proc'), srh: g('#n-srh'), response: g('#n-resp'), poc: g('#n-poc'), transfusion: $('#n-tx').checked };
+  p.notes.push({ t: nowISO(), by: me.name, tent: p.location, dx: p.clinical.dx, plan: g('#n-plan') });
   if (p.state === 'waiting') p.state = 'in-care';
-  log(id, `Note: ${dx}.`);
-  done('Note saved');
+  if (!p.doctor && (me.role === 'doctor' || me.role === 'admin')) p.doctor = me.name;
+  log(id, `Assessment: ${p.clinical.dx} (${p.clinical.category}).`);
+  done('Assessment saved');
 }
+
 function vitalsForm(id) {
   const v = pat(id).vitals || {};
   modal('Update vitals', `<form onsubmit="saveVitals(event,'${id}')"><div class="fgrid">
@@ -1020,13 +1360,16 @@ function vitalsForm(id) {
     <div class="field"><label for="v-temp">Temp °C</label><input id="v-temp" type="number" step="0.1" value="${esc(v.temp)}"></div>
     <div class="field"><label for="v-spo2">SpO₂ %</label><input id="v-spo2" type="number" value="${esc(v.spo2)}"></div>
     <div class="field"><label for="v-rr">Resp. rate</label><input id="v-rr" type="number" value="${esc(v.rr)}"></div>
+    <div class="field"><label for="v-height">Height cm</label><input id="v-height" type="number" value="${esc(v.height)}"></div>
+    <div class="field"><label for="v-weight">Weight kg</label><input id="v-weight" type="number" step="0.1" value="${esc(v.weight)}"></div>
+    <div class="field"><label for="v-muac">MUAC cm</label><input id="v-muac" type="number" step="0.1" value="${esc(v.muac)}"></div>
     </div><button class="btn primary">Save vitals</button></form>`);
 }
 function saveVitals(e, id) {
   e.preventDefault();
   const p = pat(id); p.vitals = readVitals();
   const v = p.vitals;
-  log(id, `Vitals: BP ${v.bp || '–'}, pulse ${v.hr || '–'}, temp ${v.temp || '–'}, SpO2 ${v.spo2 || '–'}.`);
+  log(id, `Vitals: BP ${v.bp || '–'}, pulse ${v.hr || '–'}, resp. ${v.rr || '–'}, temp ${v.temp || '–'}, SpO2 ${v.spo2 || '–'}${v.weight ? ', weight ' + v.weight + ' kg' : ''}${v.muac ? ', MUAC ' + v.muac + ' cm' : ''}.`);
   done('Vitals updated');
 }
 function orderForm(id) {
@@ -1091,20 +1434,31 @@ function saveAdmit(e, id) {
   done(`Admitted to bed ${bed}`);
 }
 function dischargeForm(id) {
-  modal('Discharge patient', `<form onsubmit="saveDischarge(event,'${id}')">
-    <div class="field"><label>Outcome</label><div class="choice">${OUTCOMES.map((o, i) => `<input type="radio" name="out" id="out${i}" value="${o}" ${i === 0 ? 'checked' : ''}><label for="out${i}">${o}</label>`).join('')}</div></div>
-    <div class="field"><label for="dis-note">Discharge note</label><textarea id="dis-note" placeholder="Medication, follow-up, advice"></textarea></div>
+  modal('Discharge and outcome', `<form onsubmit="saveDischarge(event,'${id}')">
+    <div class="field"><label>Visit outcome</label><div class="choice">${VISIT_OUTCOMES.map((o, i) => `<input type="radio" name="out" id="out${i}" value="${o}" ${i === 0 ? 'checked' : ''}><label for="out${i}">${o}</label>`).join('')}</div></div>
+    <div class="field"><label for="dis-meds">Medication to take home</label><input id="dis-meds" type="text" placeholder="e.g. Ibuprofen 400 mg, three times a day"></div>
+    <div class="fgrid">
+      <div class="field"><label for="dis-ref">Referral</label><select id="dis-ref">${REFERRALS.map(r => `<option>${r}</option>`).join('')}</select></div>
+      <div class="field"><label for="dis-fu">Follow-up visit</label><select id="dis-fu"><option value="">None</option><option value="3">In 3 days</option><option value="7">In 7 days</option><option value="14">In 14 days</option></select></div>
+    </div>
+    <div class="field"><label for="dis-refnote">Referral note</label><input id="dis-refnote" type="text"></div>
+    <div class="field"><label for="dis-note">Outcome note</label><textarea id="dis-note" placeholder="Advice, warning signs"></textarea></div>
     <button class="btn primary">Confirm discharge</button></form>`);
 }
+
 function saveDischarge(e, id) {
   e.preventDefault();
   const p = pat(id);
-  const out = e.target.out.value, note = $('#dis-note').value.trim();
+  const g = k => $(k).value.trim();
+  const out = e.target.out.value, fu = g('#dis-fu');
+  p.outcomeDetail = { visit: out, meds: g('#dis-meds'), referral: g('#dis-ref'), refNote: g('#dis-refnote'), note: g('#dis-note'), followup: fu ? addDays(Number(fu)) : '' };
+  if (fu) S.followups.push({ id: 'FU-' + Date.now(), pid: id, date: addDays(Number(fu)), reason: 'Follow-up after ' + (p.clinical.dx || p.complaint).toLowerCase(), status: 'expected' });
   if (p.bed) { S.beds[p.bed - 1] = null; }
-  log(id, `${out}${p.bed ? ' from bed ' + p.bed : ''}.${note ? ' ' + note : ''}`);
+  log(id, `${out}${p.bed ? ' from bed ' + p.bed : ''}.${p.outcomeDetail.referral !== 'None' ? ' Referral: ' + p.outcomeDetail.referral + '.' : ''}${fu ? ' Follow-up in ' + fu + ' days.' : ''}${p.outcomeDetail.note ? ' ' + p.outcomeDetail.note : ''}`);
   p.bed = null; p.state = 'discharged'; p.outcome = out; p.movedAt = nowISO();
   done('Patient discharged');
 }
+
 function wristband(id) {
   const p = pat(id);
   modal('Patient wristband', `<div class="band printable">
@@ -1135,6 +1489,7 @@ function render() {
     case 'orders': inner = ordersView(); break;
     case 'ward': inner = wardView(); break;
     case 'search': inner = searchView(); break;
+    case 'attend': inner = attendView(); break;
     case 'patient': inner = patientView(view.id); break;
     default: view = homeFor(me.role); return render();
   }
@@ -1156,6 +1511,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
 /* ---------- boot ---------- */
 S = load();
+ensureAttendance();
 const savedUser = read(USER_KEY);
 if (savedUser && USERS[savedUser]) { me = Object.assign({ username: savedUser }, USERS[savedUser]); view = homeFor(me.role); }
 render();
