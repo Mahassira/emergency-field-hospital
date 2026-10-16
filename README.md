@@ -18,7 +18,7 @@ All passwords are `demo123`.
 | `doctor` | Physician | See the queue, fill in the clinical assessment, order an X-ray, refer, admit |
 | `lab` | Lab & X-ray | Enter results that go straight back to the patient's file |
 | `nurse` | Ward nurse | 50-bed ward map, discharge with outcome and follow-up |
-| `admin` | Site manager | Dashboard for the whole hospital, staff attendance |
+| `admin` | Site manager | Dashboard for the whole hospital, staff attendance, export everything to Excel |
 
 ## The tents
 

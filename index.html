@@ -1049,7 +1049,7 @@ function dashView() {
       </div>
       <div class="card"><div class="secthead">${ic('clock')}<h2>Latest activity</h2></div><ul class="timeline">${feed}</ul></div>
     </div>
-    <div class="row mt"><button class="btn" onclick="exportData()">${ic('download')}Export data (JSON)</button><span class="small muted">In a real deployment, this file would sync to the central server when the connection returns.</span></div>`;
+    <div class="row mt"><button class="btn" onclick="exportData()">${ic('download')}Export to Excel</button><span class="small muted">In a real deployment, this file would sync to the central server when the connection returns.</span></div>`;
 }
 
 function registerView() {
@@ -1467,13 +1467,80 @@ function wristband(id) {
     <p class="small muted">Print on a wristband label, or write the file number on the patient's band. Staff search by this number.</p>
     <div class="row"><button class="btn primary" onclick="window.print()">Print</button><button class="btn" onclick="closeModal()">Done</button></div>`);
 }
+/* ---------- Excel export (built in the browser, works offline) ---------- */
+const CRC_T = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zip(files) {
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  const u16 = n => [n & 255, (n >>> 8) & 255], u32 = n => [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255];
+  files.forEach(([name, text]) => {
+    const nm = enc.encode(name), data = enc.encode(text), crc = crc32(data);
+    const head = [...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nm.length), ...u16(0)];
+    parts.push(new Uint8Array([...u32(0x04034b50), ...head]), nm, data);
+    central.push(new Uint8Array([...u32(0x02014b50), ...u16(20), ...head, ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(off)]), nm);
+    off += 30 + nm.length + data.length;
+  });
+  const csize = central.reduce((a, b) => a + b.length, 0);
+  const end = new Uint8Array([...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length), ...u32(csize), ...u32(off), ...u16(0)]);
+  return new Blob([...parts, ...central, end], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+function xlsx(sheets) {
+  const x = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+  const col = i => { let s = ''; i++; while (i) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+  const sheetXml = rows => {
+    const widths = rows[0].map((_, c) => Math.min(60, Math.max(8, ...rows.map(r => String(r[c] ?? '').length)) + 2));
+    const body = rows.map((r, ri) => `<row r="${ri + 1}">${r.map((v, ci) => {
+      const ref = col(ci) + (ri + 1), st = ri === 0 ? ' s="1"' : ' s="2"';
+      if (v === null || v === undefined || v === '') return `<c r="${ref}"${st}/>`;
+      if (typeof v === 'number' && isFinite(v)) return `<c r="${ref}"${st}><v>${v}</v></c>`;
+      return `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${x(v)}</t></is></c>`;
+    }).join('')}</row>`).join('');
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>${body}</sheetData><autoFilter ref="A1:${col(rows[0].length - 1)}${rows.length}"/></worksheet>`;
+  };
+  const files = [
+    ['[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`],
+    ['_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+    ['xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((sh, i) => `<sheet name="${x(sh[0])}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets><definedNames>${sheets.map((sh, i) => `<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${x(sh[0])}'!$A$1:$${col(sh[1][0].length - 1)}$${sh[1].length}</definedName>`).join('')}</definedNames></workbook>`],
+    ['xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+    ['xl/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF113A60"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border/><border><bottom style="thin"><color rgb="FFE5DCCB"/></bottom></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="0"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`],
+    ...sheets.map((sh, i) => [`xl/worksheets/sheet${i + 1}.xml`, sheetXml(sh[1])])
+  ];
+  return zip(files);
+}
 function exportData() {
-  const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+  const dt = iso => { if (!iso) return ''; const d = new Date(iso); return dayKey(d) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  const num = v => v === '' || v === null || v === undefined || isNaN(Number(v)) ? (v || '') : Number(v);
+  const TRI = { red: 'Red', yellow: 'Yellow', green: 'Green' };
+  const STATE = { waiting: 'Waiting', 'in-care': 'In care', admitted: 'Admitted', discharged: 'Discharged' };
+  const patients = [['File no.', 'Admission date', 'Patient name', 'Age', 'Gender', 'Pregnant', 'Phone', 'Shelter / area', 'Condition', 'Triage', 'Status', 'Assigned tent', 'Bed', 'Assigned doctor', 'Allergies',
+    'Blood pressure', 'Heart rate', 'Resp. rate', 'SpO2 %', 'Temp °C', 'Height cm', 'Weight kg', 'MUAC cm',
+    'History', 'System examined', 'Physical findings', 'Diagnosis', 'Emergency category', 'SRH services', 'Medication given here', 'Procedure', 'Blood transfusion', 'Response',
+    'Visit outcome', 'Medication to take home', 'Referral', 'Referral note', 'Outcome note', 'Follow-up date', 'Last updated']];
+  S.patients.forEach(p => {
+    const v = p.vitals || {}, c = p.clinical || {}, o = p.outcomeDetail || {};
+    patients.push([p.id, dt(p.createdAt), p.name, num(p.age), p.sex === 'F' ? 'Female' : 'Male', p.pregnant ? 'Yes' : 'No', p.phone, p.shelter, p.complaint, TRI[p.triage] || p.triage, STATE[p.state] || p.state,
+      p.state === 'discharged' ? '' : tentLabel(p.location), p.bed || '', p.doctor, p.allergies,
+      v.bp, num(v.hr), num(v.rr), num(v.spo2), num(v.temp), num(v.height), num(v.weight), num(v.muac),
+      c.history, c.system, c.exam, c.dx, c.category, c.srh, c.poc, c.procedures, c.dx ? (c.transfusion ? 'Yes' : 'No') : '', c.response,
+      o.visit || p.outcome || '', o.meds, o.referral, o.refNote, o.note, o.followup, dt(lastUpdated(p.id))]);
+  });
+  const orders = [['Request no.', 'File no.', 'Patient name', 'Type', 'Test', 'Requested from', 'Requested at', 'Status', 'Result', 'Result at']];
+  S.orders.forEach(o => { const p = pat(o.pid) || {}; orders.push([o.id, o.pid, p.name, o.group, o.test, tentLabel(o.from), dt(o.at), o.status === 'done' ? 'Done' : 'Requested', o.result, dt(o.doneAt)]); });
+  const beds = [['Bed', 'Status', 'File no.', 'Patient name', 'Diagnosis']];
+  S.beds.forEach((pid, i) => { const p = pid ? pat(pid) : null; beds.push([i + 1, p ? 'Occupied' : 'Free', p ? p.id : '', p ? p.name : '', p ? (p.clinical && p.clinical.dx) || '' : '']); });
+  const staff = [['Staff ID', 'Name', 'Job title', 'Group', 'Tent', 'Shift', 'Date', 'Status', 'Late', 'Check-in', 'Check-out']];
+  S.staff.forEach(st => { const r = attOf(st.id); const k = attStatus(st.id); staff.push([st.id, st.name, st.title, st.group, tentLabel(st.tent), st.shift, S.att.date, STATUS_LABEL[k === 'late' ? 'present' : k], r.late ? 'Yes' : 'No', r.in ? fmtTime(r.in) : '', r.out ? fmtTime(r.out) : '']); });
+  const fus = [['Follow-up no.', 'File no.', 'Patient name', 'Reason', 'Due date', 'Status', 'Attended at']];
+  S.followups.forEach(f => { const p = pat(f.pid) || {}; const st = f.status === 'expected' && f.date < dayKey() ? 'Missed' : f.status[0].toUpperCase() + f.status.slice(1); fus.push([f.id, f.pid, p.name, f.reason, f.date, st, dt(f.at)]); });
+  const logs = [['Time', 'File no.', 'Patient name', 'Action', 'Recorded by']];
+  S.log.slice().sort((a, b) => a.t.localeCompare(b.t)).forEach(l => { const p = pat(l.pid) || {}; logs.push([dt(l.t), l.pid, p.name, l.text, l.by]); });
+  const blob = xlsx([['Patients', patients], ['Lab & X-ray', orders], ['Ward beds', beds], ['Staff attendance', staff], ['Follow-ups', fus], ['Activity log', logs]]);
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'tentcare-export-' + new Date().toISOString().slice(0, 10) + '.json';
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  a.download = 'TentCare-' + dayKey() + '.xlsx';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  toast('Excel file downloaded');
 }
 
 /* ---------- render ---------- */

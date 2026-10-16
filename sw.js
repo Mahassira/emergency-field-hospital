@@ -1,7 +1,7 @@
 // Keeps the app working with no internet connection.
 // Pages: try the network first so updates show straight away; use the saved copy when offline.
 // Images and other files: use the saved copy first, refresh it in the background.
-const CACHE = 'tentcare-v6';
+const CACHE = 'tentcare-v7';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './logo.png', './tent.png', './favicon.png', './apple-touch-icon.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 
 self.addEventListener('install', event => {
