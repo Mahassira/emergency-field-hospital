@@ -136,11 +136,12 @@ h3{font-size:14px;margin:0 0 8px;color:var(--primary)}
 
 /* ward */
 .beds{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
-.bed{border:1px solid var(--line);border-radius:11px;padding:8px;min-height:66px;background:var(--surface);text-align:left;cursor:default;font-size:12px}
+.bed{min-width:0;border:1px solid var(--line);border-radius:11px;padding:8px;min-height:66px;background:var(--surface);text-align:left;cursor:default;font-size:12px}
 .bed .num{font-weight:700;font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
 .bed.occ{cursor:pointer;background:var(--primary);border-color:var(--primary);color:#fff}
 .bed.occ .num{color:rgba(255,255,255,.7)}
 .bed.occ .who{color:#fff;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-size:12px}
+.bed .who{text-align:left}
 .bed.free .who{color:var(--accent-ink);font-weight:600;margin-top:4px}
 .bed .tdot{width:9px;height:9px;border-radius:50%;display:inline-block;box-shadow:0 0 0 2px rgba(255,255,255,.6)}
 .tdot.red{background:#ff6b5e} .tdot.yellow{background:#ffc04d} .tdot.green{background:#5fd18a}
@@ -239,6 +240,87 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
   .tentrow .track{grid-column:2}
 }
 @media(min-width:721px){.nav .lbl-short{display:none}}
+
+/* ---------- mobile app shell ---------- */
+@media(min-width:721px){.m-only{display:none!important}}
+.mtitle{font-weight:700;font-size:17px;letter-spacing:.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.avatar{width:36px;height:36px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;cursor:pointer;flex:none}
+.backbtn{display:grid;place-items:center;width:38px;height:38px;margin-left:-8px;border:0;background:none;color:#fff;cursor:pointer;border-radius:10px;flex:none}
+.backbtn:active{background:rgba(255,255,255,.12)}
+.seg{display:flex;background:var(--surface-2);border-radius:12px;padding:4px;gap:4px;margin:0 0 14px}
+.seg button{flex:1;border:0;background:none;padding:9px 8px;border-radius:9px;font-weight:700;color:var(--muted);cursor:pointer;font-size:14px}
+.seg button.on{background:var(--surface);color:var(--primary);box-shadow:var(--shadow)}
+.sheetlist{display:grid;gap:6px}
+.sheetlist button{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:0;background:var(--surface-2);border-radius:13px;padding:13px 14px;font-weight:600;color:var(--primary);cursor:pointer;font-size:15px}
+.sheetlist button:active{background:#ece2d2}
+.sheetlist button .ic{color:var(--accent)}
+.sheetlist button.danger{color:var(--red)} .sheetlist button.danger .ic{color:var(--red)}
+.sheetlist button.on{outline:2px solid var(--accent)}
+.sheetlist .cnt{margin-left:auto;font-size:12px;background:var(--surface);border-radius:999px;padding:2px 8px;color:var(--muted)}
+.grabber{width:40px;height:5px;border-radius:999px;background:var(--line);margin:-6px auto 14px}
+.acct{display:flex;gap:12px;align-items:center;margin-bottom:16px}
+.acct .avatar{width:48px;height:48px;font-size:16px;cursor:default}
+.actionbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(17,58,96,.08);padding:10px 16px calc(10px + env(safe-area-inset-bottom));gap:10px}
+.actionbar .btn{flex:1;min-height:48px;border-radius:13px;font-size:15px}
+.actionbar .btn.more{flex:0 0 auto;padding:0 16px}
+
+@media(max-width:720px){
+  .d-only{display:none!important}
+  body{font-size:15px}
+  .top{padding-top:env(safe-area-inset-top)}
+  .top .wrap{min-height:56px;gap:10px}
+  .brand .mark{width:34px;height:34px;border-radius:9px}
+  .brand .mark img{width:27px}
+  .pill{padding:0;background:none!important;width:10px;height:10px;justify-content:center}
+  .pill .ptxt{display:none}
+  .pill .dot{width:9px!important;height:9px!important;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+  .iconbtn{width:36px;height:36px;background:none}
+  .nav button{order:var(--mo,99)}
+  .nav.m-hide{display:none}
+  .wrap>h1:first-child,.wrap>.row.between:first-child h1{display:none}
+  main{padding-top:16px}
+  .sub{font-size:13.5px;margin-bottom:14px}
+  h2{font-size:15.5px}
+  .card{padding:14px;border-radius:16px}
+  .pcard{padding:11px 12px 11px 0;border-radius:14px;gap:10px}
+  .pcard .name{font-size:15px}
+  .pcard .meta{font-size:12.5px}
+  .pcard .cc{font-size:14px;margin-top:2px}
+  .pcard .row{margin-top:5px!important}
+  .badge{font-size:11.5px;padding:2px 7px}
+  .tri{font-size:10.5px;padding:3px 8px}
+  .split[data-tab=waiting] [data-pane=care],.split[data-tab=care] [data-pane=waiting]{display:none}
+  .split .secthead{display:none}
+  .tile{padding:12px;gap:10px;border-radius:16px}
+  .tile .tic{width:36px;height:36px;border-radius:10px}
+  .tile .n{font-size:22px}
+  .tile .l{font-size:12px}
+  .phead{gap:8px}
+  .phead h1{font-size:21px}
+  .pmeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .pmeta .mt{margin:0}
+  .vitals{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .vitals div{padding:8px 10px}
+  .vitals b{font-size:15px}
+  body.has-actionbar main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  body.no-nav main{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+  body.has-actionbar{--nav-h:72px}
+  body.no-nav{--nav-h:0px}
+  .foot{font-size:12px;margin-top:18px}
+  .foot img{width:22px}
+  .login{justify-content:flex-start;padding-top:calc(28px + env(safe-area-inset-top))}
+  .login .logo{width:min(170px,46vw);margin-bottom:14px}
+  .login .box{padding:18px;border-radius:18px}
+  .login .lead{font-size:14px;margin-bottom:12px}
+  .accounts button{padding:8px 10px}
+  .accounts .aic{width:32px;height:32px}
+  .accounts code{font-size:10.5px}
+  .beds{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+  .bed{min-height:60px;padding:7px;border-radius:10px}
+  .order{flex-direction:column;align-items:stretch}
+  .order .btn{width:100%}
+}
+@media(min-width:721px){.login .logo{width:220px}}
 @media print{
   body *{visibility:hidden}
   .printable,.printable *{visibility:visible}
@@ -290,6 +372,9 @@ const ICONS = {
   tent: '<path d="M3 20 12 4l9 16H3z"/><path d="M9 20l3-6 3 6"/>',
   download: '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
   wifioff: '<path d="M2 8.8a15 15 0 0 1 4.2-2.6M10.7 5.1A15 15 0 0 1 22 8.8M5 12.5a10 10 0 0 1 5.2-2.6M16.8 11a10 10 0 0 1 2.2 1.5M8.5 16a5 5 0 0 1 7 0M12 20h.01M3 3l18 18"/>',
+  menu: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  grid: '<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>',
   reset: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/>'
 };
 const TENT_IC = { REG: 'userplus', ER: 'pulse', OPD: 'steth', MAT: 'heart', OT: 'scissors', WARD: 'bed', DIAG: 'flask' };
@@ -317,6 +402,10 @@ const OUTCOMES = ['Discharged home', 'Transferred to another facility', 'Left ag
 let S = null;
 let me = null;
 let view = { name: 'login' };
+let prevView = null;
+let curActions = [];
+const tentTab = {};
+const MOBILE_PRIMARY = { admin: ['dash', 'tent:ER', 'orders', 'ward'] };
 
 function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -476,13 +565,20 @@ function canAct(p) {
   return false;
 }
 function go(name, id) {
+  if (name === 'patient' && view.name !== 'patient') prevView = Object.assign({}, view);
   view = { name, id };
   closeModal();
   render();
   window.scrollTo(0, 0);
 }
+function goBack() {
+  const v = prevView && prevView.name !== 'patient' ? prevView : homeFor(me.role);
+  prevView = null;
+  view = { name: v.name, id: v.id };
+  render();
+  window.scrollTo(0, 0);
+}
 
-/* ---------- login ---------- */
 function loginView() {
   const aic = { reception: 'userplus', doctor: 'steth', lab: 'flask', nurse: 'bed', admin: 'dash' };
   const accts = Object.entries(USERS).map(([u, x]) =>
@@ -548,25 +644,71 @@ function tabLabel(t) {
   return { icon: L[0], long: L[1], short: L[2], count };
 }
 
+function initials(n) { return n.replace(/^Dr\.\s*/, '').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase(); }
+function screenTitle() {
+  switch (view.name) {
+    case 'dash': return 'Overview';
+    case 'register': return 'Register patient';
+    case 'today': return "Today's patients";
+    case 'tent': return tent(view.id).name;
+    case 'orders': return 'Lab & X-ray';
+    case 'ward': return 'Ward · ' + BEDS + ' beds';
+    case 'search': return 'Find a patient';
+    case 'patient': return 'Patient file';
+    default: return 'EMT TentCare';
+  }
+}
+function navActive(t) { return t.startsWith('tent:') ? (view.name === 'tent' && view.id === t.slice(5)) : view.name === t; }
+function navGo(t) { const [n, id] = t.split(':'); return `go('${n}'${id ? `,'${id}'` : ''})`; }
+function mobileNav() {
+  const items = navFor(me.role).filter(t => t !== 'search');
+  const primary = MOBILE_PRIMARY[me.role] || (items.length > 5 ? items.slice(0, 4) : items);
+  return { primary, overflow: items.filter(t => !primary.includes(t)) };
+}
+function moreSheet() {
+  const { overflow } = mobileNav();
+  const rows = overflow.map(t => {
+    const L = tabLabel(t);
+    return `<button class="${navActive(t) ? 'on' : ''}" onclick="${navGo(t)}">${ic(L.icon)}${esc(L.long)}${L.count !== null && L.count !== undefined ? `<span class="cnt">${L.count}</span>` : ''}</button>`;
+  }).join('');
+  sheet('More', `<div class="sheetlist">${rows}</div>`);
+}
+function accountSheet() {
+  sheet('Account', `<div class="acct"><span class="avatar">${initials(me.name)}</span><div><b>${esc(me.name)}</b><div class="small muted">${esc(me.title)}</div><div class="small muted">${navigator.onLine ? 'Online' : 'Offline · data saved on this device'}</div></div></div>
+    <div class="sheetlist">
+      <button onclick="closeModal();resetDemo()">${ic('reset')}Reset demo data</button>
+      <button class="danger" onclick="logout()">${ic('logout')}Sign out</button>
+    </div>`);
+}
 function shell(inner) {
   const online = navigator.onLine;
+  const { primary, overflow } = mobileNav();
+  const hasSearch = navFor(me.role).includes('search');
+  const onPatient = view.name === 'patient';
+  const hideMobileNav = onPatient || primary.length + (overflow.length ? 1 : 0) < 2;
+  document.body.classList.toggle('no-nav', hideMobileNav && !onPatient);
   const tabs = navFor(me.role).map(t => {
-    const isActive = t.startsWith('tent:') ? (view.name === 'tent' && view.id === t.slice(5)) : view.name === t;
-    const [n, id] = t.split(':');
     const L = tabLabel(t);
-    return `<button class="${isActive ? 'active' : ''}" onclick="go('${n}'${id ? `,'${id}'` : ''})" aria-label="${esc(L.long)}">${ic(L.icon)}<span class="lbl-long">${esc(L.long)}</span><span class="lbl-short">${esc(L.short)}</span>${L.count !== null && L.count !== undefined ? `<span class="count">${L.count}</span>` : ''}</button>`;
+    const mi = primary.indexOf(t);
+    const cls = [navActive(t) ? 'active' : '', t === 'search' ? 'd-only' : '', mi < 0 && t !== 'search' ? 'd-only' : ''].join(' ');
+    return `<button class="${cls}" style="--mo:${mi < 0 ? 99 : mi}" onclick="${navGo(t)}" aria-label="${esc(L.long)}">${ic(L.icon)}<span class="lbl-long">${esc(L.long)}</span><span class="lbl-short">${esc(L.short)}</span>${L.count !== null && L.count !== undefined ? `<span class="count">${L.count}</span>` : ''}</button>`;
   }).join('');
+  const more = overflow.length ? `<button class="m-only ${overflow.some(navActive) ? 'active' : ''}" style="--mo:50" onclick="moreSheet()" aria-label="More">${ic('menu')}<span class="lbl-short">More</span></button>` : '';
   return `
   <header class="top"><div class="wrap">
-    <div class="brand">${logo()}<span class="bname">EMT TentCare<small>Emergency medical tents</small></span></div>
-    <span class="pill ${online ? 'on' : 'off'}" id="net"><span class="dot"></span>${online ? 'Online' : 'Offline · saved on device'}</span>
+    <div class="brand d-only">${logo()}<span class="bname">EMT TentCare<small>Emergency medical tents</small></span></div>
+    ${onPatient ? `<button class="backbtn m-only" onclick="goBack()" aria-label="Back">${ic('back')}</button>` : `<span class="brand m-only">${logo()}</span>`}
+    <span class="mtitle m-only">${esc(screenTitle())}</span>
+    <span class="pill ${online ? 'on' : 'off'}" id="net" title="${online ? 'Online' : 'Offline · saved on device'}"><span class="dot"></span><span class="ptxt">${online ? 'Online' : 'Offline · saved on device'}</span></span>
     <div class="spacer"></div>
-    <div class="who"><b>${esc(me.name)}</b><br><span class="role">${esc(me.title)}</span></div>
-    <button class="iconbtn" onclick="logout()" title="Sign out" aria-label="Sign out">${ic('logout')}</button>
+    <div class="who d-only"><b>${esc(me.name)}</b><br><span class="role">${esc(me.title)}</span></div>
+    ${hasSearch && view.name !== 'search' ? `<button class="iconbtn m-only" onclick="go('search')" aria-label="Search">${ic('search')}</button>` : ''}
+    <button class="avatar m-only" onclick="accountSheet()" aria-label="Account">${initials(me.name)}</button>
+    <button class="iconbtn d-only" onclick="logout()" title="Sign out" aria-label="Sign out">${ic('logout')}</button>
   </div></header>
-  <nav class="nav"><div class="wrap">${tabs}</div></nav>
+  <nav class="nav ${hideMobileNav ? 'm-hide' : ''}"><div class="wrap">${tabs}${more}</div></nav>
   <main><div class="wrap">${inner}
-    <div class="foot"><img src="tent.png" alt=""><span>Demo with fictional data. Changes stay on this device.</span><a href="#" onclick="resetDemo();return false">Reset demo data</a></div>
+    <div class="foot"><img src="tent.png" alt=""><span>Demo with fictional data. Changes stay on this device.</span><a href="#" class="d-only" onclick="resetDemo();return false">Reset demo data</a></div>
   </div></main>`;
 }
 
@@ -706,13 +848,19 @@ function tentView(id) {
   const here = S.patients.filter(p => p.location === id && p.state !== 'discharged');
   const waiting = sortQueue(here.filter(p => p.state === 'waiting'));
   const care = sortQueue(here.filter(p => p.state !== 'waiting'));
+  const tab = tentTab[id] || (waiting.length || !care.length ? 'waiting' : 'care');
   return `<h1>Tent ${t.no} · ${t.name}</h1>
-    <p class="sub">${here.length} patient${here.length === 1 ? '' : 's'}. Queue is sorted by triage colour, then by waiting time.</p>
-    <div class="grid g2">
-      <section><div class="secthead">${ic('clock')}<h2>Waiting (${waiting.length})</h2></div><div class="plist">${waiting.map(p => patientCard(p)).join('') || empty('Nobody waiting.')}</div></section>
-      <section><div class="secthead">${ic(TENT_IC[id])}<h2>In care (${care.length})</h2></div><div class="plist">${care.map(p => patientCard(p)).join('') || empty('Nobody in care.')}</div></section>
+    <p class="sub">Tent ${t.no} · ${here.length} patient${here.length === 1 ? '' : 's'}. Sorted by triage colour, then waiting time.</p>
+    <div class="seg m-only" role="tablist">
+      <button class="${tab === 'waiting' ? 'on' : ''}" onclick="setTentTab('${id}','waiting')">Waiting · ${waiting.length}</button>
+      <button class="${tab === 'care' ? 'on' : ''}" onclick="setTentTab('${id}','care')">In care · ${care.length}</button>
+    </div>
+    <div class="grid g2 split" data-tab="${tab}">
+      <section data-pane="waiting"><div class="secthead">${ic('clock')}<h2>Waiting (${waiting.length})</h2></div><div class="plist">${waiting.map(p => patientCard(p)).join('') || empty('Nobody waiting.')}</div></section>
+      <section data-pane="care"><div class="secthead">${ic(TENT_IC[id])}<h2>In care (${care.length})</h2></div><div class="plist">${care.map(p => patientCard(p)).join('') || empty('Nobody in care.')}</div></section>
     </div>`;
 }
+function setTentTab(id, tab) { tentTab[id] = tab; render(); }
 
 function ordersView() {
   const pend = S.orders.filter(o => o.status === 'requested').sort((a, b) => {
@@ -770,6 +918,20 @@ function patientView(id) {
   const tl = S.log.filter(l => l.pid === id);
   const where = p.state === 'discharged' ? esc(p.outcome || 'Discharged') : `${esc(tentLabel(p.location))}${p.bed ? ' · bed ' + p.bed : ''}`;
 
+  const A = [];
+  if (act) {
+    if (p.state === 'waiting') A.push(['steth', 'Start consultation', `startCare('${id}')`, 'primary']);
+    A.push(['note', 'Add clinical note', `noteForm('${id}')`, '']);
+    A.push(['pulse', 'Update vitals', `vitalsForm('${id}')`, '']);
+    A.push(['flask', 'Request lab / X-ray', `orderForm('${id}')`, '']);
+    A.push(['refer', 'Refer to another tent', `referForm('${id}')`, '']);
+    if (p.location !== 'WARD') A.push(['bed', 'Admit to ward', `admitForm('${id}')`, '']);
+    A.push(['exit', 'Discharge', `dischargeForm('${id}')`, 'danger']);
+  }
+  A.push(['tag', 'Wristband', `wristband('${id}')`, '']);
+  curActions = A;
+  const first = A[0];
+  const actionbar = `<div class="actionbar m-only"><button class="btn primary" onclick="${first[2]}">${ic(first[0])}${esc(first[1])}</button>${A.length > 1 ? `<button class="btn more" onclick="actionsSheet()" aria-label="All actions">${ic('grid')}Actions</button>` : ''}</div>`;
   let buttons = '';
   if (act) {
     if (p.state === 'waiting') buttons += `<button class="btn primary" onclick="startCare('${id}')">${ic('steth')}Start consultation</button>`;
@@ -798,13 +960,14 @@ function patientView(id) {
           <h1>${esc(p.name)}</h1>
           <div class="muted">${p.age} years · ${p.sex === 'F' ? 'Female' : 'Male'}${p.shelter ? ' · ' + esc(p.shelter) : ''}${p.phone ? ' · ' + esc(p.phone) : ''}</div>
         </div>
-        <div style="text-align:right"><span class="tri ${p.triage}">${p.triage}</span><div class="mt"><span class="where">${ic(p.state === 'discharged' ? 'exit' : (TENT_IC[p.location] || 'tent'), 'sm')}${where}</span></div><div class="small muted">Arrived ${fmtTime(p.createdAt)}</div></div>
+        <div class="pmeta" style="text-align:right"><span class="tri ${p.triage}">${p.triage}</span><div class="mt"><span class="where">${ic(p.state === 'discharged' ? 'exit' : (TENT_IC[p.location] || 'tent'), 'sm')}${where}</span></div><div class="small muted">Arrived ${fmtTime(p.createdAt)}</div></div>
       </div>
       <div class="mt"><span class="muted small">Main complaint</span><div><b>${esc(p.complaint)}</b></div></div>
       <div class="vitals mt">${vit}</div>
-      <div class="actions mt">${buttons}</div>
+      <div class="actions mt d-only">${buttons}</div>
       ${!act && p.state !== 'discharged' && me.role !== 'admin' ? `<p class="small muted mt">You can view this file. Actions are available to staff in ${esc(tentLabel(p.location))}.</p>` : ''}
     </div>
+    ${actionbar}
     <div class="grid g2 mt">
       <div class="card"><div class="secthead">${ic('note')}<h2>Clinical notes</h2></div>${notes || '<div class="muted">No notes yet.</div>'}
         <div class="secthead mt">${ic('flask')}<h2>Lab & X-ray</h2></div>${orderRows || '<div class="muted">No requests yet.</div>'}</div>
@@ -813,12 +976,20 @@ function patientView(id) {
 }
 
 /* ---------- actions ---------- */
+function actionsSheet() {
+  sheet('Actions', `<div class="sheetlist">${curActions.map(a => `<button class="${a[3] === 'danger' ? 'danger' : ''}" onclick="${a[2]}">${ic(a[0])}${esc(a[1])}</button>`).join('')}</div>`);
+}
 function modal(title, body) {
-  $('#modal-root').innerHTML = `<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="mhead"><h2 style="margin:0">${esc(title)}</h2><button class="x" onclick="closeModal()" aria-label="Close">×</button></div>${body}</div></div>`;
+  $('#modal-root').innerHTML = `<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="grabber m-only"></div><div class="mhead"><h2 style="margin:0">${esc(title)}</h2><button class="x" onclick="closeModal()" aria-label="Close">×</button></div>${body}</div></div>`;
   const first = $('#modal-root input:not([type=radio]), #modal-root select, #modal-root textarea');
   if (first) first.focus();
 }
+
 function closeModal() { $('#modal-root').innerHTML = ''; }
+function sheet(title, body) {
+  $('#modal-root').innerHTML = `<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="grabber m-only"></div><div class="mhead"><h2 style="margin:0">${esc(title)}</h2><button class="x" onclick="closeModal()" aria-label="Close">×</button></div>${body}</div></div>`;
+}
+
 function done(msg) { save(); closeModal(); render(); toast(msg); }
 
 function startCare(id) {
@@ -954,7 +1125,7 @@ function exportData() {
 /* ---------- render ---------- */
 function render() {
   const app = $('#app');
-  if (!me) { app.innerHTML = loginView(); return; }
+  if (!me) { document.body.classList.remove('has-actionbar', 'no-nav'); app.innerHTML = loginView(); return; }
   let inner = '';
   switch (view.name) {
     case 'dash': inner = dashView(); break;
@@ -968,6 +1139,7 @@ function render() {
     default: view = homeFor(me.role); return render();
   }
   app.innerHTML = shell(inner);
+  document.body.classList.toggle('has-actionbar', view.name === 'patient');
   if (view.name === 'search') doSearch();
 }
 
@@ -975,7 +1147,7 @@ function updateNet() {
   const el = $('#net');
   if (!el) return;
   el.className = 'pill ' + (navigator.onLine ? 'on' : 'off');
-  el.innerHTML = '<span class="dot"></span>' + (navigator.onLine ? 'Online' : 'Offline · saved on device');
+  el.innerHTML = '<span class="dot"></span><span class="ptxt">' + (navigator.onLine ? 'Online' : 'Offline · saved on device') + '</span>';
 }
 
 window.addEventListener('online', updateNet);
