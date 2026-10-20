@@ -12,13 +12,13 @@ I worked in Gaza with International Medical Corps when we set up a field hospita
 
 All passwords are `demo123`.
 
-| Username | Role | What to try |
+| Work email | Role | What to try |
 | --- | --- | --- |
-| `reception` | Registration clerk | Register a patient, pick a triage colour, send them to a tent |
-| `doctor` | Physician | See the queue, fill in the clinical assessment, order an X-ray, refer, admit |
-| `lab` | Lab & X-ray | Enter results that go straight back to the patient's file |
-| `nurse` | Ward nurse | 50-bed ward map, discharge with outcome and follow-up |
-| `admin` | Site manager | Dashboard for the whole hospital, staff attendance, export everything to Excel |
+| `reception@emttentcare.com` | Registration clerk | Register a patient, pick a triage colour, send them to a tent |
+| `doctor@emttentcare.com` | Physician | See the queue, fill in the clinical assessment, order an X-ray, refer, admit |
+| `lab@emttentcare.com` | Lab & X-ray | Enter results that go straight back to the patient's file |
+| `nurse@emttentcare.com` | Ward nurse | 50-bed ward map, discharge with outcome and follow-up |
+| `admin@emttentcare.com` | Site manager | Dashboard for the whole hospital, staff attendance, export everything to Excel |
 
 ## The tents
 

@@ -199,7 +199,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
 .accounts .aic{width:34px;height:34px;border-radius:10px;background:var(--surface);color:var(--accent);display:grid;place-items:center;flex:none}
 .accounts .atext{flex:1;min-width:0}
 .accounts .atext b{color:var(--primary)}
-.accounts code{font-size:11.5px;color:var(--muted)}
+.accounts code{font-size:12px;color:#0f6cbd}
 .disclaimer{font-size:12px;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 .err{color:var(--red);font-size:13px;margin:4px 0 10px;min-height:18px}
 .offline-note{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--muted);font-size:12.5px;margin-top:14px}
@@ -593,6 +593,7 @@ const USERS = {
   admin:     { name: 'Site Manager', role: 'admin', title: 'Administrator', sid: 'ST-24' }
 };
 const PASSWORD = 'demo123';
+const DOMAIN = 'emttentcare.com';
 
 const VISIT_OUTCOMES = ['Discharged with medication', 'Discharged without medication', 'Transferred to another facility', 'Left against medical advice'];
 const SYSTEMS = ['General', 'Respiratory', 'Cardiovascular', 'Abdominal', 'Musculoskeletal', 'Neurological', 'Skin & wounds', 'Obstetric & gynaecological', 'ENT & eyes'];
@@ -964,7 +965,7 @@ function goBack() {
 function loginView() {
   const aic = { reception: 'userplus', doctor: 'steth', lab: 'flask', nurse: 'bed', admin: 'dash' };
   const accts = Object.entries(USERS).map(([u, x]) =>
-    `<button type="button" onclick="quick('${u}')"><span class="aic">${ic(aic[u])}</span><span class="atext"><b>${esc(x.title)}</b><br><span class="small muted">${esc(x.name)}</span></span><code>${u} / ${PASSWORD}</code></button>`
+    `<button type="button" onclick="quick('${u}')"><span class="aic">${ic(aic[u])}</span><span class="atext"><b>${esc(x.title)}</b><br><span class="small muted">${esc(x.name)}</span><br><code>${u}@${DOMAIN}</code></span></button>`
   ).join('');
   return `
   <div class="login">
@@ -972,12 +973,13 @@ function loginView() {
     <div class="box">
       <p class="lead">Patient flow for a six-tent emergency field hospital.</p>
       <form onsubmit="doLogin(event)">
-        <div class="field"><label for="u">Username</label><input id="u" type="text" autocomplete="username" autocapitalize="none" required></div>
+        <div class="field"><label for="u">Work email</label><input id="u" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="name@emttentcare.com" required></div>
         <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
         <div class="err" id="err"></div>
         <button class="btn primary" style="width:100%">Sign in</button>
       </form>
       <h3 class="mt">Demo accounts · tap one to fill in</h3>
+      <p class="small muted" style="margin:-4px 0 8px">Password for all accounts: <code>${PASSWORD}</code></p>
       <div class="accounts">${accts}</div>
       <div class="disclaimer">
         <p style="margin:0 0 8px"><b>Demo only.</b> All patients and staff here are fictional.</p>
@@ -989,17 +991,17 @@ function loginView() {
   </div>`;
 }
 
-function quick(u) { $('#u').value = u; $('#pw').value = PASSWORD; }
+function quick(u) { $('#u').value = u + '@' + DOMAIN; $('#pw').value = PASSWORD; }
 function doLogin(e) {
   e.preventDefault();
-  const u = $('#u').value.trim().toLowerCase();
+  const u = $('#u').value.trim().toLowerCase().replace('@' + DOMAIN, '');
   if (USERS[u] && $('#pw').value === PASSWORD) {
     me = Object.assign({ username: u }, USERS[u]);
     store(USER_KEY, u);
     view = homeFor(me.role);
     render();
   } else {
-    $('#err').textContent = 'Wrong username or password. Use one of the demo accounts below.';
+    $('#err').textContent = 'Wrong email or password. Use one of the demo accounts below.';
   }
 }
 function logout() { drop(USER_KEY); me = null; view = { name: 'login' }; render(); }
@@ -1062,7 +1064,7 @@ function moreSheet() {
   sheet('More', `<div class="sheetlist">${rows}</div>`);
 }
 function accountSheet() {
-  sheet('Account', `<div class="acct"><span class="avatar">${initials(me.name)}</span><div><b>${esc(me.name)}</b><div class="small muted">${esc(me.title)}</div><div class="small muted">${navigator.onLine ? 'Online' : 'Offline · data saved on this device'}</div></div></div>
+  sheet('Account', `<div class="acct"><span class="avatar">${initials(me.name)}</span><div><b>${esc(me.name)}</b><div class="small muted">${esc(me.title)}</div><div class="small muted">${me.username}@${DOMAIN}</div><div class="small muted">${navigator.onLine ? 'Online' : 'Offline · data saved on this device'}</div></div></div>
     <div class="sheetlist">
       ${myStaff() ? (['present', 'late'].includes(attStatus(me.sid)) ? `<button onclick="setAtt('${me.sid}','out')">${ic('exit')}Check out of my shift</button>` : `<button onclick="setAtt('${me.sid}','present')">${ic('enter')}Check in for my shift</button>`) : ''}
       <button onclick="closeModal();attTab='staff';go('attend')">${ic('usercheck')}Attendance</button>
