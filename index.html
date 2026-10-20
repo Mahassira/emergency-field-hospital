@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="fluent">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EMT TentCare</title>
 <meta name="description" content="EMT TentCare: offline-first patient flow for a six-tent emergency field hospital. Demo with fictional data.">
-<meta name="theme-color" content="#113a60">
+<meta name="theme-color" content="#0f6cbd">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -400,7 +400,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
   .printable{position:fixed;left:0;top:0;width:100%}
 }
 
-/* ---------- Microsoft Fluent look (used at /fluent/) ---------- */
+/* ---------- Microsoft Fluent look ---------- */
 html.fluent{
   --bg:#f5f5f5; --surface:#ffffff; --surface-2:#f5f5f5; --line:#e0e0e0;
   --text:#242424; --muted:#616161; --primary:#0f6cbd; --primary-ink:#ffffff; --primary-soft:#ebf3fc;
@@ -413,8 +413,8 @@ html.fluent{
 .fluent .top{box-shadow:none}
 .fluent .top .wrap{min-height:48px;max-width:none;padding:0 12px}
 .fluent .brand{font-weight:600;letter-spacing:0}
-.fluent .brand .mark{width:40px;height:32px;border-radius:4px;background:#fff}
-.fluent .brand .mark img{width:34px}
+.fluent .brand .mark{width:48px;height:36px;border-radius:0;background:transparent}
+.fluent .brand .mark img{width:46px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
 .fluent .brand .bname small{letter-spacing:.4px;text-transform:none;font-size:12px;font-weight:400}
 .fluent .pill.on{background:rgba(255,255,255,.16)}
 .fluent .pill.on .dot{background:#54b054}
@@ -522,7 +522,6 @@ html.fluent{
   .fluent .actionbar .btn{border-radius:4px}
 }
 </style>
-<script>if(/\/fluent(\/|$)/.test(location.pathname)){document.documentElement.classList.add('fluent');var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content='#0f6cbd';}</script>
 </head>
 <body>
 <div id="app"></div>
@@ -980,7 +979,11 @@ function loginView() {
       </form>
       <h3 class="mt">Demo accounts · tap one to fill in</h3>
       <div class="accounts">${accts}</div>
-      <div class="disclaimer">Demo only. All patients and staff are fictional. This is not a medical device and must not be used for real patient care.</div>
+      <div class="disclaimer">
+        <p style="margin:0 0 8px"><b>Demo only.</b> All patients and staff here are fictional.</p>
+        <p style="margin:0 0 8px"><b>Works online and offline.</b> With a connection, every registration, result and discharge is saved to the central database straight away. When the internet drops, staff keep working on the same phone or tablet: each change is saved on the device and queued, then sent automatically when the connection returns, with nothing to re-enter.</p>
+        <p style="margin:0"><b>Runs inside Microsoft 365.</b> The system is designed to run inside the organisation's own Microsoft 365 environment: staff sign in with their work account and patient data is stored in Microsoft Dataverse. This demo saves only to this device.</p>
+      </div>
     </div>
     <div class="offline-note">${ic('wifioff', 'sm')} Works without internet once it has been opened</div>
   </div>`;

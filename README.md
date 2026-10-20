@@ -6,8 +6,6 @@ Emergency medical tents: know every patient's status. A patient flow system for 
 
 **Try it:** https://mahassira.github.io/emergency-field-hospital/
 
-**Microsoft-style version:** https://mahassira.github.io/emergency-field-hospital/fluent/ (the same system and data, in the look of Microsoft 365 apps)
-
 I worked in Gaza with International Medical Corps when we set up a field hospital during the war. This is a demo of the kind of system I wish we'd had from day one: one patient file that follows the person from the registration tent to the ward.
 
 ## Demo accounts
