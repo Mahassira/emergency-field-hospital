@@ -96,3 +96,5 @@ Plain HTML, CSS and JavaScript, a service worker for offline use.
 ---
 
 Demo only. Every patient and staff member is fictional. Not a medical device, and not for real patient care.
+
+© 2026 Mahassira. All rights reserved.

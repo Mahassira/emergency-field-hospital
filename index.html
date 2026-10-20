@@ -204,6 +204,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
 .err{color:var(--red);font-size:13px;margin:4px 0 10px;min-height:18px}
 .offline-note{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--muted);font-size:12.5px;margin-top:14px}
 .offline-note .ic{color:var(--accent)}
+.copyright{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
 
 /* modal */
 .scrim{position:fixed;inset:0;background:rgba(17,38,58,.45);display:flex;align-items:flex-end;justify-content:center;z-index:50;padding:0}
@@ -988,6 +989,7 @@ function loginView() {
       </div>
     </div>
     <div class="offline-note">${ic('wifioff', 'sm')} Works without internet once it has been opened</div>
+    <div class="copyright">© 2026 Mahassira. All rights reserved.</div>
   </div>`;
 }
 
@@ -1100,7 +1102,7 @@ function shell(inner) {
   </div></header>
   <nav class="nav ${hideMobileNav ? 'm-hide' : ''}"><div class="wrap">${tabs}${more}</div></nav>
   <main><div class="wrap">${inner}
-    <div class="foot"><img src="tent.png" alt=""><span>Demo with fictional data. Changes stay on this device.</span><a href="#" class="d-only" onclick="resetDemo();return false">Reset demo data</a></div>
+    <div class="foot"><img src="tent.png" alt=""><span>Demo with fictional data. Changes stay on this device. © 2026 Mahassira. All rights reserved.</span><a href="#" class="d-only" onclick="resetDemo();return false">Reset demo data</a></div>
   </div></main>`;
 }
 
