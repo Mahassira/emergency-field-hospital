@@ -50,7 +50,7 @@ One file per patient, filled in by each tent along the way:
 - **Staff:** doctors, nurses, midwives, lab staff, registration and support staff check in and out of their shift. The registration desk and the site manager see at a glance who is on duty, who arrived late, who is absent and who is on leave.
 - **Patients:** who is in each tent right now, and which follow-up visits were attended or missed.
 
-## Runs inside your Microsoft 365 environment
+## Runs inside the Microsoft 365 environment
 
 <p align="center"><img src="docs/ms-power-platform.jpg" alt="Microsoft Power Platform" width="640"></p>
 
