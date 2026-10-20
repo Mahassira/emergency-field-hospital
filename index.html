@@ -399,7 +399,130 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
   .printable,.printable *{visibility:visible}
   .printable{position:fixed;left:0;top:0;width:100%}
 }
+
+/* ---------- Microsoft Fluent look (used at /fluent/) ---------- */
+html.fluent{
+  --bg:#f5f5f5; --surface:#ffffff; --surface-2:#f5f5f5; --line:#e0e0e0;
+  --text:#242424; --muted:#616161; --primary:#0f6cbd; --primary-ink:#ffffff; --primary-soft:#ebf3fc;
+  --accent:#0f6cbd; --accent-ink:#0f6cbd; --accent-soft:#ebf3fc;
+  --red:#c50f1f; --red-soft:#fdf3f4; --amber:#835b00; --amber-soft:#fef7e7; --green:#0e700e; --green-soft:#f1faf1;
+  --radius:8px; --shadow:0 1px 2px rgba(0,0,0,.12),0 0 2px rgba(0,0,0,.08);
+}
+.fluent body{font-family:"Segoe UI","Segoe UI Variable",system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:14px}
+.fluent a{color:#0f6cbd}
+.fluent .top{box-shadow:none}
+.fluent .top .wrap{min-height:48px;max-width:none;padding:0 12px}
+.fluent .brand{font-weight:600;letter-spacing:0}
+.fluent .brand .mark{width:40px;height:32px;border-radius:4px;background:#fff}
+.fluent .brand .mark img{width:34px}
+.fluent .brand .bname small{letter-spacing:.4px;text-transform:none;font-size:12px;font-weight:400}
+.fluent .pill.on{background:rgba(255,255,255,.16)}
+.fluent .pill.on .dot{background:#54b054}
+.fluent .iconbtn{border-radius:4px;background:transparent}
+.fluent .iconbtn:hover{background:rgba(255,255,255,.14)}
+.fluent .avatar{background:#fff;color:#0f6cbd}
+.fluent .backbtn{border-radius:4px}
+.fluent h1{color:#242424;font-weight:600;font-size:20px;letter-spacing:0}
+.fluent h2,.fluent h3{color:#242424;font-weight:600}
+.fluent .card,.fluent .tile,.fluent .pcard,.fluent .srow,.fluent .empty{border:0;border-radius:8px;box-shadow:var(--shadow)}
+.fluent .empty{border:1px dashed #d1d1d1;box-shadow:none}
+.fluent .pcard{padding:10px 12px 10px 0}
+.fluent .pcard:hover{transform:none;background:#fafafa}
+.fluent .pcard .name{color:#242424;font-weight:600}
+.fluent .pcard .bar{width:4px}
+.fluent .tile .tic{border-radius:4px;background:#ebf3fc;color:#0f6cbd}
+.fluent .tile .n{color:#242424;font-weight:600}
+.fluent .tile.red .n{color:var(--red)}
+.fluent .tile.amber .n{color:var(--amber)}
+.fluent .secthead .ic,.fluent .formsec .ic,.fluent .where .ic{color:#0f6cbd}
+.fluent .tri{text-transform:capitalize;letter-spacing:0;font-weight:600;font-size:12px}
+.fluent .badge{border-radius:4px}
+.fluent .mrnline{color:#616161;font-family:Consolas,"Cascadia Mono",ui-monospace,monospace}
+.fluent .where{color:#242424;font-weight:600}
+/* buttons */
+.fluent .btn{border-radius:4px;min-height:32px;padding:5px 12px;border-color:#d1d1d1;color:#242424;font-weight:600;background:#fff}
+.fluent .btn:hover{background:#f5f5f5;border-color:#c7c7c7}
+.fluent .btn .ic{color:#0f6cbd}
+.fluent .btn.primary{background:#0f6cbd;border-color:#0f6cbd;color:#fff}
+.fluent .btn.primary .ic{color:#fff}
+.fluent .btn.primary:hover{background:#115ea3}
+.fluent .btn.danger{color:#c50f1f;border-color:#d1d1d1}
+.fluent .btn.danger .ic{color:#c50f1f}
+/* patient commands become a command bar */
+.fluent .actions{background:#fff;border-radius:4px;box-shadow:var(--shadow);padding:4px;gap:2px}
+.fluent .actions .btn{border:0;background:transparent;font-weight:400;min-height:32px;padding:4px 10px}
+.fluent .actions .btn:hover{background:#f0f0f0}
+.fluent .actions .btn.primary{background:#0f6cbd;color:#fff;font-weight:600}
+/* forms */
+.fluent label{color:#424242;font-weight:600}
+.fluent input[type=text],.fluent input[type=number],.fluent input[type=password],.fluent input[type=tel],.fluent select,.fluent textarea{border-radius:4px;border:1px solid #d1d1d1;border-bottom-color:#616161;min-height:36px;padding:6px 10px}
+.fluent input:focus,.fluent select:focus,.fluent textarea:focus{outline:0;border-color:#d1d1d1;border-bottom:2px solid #0f6cbd}
+.fluent .choice label{border-radius:4px;border-color:#d1d1d1;font-weight:400;padding:6px 12px}
+.fluent .choice input:checked+label{font-weight:600}
+/* vitals, beds, timeline, notes */
+.fluent .vitals div{border-radius:4px;background:#fafafa;border:1px solid #f0f0f0}
+.fluent .vitals b{color:#242424;font-weight:600}
+.fluent .bed{border-radius:4px;border-color:#e0e0e0}
+.fluent .bed.occ{background:#0f6cbd;border-color:#0f6cbd}
+.fluent .bed.free .who{color:#0e700e}
+.fluent .timeline li::before{border-color:#0f6cbd}
+.fluent .note{background:#f5f9fd;border-left-color:#0f6cbd}
+.fluent .alertbar{border-radius:4px;border:1px solid #eeacb2;font-weight:600}
+.fluent .kv>div:nth-child(odd){color:#616161;font-weight:400}
+.fluent .track .c{background:#0f6cbd} .fluent .track .w{background:#9fc5ec}
+.fluent .tentrow .num{border-radius:4px;background:#ebf3fc;color:#0f6cbd}
+/* segmented control becomes tabs */
+.fluent .seg{background:transparent;border-bottom:1px solid #e0e0e0;border-radius:0;padding:0;gap:16px}
+.fluent .seg button{flex:0 0 auto;border-radius:0;padding:10px 2px;font-weight:400;color:#424242}
+.fluent .seg button.on{background:transparent;box-shadow:inset 0 -3px 0 #0f6cbd;color:#242424;font-weight:600}
+.fluent .chips button{border-radius:4px}
+.fluent .chips button.on{background:#0f6cbd;border-color:#0f6cbd}
+.fluent .myshift{border-radius:8px;background:#0f6cbd}
+.fluent .myshift .btn{border-radius:4px}
+/* sheets, modals, toast */
+.fluent .scrim{background:rgba(0,0,0,.4)}
+.fluent .modal{border-radius:12px 12px 0 0}
+@media(min-width:640px){.fluent .modal{border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.24)}}
+.fluent .sheetlist button{border-radius:4px;background:#f5f5f5;color:#242424;font-weight:400}
+.fluent .sheetlist button .ic{color:#0f6cbd}
+.fluent .toast{background:#242424;border-radius:4px}
+.fluent .toast .ic{color:#54b054}
+/* sign-in page keeps the EMT TentCare brand, in Fluent colours */
+.fluent .login{background:#f5f5f5}
+.fluent .login .box{border:0;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.14),0 0 2px rgba(0,0,0,.12)}
+.fluent .accounts button{border-radius:4px;background:#f5f5f5}
+.fluent .accounts button:hover{background:#ebebeb;border-color:transparent}
+.fluent .accounts .aic{border-radius:4px;color:#0f6cbd}
+.fluent .accounts .atext b{color:#242424}
+/* navigation: tabs on tablets, a left side menu from 900px */
+@media(min-width:721px){.fluent .nav{top:48px}}
+.fluent .nav button{font-weight:400;color:#424242}
+.fluent .nav button .ic{color:#616161}
+.fluent .nav button.active{color:#0f6cbd;font-weight:600;border-bottom-color:#0f6cbd}
+.fluent .nav button.active .ic{color:#0f6cbd}
+.fluent .nav .count{background:#f0f0f0;color:#424242}
+.fluent .nav button.active .count{background:#0f6cbd;color:#fff}
+@media(min-width:900px){
+  .fluent .nav{position:fixed;top:48px;left:0;bottom:0;width:240px;border-bottom:0;border-right:1px solid #e0e0e0;background:#fafafa;overflow-y:auto;z-index:18}
+  .fluent .nav .wrap{flex-direction:column;align-items:stretch;padding:8px;gap:2px;max-width:none;overflow:visible}
+  .fluent .nav button{border-bottom:0;border-radius:4px;padding:8px 12px;justify-content:flex-start;font-size:14px}
+  .fluent .nav button:hover{background:#ebebeb}
+  .fluent .nav button.active{background:#ebf3fc;box-shadow:inset 3px 0 0 #0f6cbd}
+  .fluent .nav .count{margin-left:auto}
+  .fluent main{margin-left:240px}
+  .fluent main .wrap{max-width:1200px;padding:0 28px}
+  .fluent .toast{left:calc(50% + 120px)}
+}
+@media(max-width:720px){
+  .fluent .nav{background:#fff}
+  .fluent .nav button{font-size:11px}
+  .fluent .nav button.active{border-top-color:#0f6cbd}
+  .fluent .nav .count{background:#0f6cbd;color:#fff}
+  .fluent .card{border-radius:8px}
+  .fluent .actionbar .btn{border-radius:4px}
+}
 </style>
+<script>if(/\/fluent(\/|$)/.test(location.pathname)){document.documentElement.classList.add('fluent');var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content='#0f6cbd';}</script>
 </head>
 <body>
 <div id="app"></div>
