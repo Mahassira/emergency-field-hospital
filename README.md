@@ -52,6 +52,13 @@ Based on the WHO Emergency Care Toolkit (Acute Referral Form, Acute Transfer Che
 - **After the transfer:** record when the patient left, the arrival time and status (Stable, Unstable, Dead), then the counter-referral from the receiving facility.
 - **Ward beds:** a bed goes to "Cleaning" when a patient leaves, and the nurse marks it ready. The Excel export has an "External referrals" sheet.
 
+## Triage and mass casualties
+
+- **Triage criteria:** the registration form lists the high-risk red signs and high-risk trauma from the WHO trauma form (Emergency Care Toolkit). Any red sign suggests Red, and any high-risk trauma suggests at least Yellow. An adult pulse under 50 or over 150 ticks its sign automatically. Choosing a lower colour gives a warning, and if the clerk keeps it, the file records it as clinical judgement.
+- **Dead on arrival** is a triage choice. The patient is recorded but not sent to a tent.
+- **Mass casualty mode:** reception or admin starts it with an incident name. Every user then sees a red banner with counts by colour. Registration drops to triage colour, sex and age group. Each patient gets a temporary ID (MCI-001…), and Red and Yellow go to Emergency, Green to Outpatients. Staff can find the patient by the temporary ID and press **Identify patient** later. The file number stays the same.
+- New visit outcomes: **Left without being seen** and **Died**.
+
 ## Attendance
 
 <p align="center"><img src="docs/screen-attendance-phone.png" alt="Attendance on a phone" width="300"> &nbsp; <img src="docs/screen-er-phone.png" alt="Emergency queue on a phone" width="300"></p>

@@ -233,6 +233,32 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
 .refprint td:first-child{width:32%;font-weight:600;background:#f5f5f5}
 @media(max-width:720px){.abcde{grid-template-columns:1fr auto;padding-bottom:8px;border-bottom:1px solid var(--line)}.abcde input[type=text]{grid-column:1 / -1}}
 .abcde .checkline{white-space:nowrap}
+.tri.black{color:#fff;background:#242424}
+.pcard .bar.black{background:#242424}
+.tdot.black{background:#242424}
+.choice.tri-pick input:checked+label.k{border-color:#242424;background:#242424;color:#fff}
+details.crit{border:1px solid var(--line);border-radius:6px;padding:0 12px;margin:4px 0 12px;background:var(--surface)}
+details.crit summary{cursor:pointer;padding:10px 0;font-weight:600;font-size:14px;list-style:none;display:flex;gap:8px;align-items:center}
+details.crit summary::-webkit-details-marker{display:none}
+details.crit summary::before{content:'▸';color:var(--muted);transition:transform .15s}
+details.crit[open] summary::before{transform:rotate(90deg)}
+details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
+.critcols{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;padding-bottom:10px}
+.critcols h4{margin:10px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.critcols h3{margin:6px 0 0;font-size:13.5px}
+@media(max-width:720px){.critcols{grid-template-columns:1fr}}
+.tri-hint{font-size:13.5px;font-weight:600;padding:8px 12px;border-radius:6px;margin:0 0 10px;display:none}
+.tri-hint.red{display:block;background:var(--red-soft);color:var(--red)}
+.tri-hint.yellow{display:block;background:var(--amber-soft);color:var(--amber)}
+.mcibar{background:#a4262c;color:#fff;font-size:13.5px;border-radius:6px;margin:0 0 16px;display:flex;gap:10px 12px;align-items:center;flex-wrap:wrap;padding:9px 12px}
+.mcibar b{letter-spacing:.3px}
+.mcibar .cts{display:flex;gap:6px;flex-wrap:wrap}
+.mcibar .cts span{background:rgba(255,255,255,.18);border-radius:999px;padding:1px 9px;font-size:12px}
+.mcibar button{margin-left:auto;background:#fff;color:#a4262c;border:0;border-radius:4px;padding:4px 10px;font-weight:600;cursor:pointer;font-size:12.5px}
+.fast .choice label{min-height:52px;font-size:15px}
+.fast .tri-pick label{min-width:120px;justify-content:center}
+.recent{margin-top:14px}
+.recent .order{padding:8px 0}
 .copyright{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
 
 /* modal */
@@ -627,7 +653,7 @@ const USERS = {
 const PASSWORD = 'demo123';
 const DOMAIN = 'emttentcare.com';
 
-const VISIT_OUTCOMES = ['Discharged with medication', 'Discharged without medication', 'Transferred to another facility', 'Left against medical advice'];
+const VISIT_OUTCOMES = ['Discharged with medication', 'Discharged without medication', 'Transferred to another facility', 'Left against medical advice', 'Left without being seen', 'Died'];
 const SYSTEMS = ['General', 'Respiratory', 'Cardiovascular', 'Abdominal', 'Musculoskeletal', 'Neurological', 'Skin & wounds', 'Obstetric & gynaecological', 'ENT & eyes'];
 const EMERG_CAT = ['Trauma', 'Medical', 'Surgical', 'Obstetric', 'Paediatric', 'Burns', 'Mental health', 'Not an emergency'];
 const SRH = ['None', 'Antenatal care', 'Delivery care', 'Postnatal care', 'Family planning', 'GBV clinical care'];
@@ -656,7 +682,7 @@ function save() { store(KEY, JSON.stringify(S)); }
 function load() {
   try {
     const d = JSON.parse(read(KEY));
-    if (d && d.v === 4) { S = d; ensureAttendance(); return d; }
+    if (d && d.v === 5) { S = d; ensureAttendance(); return d; }
   } catch (e) {}
   return seed();
 }
@@ -703,7 +729,23 @@ function log(pid, text, by) {
 function pendingOrders(pid) { return S.orders.filter(o => o.pid === pid && o.status === 'requested'); }
 function freeBeds() { return S.beds.map((b, i) => b || (S.bedClean && S.bedClean[i]) ? null : i + 1).filter(Boolean); }
 function releaseBed(n) { if (!n) return; S.beds[n - 1] = null; S.bedClean[n - 1] = true; }
-const triOrder = { red: 0, yellow: 1, green: 2 };
+const triOrder = { red: 0, yellow: 1, green: 2, black: 3 };
+const TRI_NAME = { red: 'Red', yellow: 'Yellow', green: 'Green', black: 'Dead on arrival' };
+// High-risk signs and high-risk trauma, from the WHO Emergency Care Toolkit trauma form (Emergency Unit Form: Trauma).
+const RED_SIGNS = [
+  ['A/B', ['Stridor, cyanosis or respiratory distress']],
+  ['C', ['Poor perfusion, weak fast pulse, capillary refill over 3 s, or heavy bleeding', 'Adult: pulse under 50 or over 150', 'Child over 2: lethargy, sunken eyes, slow skin pinch, poor drinking']],
+  ['D', ['Unresponsive', 'Acute convulsions', 'Hypoglycaemia', 'Acute focal neurologic deficit', 'Altered mental status with fever, hypothermia, stiff neck or headache']],
+  ['Other', ['Threatened limb', 'Snake bite', 'Poisoning, ingestion or chemical exposure', 'Violent or aggressive', 'Acute testicular pain or priapism', 'Adult: severe chest or abdominal pain, or ECG with ischaemia', 'Pregnant with high-risk findings', 'Infant under 8 days old', 'Infant under 2 months with temperature over 39 °C or under 36 °C']]
+];
+const TRAUMA_SIGNS = [
+  ['General trauma', ['Fall from more than twice the person\'s height', 'Penetrating trauma (except below the knee or elbow)', 'Penetrating trauma below the knee or elbow with uncontrolled bleeding', 'Crush injury', 'Polytrauma (injury to several body areas)', 'Bleeding disorder or on anticoagulation', 'Pregnant']],
+  ['Road traffic', ['High-speed motor vehicle crash', 'Pedestrian or cyclist hit by a vehicle', 'Another person in the same vehicle died at the scene', 'Motor vehicle crash without a seatbelt', 'Trapped or thrown from a vehicle (including motorcycle)']]
+];
+const RED_LIST = RED_SIGNS.flatMap(g => g[1]);
+const TRAUMA_LIST = TRAUMA_SIGNS.flatMap(g => g[1]);
+const sexTxt = p => p.sex === 'F' ? 'Female' : p.sex === 'M' ? 'Male' : 'Unknown';
+const ageTxt = p => p.ageGroup ? p.ageGroup : p.age + ' y';
 
 function toast(msg) {
   document.querySelectorAll('.toast').forEach(t => t.remove());
@@ -716,7 +758,7 @@ function toast(msg) {
 
 /* ---------- seed data (fictional) ---------- */
 function seed() {
-  S = { v: 4, seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), bedClean: Array(BEDS).fill(false), referrals: [], staff: [], att: null, followups: [] };
+  S = { v: 5, mci: null, mcis: [], seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), bedClean: Array(BEDS).fill(false), referrals: [], staff: [], att: null, followups: [] };
   const V = (bp, hr, t, s, rr, height, weight, muac) => ({ bp, hr, temp: t, spo2: s, rr, height: height || '', weight: weight || '', muac: muac || '' });
 
   function add(p) {
@@ -1147,7 +1189,7 @@ function shell(inner) {
     <button class="iconbtn d-only" onclick="logout()" title="Sign out" aria-label="Sign out">${ic('logout')}</button>
   </div></header>
   <nav class="nav ${hideMobileNav ? 'm-hide' : ''}"><div class="wrap">${tabs}${more}</div></nav>
-  <main><div class="wrap">${inner}
+  <main><div class="wrap">${mciBar()}${inner}
     <div class="foot"><img src="tent.png" alt=""><span>Demo with fictional data. Changes stay on this device. © 2026 Mahassira. All rights reserved.</span><a href="#" class="d-only" onclick="resetDemo();return false">Reset demo data</a></div>
   </div></main>`;
 }
@@ -1163,6 +1205,8 @@ function patientCard(p, opts = {}) {
     pend ? `<span class="badge warn">${pend} result${pend > 1 ? 's' : ''} pending</span>` : '',
     !pend && done ? '<span class="badge ok">Results ready</span>' : '',
     p.pregnant ? '<span class="badge preg">Pregnant</span>' : '',
+    p.unidentified && p.triage !== 'black' ? '<span class="badge warn">Not identified</span>' : '',
+    p.triageCriteria && p.triageCriteria.red.length ? '<span class="badge allergy">Red sign</span>' : p.triageCriteria && p.triageCriteria.trauma.length ? '<span class="badge warn">High-risk trauma</span>' : '',
     hasAllergy(p) ? '<span class="badge allergy">Allergy</span>' : '',
     p.dischargeApproved && p.state !== 'discharged' ? '<span class="badge warn">Discharge approved</span>' : '',
     (p.visitNo || 1) > 1 ? `<span class="badge">Visit ${p.visitNo}</span>` : '',
@@ -1173,11 +1217,11 @@ function patientCard(p, opts = {}) {
     <span class="bar ${p.triage || 'none'}"></span>
     <span class="main">
       <span class="name">${esc(p.name)}</span>
-      <div class="meta">${p.id} · ${p.age} y · ${p.sex === 'F' ? 'Female' : 'Male'}${opts.showTent ? ' · ' + (p.state === 'discharged' ? 'Discharged · last in ' + esc(tentLabel(p.location)) : esc(tentLabel(p.location))) : ''}</div>
+      <div class="meta">${p.id}${p.tempId ? ' · ' + p.tempId : ''} · ${ageTxt(p)} · ${sexTxt(p)}${opts.showTent ? ' · ' + (p.state === 'discharged' ? 'Discharged · last in ' + esc(tentLabel(p.location)) : esc(tentLabel(p.location))) : ''}</div>
       <div class="cc">${esc(p.complaint)}</div>
       <div class="row" style="gap:6px;margin-top:6px">${badges}</div>
     </span>
-    <span class="side"><span class="tri ${p.triage}">${p.triage}</span><span class="wait">${ic('clock', 'sm')}${p.state === 'discharged' ? fmtTime(p.createdAt) : since(p.movedAt || p.createdAt)}</span></span>
+    <span class="side"><span class="tri ${p.triage}">${p.triage === 'black' ? 'dead' : p.triage}</span><span class="wait">${ic('clock', 'sm')}${p.state === 'discharged' ? fmtTime(p.createdAt) : since(p.movedAt || p.createdAt)}</span></span>
   </button>`;
 }
 function sortQueue(list) {
@@ -1216,6 +1260,7 @@ function dashView() {
     <div class="tiles">
       ${tile('users', active.length, 'Patients in the hospital')}
       ${tile('alert', red, 'Red (immediate) cases', 'red')}
+      ${mciActive() ? tile('users', mciPatients().length, 'Mass casualty patients', 'red') : ''}
       ${tile('bed', `${occ}<span class="small muted">/${BEDS}</span>`, 'Ward beds occupied')}
       ${tile('flask', pend, 'Lab & X-ray results pending')}
       ${tile('userplus', today, 'Registered today')}
@@ -1232,14 +1277,118 @@ function dashView() {
     <div class="row mt"><button class="btn" onclick="exportData()">${ic('download')}Export to Excel</button><span class="small muted">In a real deployment, this file would sync to the central server when the connection returns.</span></div>`;
 }
 
+const mciActive = () => S.mci && S.mci.on;
+const mciPatients = () => S.patients.filter(p => S.mci && p.mci === S.mci.id);
+function mciStartForm() {
+  modal('Start mass casualty mode', `<form onsubmit="mciStart(event)" novalidate>
+    <p class="small">Use this when many patients arrive at once. Registration drops to the minimum: triage colour, sex and age group. Each patient gets a temporary ID (MCI-001, MCI-002…) and is identified later. Every user sees a red banner until the incident is closed.</p>
+    <div class="field"><label for="mci-name">Incident</label><input id="mci-name" type="text" placeholder="e.g. Market explosion, north camp"></div>
+    <div class="form-msg"></div><button class="btn danger">Start mass casualty mode</button></form>`);
+}
+function mciStart(e) {
+  e.preventDefault();
+  const n = $('#mci-name').value.trim();
+  if (!formGate(e.target, n ? [] : ['Write a short name for the incident.'], [])) return;
+  S.mcis = S.mcis || [];
+  S.mci = { id: 'MCI' + (S.mcis.length + 1), on: true, name: n, by: me.name, at: nowISO(), seq: 0 };
+  S.mcis.push(S.mci);
+  S.log.unshift({ t: nowISO(), pid: '', text: `Mass casualty mode started: ${n}.`, by: me.name });
+  view = { name: 'register' };
+  done('Mass casualty mode on');
+}
+function mciEnd() {
+  const open = mciPatients().filter(p => p.unidentified && p.triage !== 'black').length;
+  modal('Close the incident', `<p>${mciPatients().length} patients were registered under "${esc(S.mci.name)}".${open ? ` <b>${open} are still not identified.</b> They keep their temporary ID and can be identified later.` : ''}</p>
+    <div class="row"><button class="btn primary" onclick="mciClose()">Close incident and return to normal registration</button><button class="btn" onclick="closeModal()">Keep open</button></div>`);
+}
+function mciClose() {
+  S.mci.on = false; S.mci.endedAt = nowISO(); S.mci.endedBy = me.name;
+  S.log.unshift({ t: nowISO(), pid: '', text: `Mass casualty incident closed: ${S.mci.name}. ${mciPatients().length} patients.`, by: me.name });
+  done('Incident closed');
+}
+function mciBar() {
+  if (!mciActive()) return '';
+  const ps = mciPatients(), c = t => ps.filter(p => p.triage === t).length;
+  const canEnd = me.role === 'admin' || me.role === 'reception';
+  return `<div class="mcibar" role="status">${ic('alert', 'sm')}<b>MASS CASUALTY · ${esc(S.mci.name)}</b><span>since ${fmtTime(S.mci.at)}</span>
+    <span class="cts"><span>${ps.length} patients</span><span>Red ${c('red')}</span><span>Yellow ${c('yellow')}</span><span>Green ${c('green')}</span><span>Dead ${c('black')}</span><span>Not identified ${ps.filter(p => p.unidentified && p.triage !== 'black').length}</span></span>
+    ${canEnd ? '<button onclick="mciEnd()">Close incident</button>' : ''}</div>`;
+}
+function fastRegisterView() {
+  const recent = mciPatients().slice(-6).reverse().map(p => `<div class="order"><div><b>${p.tempId}</b> <span class="tri ${p.triage}">${p.triage === 'black' ? 'dead' : p.triage}</span><div class="small muted">${esc(sexTxt(p))} · ${esc(p.ageGroup)} · ${p.triage === 'black' ? 'Dead on arrival' : esc(tentLabel(p.location))} · ${fmtTime(p.createdAt)}</div></div><button class="btn sm" onclick="wristband('${p.id}')">Wristband</button></div>`).join('');
+  return `
+    <div class="row between"><div><h1>Fast registration</h1><p class="sub">Mass casualty mode. Minimum data now, full details when the patient is identified.</p></div><button class="btn" onclick="regFull=true;render()">Full registration</button></div>
+    <form class="card fast" onsubmit="doFastRegister(event)" novalidate>
+      <div class="field"><label>Triage</label><div class="choice tri-pick">${triageFields('', true)}</div></div>
+      <div class="fgrid">
+        <div class="field"><label>Sex</label><div class="choice">${[['F', 'Female'], ['M', 'Male'], ['U', 'Unknown']].map(([v, l]) => `<input type="radio" name="fsex" id="fs-${v}" value="${v}"><label for="fs-${v}">${l}</label>`).join('')}</div></div>
+        <div class="field"><label>Age group</label><div class="choice">${['Infant', 'Child', 'Adult', 'Older adult'].map((l, i) => `<input type="radio" name="fage" id="fa${i}" value="${l}"><label for="fa${i}">${l}</label>`).join('')}</div></div>
+      </div>
+      <div class="field"><label for="f-inj">Main injury or what you see (optional)</label><input id="f-inj" type="text" placeholder="e.g. burns to arms, bleeding left leg"></div>
+      <p class="small muted">Red and Yellow go to Tent 2 · Emergency. Green goes to Tent 3 · Outpatient Clinics. Dead on arrival is recorded and not sent to a tent.</p>
+      <div class="form-msg"></div>
+      <button class="btn primary">${ic('check')}Register and next</button>
+    </form>
+    ${recent ? `<div class="card recent"><div class="secthead">${ic('clock')}<h2>Just registered</h2></div>${recent}</div>` : ''}`;
+}
+let regFull = false;
+function doFastRegister(e) {
+  e.preventDefault();
+  const f = e.target, tri = f.triage.value, sx = f.fsex.value, ag = f.fage.value;
+  const errs = [];
+  if (!tri) errs.push('Choose the triage colour.');
+  if (!sx) errs.push('Choose the sex, or Unknown.');
+  if (!ag) errs.push('Choose the age group.');
+  if (!formGate(f, errs, [])) return;
+  S.mci.seq += 1;
+  const tempId = 'MCI-' + String(S.mci.seq).padStart(3, '0');
+  createPatient({
+    name: 'Unidentified · ' + tempId, age: { Infant: 0, Child: 8, Adult: 30, 'Older adult': 70 }[ag], ageGroup: ag, sex: sx, pregnant: false,
+    allergy: { st: 'unknown', txt: '' }, phone: '', shelter: '', complaint: $('#f-inj').value.trim() || 'Mass casualty: ' + S.mci.name,
+    triage: tri, vitals: {}, location: tri === 'green' ? 'OPD' : 'ER', tempId, mci: S.mci.id, fast: true,
+    criteria: null
+  });
+}
+function identifyForm(id) {
+  const p = pat(id);
+  modal('Identify patient', `<form onsubmit="saveIdentify(event,'${id}')" novalidate>
+    <p class="small muted">${p.tempId} keeps the same file (${p.id}). The temporary ID stays on record so nothing is lost.</p>
+    <div class="field"><label for="id-name">Full name</label><input id="id-name" type="text"></div>
+    <div class="fgrid">
+      <div class="field"><label for="id-age">Age (years)</label><input id="id-age" type="number" min="0" max="120"></div>
+      <div class="field" style="grid-column:span 2"><label>Gender</label><div class="choice"><input type="radio" name="isex" id="is-f" value="F" ${p.sex === 'F' ? 'checked' : ''}><label for="is-f">Female</label><input type="radio" name="isex" id="is-m" value="M" ${p.sex === 'M' ? 'checked' : ''}><label for="is-m">Male</label></div></div>
+      <div class="field"><label for="id-phone">Phone or family contact</label><input id="id-phone" type="tel"></div>
+      <div class="field"><label for="id-shelter">Shelter or area</label><input id="id-shelter" type="text"></div>
+    </div>
+    <div class="form-msg"></div><button class="btn primary">Save identity</button></form>`);
+}
+function saveIdentify(e, id) {
+  e.preventDefault();
+  const f = e.target, p = pat(id);
+  const name = $('#id-name').value.trim(), age = $('#id-age').value;
+  const errs = [];
+  if (!name) errs.push('Write the patient\'s full name.');
+  if (age === '' || Number(age) < 0 || Number(age) > 120) errs.push('Write an age between 0 and 120.');
+  if (!f.isex.value) errs.push('Choose the gender.');
+  const others = S.patients.filter(q => q.id !== id && normName(q.name) === normName(name) && q.sex === f.isex.value && Math.abs(q.age - Number(age)) <= 1);
+  const warns = others.length ? [`${others.map(q => q.name + ' (' + q.id + ')').join(', ')} already has a file with the same name, sex and similar age. If it is the same person, tell the records officer so the files can be linked.`] : [];
+  if (!formGate(f, errs, warns)) return;
+  p.name = name; p.age = Number(age); p.ageGroup = ''; p.sex = f.isex.value; p.unidentified = false;
+  p.phone = $('#id-phone').value.trim() || p.phone; p.shelter = $('#id-shelter').value.trim() || p.shelter;
+  log(id, `Identified as ${name} (was ${p.tempId}). Recorded by ${me.name}.`);
+  done('Patient identified');
+}
+
 function registerView() {
-  const triPick = triageFields('');
+  if (mciActive() && !regFull) return fastRegisterView();
+  const triPick = triageFields('', true);
   const dest = CLINICAL.map((id, i) =>
     `<input type="radio" name="dest" id="d-${id}" value="${id}" ${i === 0 ? 'checked' : ''}><label for="d-${id}">Tent ${tent(id).no} · ${tent(id).name}</label>`).join('');
   return `
-    <h1>Register a patient</h1>
-    <p class="sub">Tent 1 · Registration & Triage. The patient gets a file number and goes straight to the chosen tent's queue.</p>
-    <form class="card" onsubmit="doRegister(event)" oninput="this.dataset.warned=''" novalidate>
+    <div class="row between"><div><h1>Register a patient</h1>
+    <p class="sub">Tent 1 · Registration & Triage. The patient gets a file number and goes straight to the chosen tent's queue.</p></div>
+    ${mciActive() ? '<button class="btn" onclick="regFull=false;render()">Back to fast registration</button>' : (me.role === 'reception' || me.role === 'admin') ? `<button class="btn danger" onclick="mciStartForm()">${ic('alert')}Mass casualty mode</button>` : ''}</div>
+    <form class="card" onsubmit="doRegister(event)" oninput="this.dataset.warned='';triageHint()" novalidate>
       <div class="formsec">${ic('user')}<h2>Patient</h2></div>
       <div class="field"><label for="r-name">Full name</label><input id="r-name" type="text" required></div>
       <div class="fgrid">
@@ -1252,6 +1401,7 @@ function registerView() {
       ${allergyField(null)}
       <p class="small muted" style="margin:-4px 0 0">Admission date: ${fmtDay(dayKey())}, recorded automatically.</p>
       <div class="formsec">${ic('alert')}<h2>Triage</h2></div>
+      ${criteriaFields()}
       <div class="field choice tri-pick">${triPick}</div>
       ${vitalsFields()}
       <div class="formsec">${ic('tent')}<h2>Send to</h2></div>
@@ -1261,6 +1411,7 @@ function registerView() {
     </form>`;
 }
 /* ---------- validation ---------- */
+
 function checkVitals(v) {
   const E = [], Wn = [];
   const num = (val, name, lo, hi, wlo, whi, unit) => {
@@ -1337,10 +1488,42 @@ function vitalsFields(v) {
     <div class="field"><label for="v-muac">MUAC cm</label><input id="v-muac" type="number" step="0.1" min="5" max="50" placeholder="children, pregnancy" value="${esc(v.muac)}"></div>
   </div>`;
 }
-function triageFields(cur) {
-  return ['red', 'yellow', 'green'].map((t, i) =>
-    `<input type="radio" name="triage" id="t-${t}" value="${t}" ${cur === t ? 'checked' : ''} ${i === 0 ? 'required' : ''}><label for="t-${t}" class="${t[0]}">${['Red · immediate', 'Yellow · urgent', 'Green · non-urgent'][i]}</label>`).join('');
+function triageFields(cur, withDoa) {
+  const opts = [['red', 'Red · immediate', 'r'], ['yellow', 'Yellow · urgent', 'y'], ['green', 'Green · non-urgent', 'g']].concat(withDoa ? [['black', 'Dead on arrival', 'k']] : []);
+  return opts.map(([t, l, c], i) =>
+    `<input type="radio" name="triage" id="t-${t}" value="${t}" ${cur === t ? 'checked' : ''} ${i === 0 ? 'required' : ''}><label for="t-${t}" class="${c}">${l}</label>`).join('');
 }
+function criteriaFields() {
+  const grp = (list, pre) => list.map(([g, items]) => `<h4>${g}</h4>` + items.map(t => {
+    const i = (pre === 'rs' ? RED_LIST : TRAUMA_LIST).indexOf(t);
+    return `<label><input type="checkbox" id="${pre}${i}" onchange="triageHint()">${esc(t)}</label>`;
+  }).join('')).join('');
+  return `<details class="crit" id="crit"><summary>Triage criteria · WHO Emergency Care Toolkit <span class="cnt" id="crit-n">None ticked</span></summary>
+    <div class="critcols checks">
+      <div><h3>High-risk red signs</h3><p class="small muted" style="margin:2px 0 0">Any one means Red.</p>${grp(RED_SIGNS, 'rs')}</div>
+      <div><h3>High-risk trauma</h3><p class="small muted" style="margin:2px 0 0">Any one means at least Yellow, and a doctor sees the patient early.</p>${grp(TRAUMA_SIGNS, 'ht')}</div>
+    </div></details>
+    <div class="tri-hint" id="tri-hint"></div>`;
+}
+function readCriteria() {
+  const red = RED_LIST.filter((_, i) => $('#rs' + i) && $('#rs' + i).checked);
+  const trauma = TRAUMA_LIST.filter((_, i) => $('#ht' + i) && $('#ht' + i).checked);
+  return { red, trauma, suggested: red.length ? 'red' : trauma.length ? 'yellow' : '' };
+}
+// Ticks the pulse sign from the vital signs, then shows what the criteria suggest.
+function triageHint() {
+  if (!$('#crit')) return;
+  const age = Number($('#r-age') ? $('#r-age').value : ''), hr = Number($('#v-hr') ? $('#v-hr').value : '');
+  const pulseBox = $('#rs' + RED_LIST.indexOf('Adult: pulse under 50 or over 150'));
+  if (age >= 18 && hr && (hr < 50 || hr > 150) && !pulseBox.checked) { pulseBox.checked = true; pulseBox.dataset.auto = '1'; }
+  const c = readCriteria(), n = c.red.length + c.trauma.length;
+  $('#crit-n').textContent = n ? n + ' ticked' : 'None ticked';
+  const h = $('#tri-hint');
+  h.className = 'tri-hint ' + c.suggested;
+  h.textContent = c.suggested === 'red' ? `Criteria suggest RED: ${c.red.join('; ')}.` : c.suggested === 'yellow' ? `Criteria suggest at least YELLOW (high-risk trauma): ${c.trauma.join('; ')}.` : '';
+  if (n) $('#crit').open = true;
+}
+const critText = p => { const c = p.triageCriteria; if (!c) return ''; return [c.red.length ? 'Red signs: ' + c.red.join('; ') : '', c.trauma.length ? 'High-risk trauma: ' + c.trauma.join('; ') : ''].filter(Boolean).join(' · '); };
 
 function readVitals() {
   const g = id => { const el = $(id); return el ? el.value.trim() : ''; };
@@ -1362,11 +1545,16 @@ function doRegister(e) {
   if (al.err) errs.push(al.err);
   if (!f.triage.value) errs.push('Choose a triage colour. Nothing is selected by default.');
   const cv = checkVitals(v);
-  if (!formGate(f, errs.concat(cv.E), cv.Wn)) return;
+  const crit = readCriteria();
+  const tri = f.triage.value;
+  const under = tri && tri !== 'black' && crit.suggested && triOrder[tri] > triOrder[crit.suggested];
+  const warns = cv.Wn.concat(under ? [`You chose ${TRI_NAME[tri]}, but the ticked criteria suggest ${crit.suggested === 'red' ? 'Red' : 'at least Yellow'}. Check the triage. If you keep it, the reason is your clinical judgement and it is recorded.`] : []);
+  if (!formGate(f, errs.concat(cv.E), warns)) return;
   pendingReg = {
     name, age: Number(age), sex: f.sex.value === 'M' ? 'M' : 'F', pregnant: f.sex.value === 'FP',
     allergy: al, phone: $('#r-phone').value.trim(), shelter: $('#r-shelter').value.trim(),
-    complaint: cc, triage: f.triage.value, vitals: v, location: f.dest.value
+    complaint: cc, triage: tri, vitals: v, location: f.dest.value,
+    criteria: Object.assign(crit, { chosen: tri, override: !!under, by: me.name, at: nowISO() })
   };
   const matches = S.patients.filter(q => normName(q.name) === normName(name) && q.sex === pendingReg.sex && Math.abs(q.age - pendingReg.age) <= 1);
   if (matches.length) { dupeSheet(matches); return; }
@@ -1375,7 +1563,7 @@ function doRegister(e) {
 
 function dupeSheet(matches) {
   const rows = matches.map(q => `<div class="dupe"><div><b>${esc(q.name)}</b> <span class="small muted">${q.id}</span>
-      <div class="small muted">${q.age} y · ${q.sex === 'F' ? 'Female' : 'Male'}${q.shelter ? ' · ' + esc(q.shelter) : ''} · ${q.state === 'discharged' ? 'Discharged · last visit ' + fmtDay(dayKey(new Date(q.movedAt))) : 'In the hospital now · ' + esc(tentLabel(q.location))}</div>
+      <div class="small muted">${q.age} y · ${sexTxt(q)}${q.shelter ? ' · ' + esc(q.shelter) : ''} · ${q.state === 'discharged' ? 'Discharged · last visit ' + fmtDay(dayKey(new Date(q.movedAt))) : 'In the hospital now · ' + esc(tentLabel(q.location))}</div>
       <div class="small muted">Allergies: ${esc(allergyText(q))}</div></div>
       ${q.state === 'discharged'
         ? `<button class="btn primary sm" onclick="newVisitFromReg('${q.id}')">Same person: start a new visit</button>`
@@ -1391,11 +1579,17 @@ function createPatient(r) {
     allergyBy: r.allergy.st === 'unknown' ? '' : me.name, allergyAt: r.allergy.st === 'unknown' ? '' : nowISO(),
     clinical: {}, outcomeDetail: {}, doctor: '', visitNo: 1, visits: [], dischargeApproved: null,
     phone: r.phone, shelter: r.shelter, complaint: r.complaint, triage: r.triage, vitals: r.vitals,
-    location: r.location, state: 'waiting', bed: null, notes: [], outcome: null, createdAt: nowISO(), movedAt: nowISO()
+    location: r.location, state: 'waiting', bed: null, notes: [], outcome: null, createdAt: nowISO(), movedAt: nowISO(),
+    triageCriteria: r.criteria || null, tempId: r.tempId || '', ageGroup: r.ageGroup || '', unidentified: !!r.tempId, mci: r.mci || ''
   };
   S.patients.push(p);
-  log(p.id, `Registered at Tent 1 (visit ${encId(p)}). Triage: ${p.triage}.`);
-  log(p.id, `Referred to ${tentLabel(p.location)}.`);
+  log(p.id, `Registered at Tent 1 (visit ${encId(p)})${p.tempId ? ' as ' + p.tempId + ' during a mass casualty incident' : ''}. Triage: ${TRI_NAME[p.triage]}.${critText(p) ? ' ' + critText(p) + '.' : ''}`);
+  if (r.criteria && r.criteria.override) log(p.id, `Triage kept at ${TRI_NAME[p.triage]} against the criteria suggestion (${r.criteria.suggested === 'red' ? 'Red' : 'at least Yellow'}). Clinical judgement of ${me.name}.`);
+  if (p.triage === 'black') {
+    p.state = 'discharged'; p.outcome = 'Dead on arrival'; p.outcomeDetail = { visit: 'Dead on arrival' };
+    log(p.id, 'Dead on arrival. Not sent to a tent.');
+  } else log(p.id, `Referred to ${tentLabel(p.location)}.`);
+  if (r.fast) { pendingReg = null; save(); render(); toast(`${p.tempId} registered · ${p.triage === 'black' ? 'dead on arrival' : tentLabel(p.location)}`); return; }
   pendingReg = null;
   save();
   view = { name: 'patient', id: p.id };
@@ -1410,6 +1604,7 @@ function newVisitFromReg(pid) {
   if (r.shelter) p.shelter = r.shelter;
   p.pregnant = r.pregnant;
   startVisit(p, { complaint: r.complaint, triage: r.triage, vitals: r.vitals, location: r.location });
+  p.triageCriteria = r.criteria || null;
   pendingReg = null;
   save();
   view = { name: 'patient', id: p.id };
@@ -1549,7 +1744,7 @@ function searchView() {
 }
 function doSearch() {
   const q = $('#q').value.trim().toLowerCase();
-  const list = S.patients.filter(p => !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q) || ((p.clinical && p.clinical.dx) || '').toLowerCase().includes(q))
+  const list = S.patients.filter(p => !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q) || (p.tempId || '').toLowerCase().includes(q) || ((p.clinical && p.clinical.dx) || '').toLowerCase().includes(q))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 30);
   $('#results').innerHTML = list.map(p => patientCard(p, { showTent: true })).join('') || empty('No patient found.');
 }
@@ -1592,6 +1787,7 @@ function patientView(id) {
     if (doc && !p.dischargeApproved) A.push(['exit', 'Approve discharge', `dischargeForm('${id}')`, 'danger']);
     if (doc && p.dischargeApproved) A.push(['reset', 'Cancel discharge approval', `cancelDischarge('${id}')`, '']);
   }
+  if (p.unidentified && p.triage !== 'black' && me.role !== 'lab') A.unshift(['user', 'Identify patient', `identifyForm('${id}')`, A.some(a => a[3] === 'primary') ? '' : 'primary']);
   if (p.state !== 'discharged' && me.role !== 'lab') A.push(['alert', 'Update allergies', `allergyForm('${id}')`, '']);
   if (xr && p.state === 'discharged' && (me.role === 'doctor' || me.role === 'admin')) {
     if (!xr.arrivedAt) A.push(['check', 'Record arrival', `arrivalForm('${id}')`, 'primary']);
@@ -1621,13 +1817,15 @@ function patientView(id) {
           <div class="visitline">Visit ${p.visitNo || 1} · ${encId(p)}${p.dischargeApproved && p.state !== 'discharged' ? ' · <b>Discharge approved</b>' : ''}</div>
           ${h ? `<div class="infobar" style="margin-top:8px">${ic('refer', 'sm')}${h.to === 'WARD' ? `Bed ${p.bed} reserved. The ward has not yet confirmed the patient arrived.` : `Sent from ${esc(tentLabel(h.from))} by ${esc(h.by)}. ${esc(tentLabel(h.to))} has not yet accepted.`}</div>` : ''}
           <h1>${esc(p.name)}</h1>
-          <div class="muted">${p.age} years · ${p.sex === 'F' ? 'Female' : 'Male'}${p.shelter ? ' · ' + esc(p.shelter) : ''}${p.phone ? ' · ' + esc(p.phone) : ''}</div>
+          <div class="muted">${p.ageGroup ? p.ageGroup + ' (age not known)' : p.age + ' years'} · ${sexTxt(p)}${p.shelter ? ' · ' + esc(p.shelter) : ''}${p.phone ? ' · ' + esc(p.phone) : ''}</div>
           ${p.pregnant ? '<div class="mt" style="margin-top:8px"><span class="badge preg">Pregnant</span></div>' : ''}
         </div>
-        <div class="pmeta" style="text-align:right"><span class="tri ${p.triage}">${p.triage}</span><div class="mt"><span class="where">${ic(p.state === 'discharged' ? 'exit' : (TENT_IC[p.location] || 'tent'), 'sm')}${where}</span></div><div class="small muted">Arrived ${fmtTime(p.createdAt)}</div></div>
+        <div class="pmeta" style="text-align:right"><span class="tri ${p.triage}">${p.triage === 'black' ? 'dead on arrival' : p.triage}</span><div class="mt"><span class="where">${ic(p.state === 'discharged' ? 'exit' : (TENT_IC[p.location] || 'tent'), 'sm')}${where}</span></div><div class="small muted">Arrived ${fmtTime(p.createdAt)}</div></div>
       </div>
       ${hasAllergy(p) ? `<div class="alertbar">${ic('alert', 'sm')}Allergy: ${esc(p.allergies)}</div>` : p.allergyStatus === 'unknown' ? `<div class="infobar">${ic('alert', 'sm')}Allergies unknown. Ask the patient or family before giving medicine.</div>` : ''}
+      ${p.unidentified ? `<div class="infobar">${ic('user', 'sm')}Not yet identified. Temporary ID ${p.tempId} from a mass casualty incident.</div>` : p.tempId ? `<div class="small muted mt">Registered during a mass casualty incident as ${p.tempId}.</div>` : ''}
       <div class="mt"><span class="muted small">Condition · main complaint</span><div><b>${esc(p.complaint)}</b></div></div>
+      ${critText(p) ? `<div class="mt"><span class="muted small">Triage criteria</span><div class="small">${esc(critText(p))}${p.triageCriteria.override ? ` <span class="badge warn">Triage kept at ${TRI_NAME[p.triage]} by clinical judgement</span>` : ''}</div></div>` : ''}
       <div class="vitals mt">${vit}</div>
       <div class="actions mt d-only">${buttons}</div>
       ${!act && p.state !== 'discharged' && me.role !== 'admin' ? `<p class="small muted mt">You can view this file. Actions are available to staff in ${esc(tentLabel(p.location))}.</p>` : ''}
@@ -1999,7 +2197,7 @@ function referralPrint(id) {
   modal('Referral form', `<div class="refprint printable">
     <h2 style="margin:0">Acute Referral · ${r.id}</h2>
     <p class="small">EMT TentCare · based on the WHO Emergency Care Toolkit. A copy goes with the patient.</p>
-    <h3>Patient</h3><table>${row('Name', p.name)}${row('File / visit', p.id + ' · ' + r.enc)}${row('Age · sex', p.age + ' · ' + (p.sex === 'F' ? 'Female' : 'Male'))}${row('Allergies', allergyText(p))}${row('Contact', p.phone)}</table>
+    <h3>Patient</h3><table>${row('Name', p.name)}${row('File / visit', p.id + ' · ' + r.enc)}${row('Age · sex', ageTxt(p) + ' · ' + (sexTxt(p)))}${row('Allergies', allergyText(p))}${row('Contact', p.phone)}</table>
     <h3>Facilities</h3><table>${row('Initiating facility', 'EMT field hospital · ' + r.decidedBy)}${row('Receiving facility', [r.facility, r.focal, r.phone].filter(Boolean).join(' · '))}${row('Reason', r.reason)}${row('Decision time', fmtDay(dayKey(new Date(r.decidedAt))) + ' ' + fmtTime(r.decidedAt))}${row('Mode of transfer', r.mode + (r.transport ? ' · ' + r.transport : ''))}</table>
     <h3>Situation</h3><table>${row('Chief complaint', r.complaint)}${row('Primary diagnosis', r.dx)}${row('Other acute diagnoses', r.otherDx)}${row('Pregnant', r.pregnant)}${row('Treatments initiated', r.treatments)}</table>
     <h3>Background</h3><table>${row('History of present illness', r.hpi)}${row('Past medical and surgical history', r.pmh)}${ab}${row('Other treatments or procedures', r.other)}</table>
@@ -2088,7 +2286,7 @@ function saveNurseNote(e, id) {
 function wristband(id) {
   const p = pat(id);
   modal('Patient wristband', `<div class="band printable">
-      <div><div class="mrn">${p.id}</div><div><b>${esc(p.name)}</b></div><div class="small muted">${p.age} y · ${p.sex === 'F' ? 'F' : 'M'} · ${fmtTime(p.createdAt)}</div></div>
+      <div><div class="mrn">${p.id}</div><div><b>${esc(p.name)}</b></div><div class="small muted">${ageTxt(p)} · ${p.sex || 'U'} · ${fmtTime(p.createdAt)}</div>${p.tempId ? `<div class="mrn" style="font-size:13px">${p.tempId}</div>` : ''}</div>
       <div style="text-align:right"><img src="tent.png" alt=""><br><span class="tri ${p.triage}">${p.triage}</span></div></div>
     <p class="small muted">Print on a wristband label, or write the file number on the patient's band. Staff search by this number.</p>
     <div class="row"><button class="btn primary" onclick="window.print()">Print</button><button class="btn" onclick="closeModal()">Done</button></div>`);
@@ -2136,15 +2334,15 @@ function xlsx(sheets) {
 function exportData() {
   const dt = iso => { if (!iso) return ''; const d = new Date(iso); return dayKey(d) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
   const num = v => v === '' || v === null || v === undefined || isNaN(Number(v)) ? (v || '') : Number(v);
-  const TRI = { red: 'Red', yellow: 'Yellow', green: 'Green' };
+  const TRI = TRI_NAME;
   const STATE = { waiting: 'Waiting', 'in-care': 'In care', admitted: 'Admitted', discharged: 'Discharged' };
-  const patients = [['File no.', 'Current visit', 'Admission date', 'Patient name', 'Age', 'Gender', 'Pregnant', 'Phone', 'Shelter / area', 'Condition', 'Triage', 'Status', 'Assigned tent', 'Bed', 'Assigned doctor', 'Allergies',
+  const patients = [['File no.', 'Current visit', 'Admission date', 'Patient name', 'Age', 'Gender', 'Pregnant', 'Phone', 'Shelter / area', 'Condition', 'Triage', 'Triage criteria', 'Triage kept against criteria', 'Mass casualty temporary ID', 'Status', 'Assigned tent', 'Bed', 'Assigned doctor', 'Allergies',
     'Blood pressure', 'Heart rate', 'Resp. rate', 'SpO2 %', 'Temp °C', 'Height cm', 'Weight kg', 'MUAC cm',
     'History', 'System examined', 'Physical findings', 'Diagnosis', 'Emergency category', 'SRH services', 'Medication given here', 'Procedure', 'Blood transfusion', 'Response',
     'Visit outcome', 'Medication to take home', 'Referral', 'Referral note', 'Outcome note', 'Follow-up date', 'Last updated']];
   S.patients.forEach(p => {
     const v = p.vitals || {}, c = p.clinical || {}, o = p.outcomeDetail || {};
-    patients.push([p.id, encId(p), dt(p.createdAt), p.name, num(p.age), p.sex === 'F' ? 'Female' : 'Male', p.pregnant ? 'Yes' : 'No', p.phone, p.shelter, p.complaint, TRI[p.triage] || p.triage, STATE[p.state] || p.state,
+    patients.push([p.id, encId(p), dt(p.createdAt), p.name, num(p.age), sexTxt(p), p.pregnant ? 'Yes' : 'No', p.phone, p.shelter, p.complaint, TRI[p.triage] || p.triage, critText(p), p.triageCriteria && p.triageCriteria.override ? 'Yes' : '', p.tempId || '', STATE[p.state] || p.state,
       p.state === 'discharged' ? '' : tentLabel(p.location), p.bed || '', p.doctor, allergyText(p),
       v.bp, num(v.hr), num(v.rr), num(v.spo2), num(v.temp), num(v.height), num(v.weight), num(v.muac),
       c.history, c.system, c.exam, c.dx, c.category, c.srh, c.poc, c.procedures, c.dx ? (c.transfusion ? 'Yes' : 'No') : '', c.response,
