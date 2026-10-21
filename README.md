@@ -43,6 +43,15 @@ One file per patient, filled in by each tent along the way:
 - **Outcome:** visit outcome, medication to take home, referral and referral note, outcome note and a follow-up date.
 - **Care team:** assigned doctor, assigned tent and bed, and when the file was last updated.
 
+## Referral and handover
+
+Based on the WHO Emergency Care Toolkit (Acute Referral Form, Acute Transfer Checklist and Counter-Referral Form). This is not an official WHO form.
+
+- **Between tents:** a patient sent to another tent shows as "Not yet accepted" until a doctor there presses **Accept patient**. An admission reserves a bed, and the ward confirms with **Patient arrived on ward**.
+- **To another facility:** the doctor fills the referral in SBAR order with an ABCDE check, precautions and the 13-item transfer checklist. Any unticked item gives a warning to contact a senior clinician. The form prints as one sheet that goes with the patient.
+- **After the transfer:** record when the patient left, the arrival time and status (Stable, Unstable, Dead), then the counter-referral from the receiving facility.
+- **Ward beds:** a bed goes to "Cleaning" when a patient leaves, and the nurse marks it ready. The Excel export has an "External referrals" sheet.
+
 ## Attendance
 
 <p align="center"><img src="docs/screen-attendance-phone.png" alt="Attendance on a phone" width="300"> &nbsp; <img src="docs/screen-er-phone.png" alt="Emergency queue on a phone" width="300"></p>

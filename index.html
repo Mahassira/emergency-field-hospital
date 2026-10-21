@@ -211,6 +211,28 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
 .visitline{font-size:12.5px;color:var(--muted);margin-top:2px}
 .prev{padding:9px 0;border-bottom:1px solid var(--surface-2)}
 .prev:last-child{border-bottom:0}
+.bed.occ.res,.fluent .bed.occ.res{background:#ebf3fc;border:2px dashed #0f6cbd;color:#0f6cbd}
+.bed.occ.res .num,.bed.occ.res .who{color:#0f6cbd}
+.bed.clean{background:var(--amber-soft);border-color:#e8c98a}
+.bed.clean .who{color:var(--amber);font-weight:600;margin-top:4px}
+.bed.clean button{margin-top:6px;font-size:11.5px;padding:3px 8px;border-radius:4px;border:1px solid #e8c98a;background:#fff;color:var(--amber);cursor:pointer}
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:0 0 12px}
+.legend-row i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px;border:1px solid var(--line)}
+.sec-h{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--primary);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.abcde{display:grid;grid-template-columns:90px 70px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}
+.abcde b{font-size:13px}
+.abcde input[type=text]{min-height:36px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-weight:400;color:var(--text);margin:0 0 8px;font-size:14px}
+.checks input[type=checkbox]{width:18px;height:18px;flex:none;margin-top:2px;accent-color:var(--primary)}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.steps span{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.steps span.done{background:var(--green-soft);color:var(--green);font-weight:600}
+.refprint h3{margin:12px 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+.refprint table{width:100%;border-collapse:collapse;font-size:12.5px}
+.refprint td{border:1px solid #bbb;padding:4px 6px;vertical-align:top}
+.refprint td:first-child{width:32%;font-weight:600;background:#f5f5f5}
+@media(max-width:720px){.abcde{grid-template-columns:1fr auto;padding-bottom:8px;border-bottom:1px solid var(--line)}.abcde input[type=text]{grid-column:1 / -1}}
+.abcde .checkline{white-space:nowrap}
 .copyright{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
 
 /* modal */
@@ -405,7 +427,9 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
 @media print{
   body *{visibility:hidden}
   .printable,.printable *{visibility:visible}
-  .printable{position:fixed;left:0;top:0;width:100%}
+  .printable{position:absolute;left:0;top:0;width:100%}
+  .scrim{position:static;display:block;background:none}
+  .modal{max-height:none;overflow:visible;box-shadow:none}
 }
 
 /* ---------- Microsoft Fluent look ---------- */
@@ -632,7 +656,7 @@ function save() { store(KEY, JSON.stringify(S)); }
 function load() {
   try {
     const d = JSON.parse(read(KEY));
-    if (d && d.v === 3) { S = d; ensureAttendance(); return d; }
+    if (d && d.v === 4) { S = d; ensureAttendance(); return d; }
   } catch (e) {}
   return seed();
 }
@@ -677,7 +701,8 @@ function log(pid, text, by) {
   S.log.unshift({ t: nowISO(), pid, text, by: by || (me ? me.name : 'System') });
 }
 function pendingOrders(pid) { return S.orders.filter(o => o.pid === pid && o.status === 'requested'); }
-function freeBeds() { return S.beds.map((b, i) => b ? null : i + 1).filter(Boolean); }
+function freeBeds() { return S.beds.map((b, i) => b || (S.bedClean && S.bedClean[i]) ? null : i + 1).filter(Boolean); }
+function releaseBed(n) { if (!n) return; S.beds[n - 1] = null; S.bedClean[n - 1] = true; }
 const triOrder = { red: 0, yellow: 1, green: 2 };
 
 function toast(msg) {
@@ -691,7 +716,7 @@ function toast(msg) {
 
 /* ---------- seed data (fictional) ---------- */
 function seed() {
-  S = { v: 3, seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), staff: [], att: null, followups: [] };
+  S = { v: 4, seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), bedClean: Array(BEDS).fill(false), referrals: [], staff: [], att: null, followups: [] };
   const V = (bp, hr, t, s, rr, height, weight, muac) => ({ bp, hr, temp: t, spo2: s, rr, height: height || '', weight: weight || '', muac: muac || '' });
 
   function add(p) {
@@ -816,6 +841,7 @@ function seed() {
   });
   ['FH-0003', 'FH-0006'].forEach(id => { const p = pat(id); if (p) { p.allergyStatus = 'unknown'; p.allergyBy = ''; p.allergyAt = ''; } });
   S.orders.forEach(o => { o.enc = o.pid + '-V1'; });
+  [5, 18].forEach(b => { if (!S.beds[b - 1]) S.bedClean[b - 1] = true; });
   seedAttendance();
 
   S.log.sort((x, y) => y.t.localeCompare(x.t));
@@ -1139,7 +1165,9 @@ function patientCard(p, opts = {}) {
     p.pregnant ? '<span class="badge preg">Pregnant</span>' : '',
     hasAllergy(p) ? '<span class="badge allergy">Allergy</span>' : '',
     p.dischargeApproved && p.state !== 'discharged' ? '<span class="badge warn">Discharge approved</span>' : '',
-    (p.visitNo || 1) > 1 ? `<span class="badge">Visit ${p.visitNo}</span>` : ''
+    (p.visitNo || 1) > 1 ? `<span class="badge">Visit ${p.visitNo}</span>` : '',
+    p.handover && !p.handover.acceptedAt ? `<span class="badge warn">${p.handover.to === 'WARD' ? 'Bed reserved · not arrived' : 'Not yet accepted'}</span>` : '',
+    refOf(p) && refOf(p).status === 'decided' ? '<span class="badge warn">Referral out · not left</span>' : ''
   ].join(' ');
   return `<button class="pcard" onclick="go('patient','${p.id}')">
     <span class="bar ${p.triage || 'none'}"></span>
@@ -1496,16 +1524,23 @@ function ordersView() {
 }
 
 function wardView() {
-  const occ = S.beds.filter(Boolean).length;
+  const occ = S.beds.filter((pid) => pid && !(pat(pid).handover && !pat(pid).handover.acceptedAt)).length;
+  const res = S.beds.filter(pid => pid && pat(pid).handover && !pat(pid).handover.acceptedAt).length;
+  const cl = S.bedClean.filter(Boolean).length;
+  const canClean = me.role === 'nurse' || me.role === 'admin';
   const cells = S.beds.map((pid, i) => {
+    if (!pid && S.bedClean[i]) return `<div class="bed clean"><div class="num">Bed ${i + 1}</div><div class="who">Cleaning</div>${canClean ? `<button onclick="bedReady(${i + 1})">Mark ready</button>` : ''}</div>`;
     if (!pid) return `<div class="bed free"><div class="num">Bed ${i + 1}</div><div class="who">Free</div></div>`;
     const p = pat(pid);
-    return `<button class="bed occ" onclick="go('patient','${pid}')"><div class="num">Bed ${i + 1} <span class="tdot ${p.triage}"></span></div><div class="who">${esc(p.name)}</div></button>`;
+    const pending = p.handover && !p.handover.acceptedAt;
+    return `<button class="bed occ ${pending ? 'res' : ''}" onclick="go('patient','${pid}')"><div class="num">Bed ${i + 1}${pending ? ' · reserved' : ''} <span class="tdot ${p.triage}"></span></div><div class="who">${esc(p.name)}</div></button>`;
   }).join('');
   return `<h1>Tent 6 · Inpatient Ward</h1>
-    <p class="sub">${occ} of ${BEDS} beds occupied, ${BEDS - occ} free. Tap a bed to open the patient.</p>
+    <p class="sub">${occ} occupied, ${res} reserved for a patient on the way, ${cl} being cleaned, ${freeBeds().length} ready. Tap a bed to open the patient.</p>
+    <div class="legend-row"><span><i style="background:#0f6cbd"></i>Occupied</span><span><i style="background:#ebf3fc;border:1px dashed #0f6cbd"></i>Reserved, patient not yet arrived</span><span><i style="background:#fdf3e1;border-color:#e8c98a"></i>Cleaning</span><span><i style="background:#fff"></i>Ready</span></div>
     <div class="beds">${cells}</div>`;
 }
+function bedReady(n) { S.bedClean[n - 1] = false; S.log.unshift({ t: nowISO(), pid: '', text: `Bed ${n} cleaned and ready.`, by: me.name }); save(); render(); toast(`Bed ${n} is ready`); }
 
 function searchView() {
   return `<h1>Find a patient</h1>
@@ -1533,7 +1568,17 @@ function patientView(id) {
   const A = [];
   const doc = me.role === 'doctor' || me.role === 'admin';
   const nurse = me.role === 'nurse';
-  if (act) {
+  const h = p.handover && !p.handover.acceptedAt ? p.handover : null;
+  const xr = refOf(p);
+  if (act && h) {
+    const receiver = h.to === 'WARD' ? (nurse || doc) : doc;
+    if (receiver) A.push(['check', h.to === 'WARD' ? 'Patient arrived on ward' : 'Accept patient', `acceptPatient('${id}')`, 'primary']);
+    A.push(['pulse', 'Update vitals', `vitalsForm('${id}')`, '']);
+    if (doc) A.push(['reset', 'Cancel transfer', `cancelHandover('${id}')`, '']);
+  } else if (act && xr && xr.status === 'decided') {
+    A.push(['exit', 'Patient has left for ' + xr.facility, `referralDepart('${id}')`, 'primary']);
+    A.push(['pulse', 'Update vitals', `vitalsForm('${id}')`, '']);
+  } else if (act) {
     if (p.dischargeApproved) {
       if (doc || (nurse && p.location === 'WARD')) A.push(['exit', 'Confirm departure', `departureForm('${id}')`, 'primary']);
     } else if (p.state === 'waiting' && doc) A.push(['steth', 'Start consultation', `startCare('${id}')`, 'primary']);
@@ -1543,11 +1588,17 @@ function patientView(id) {
     A.push(['flask', 'Request lab / X-ray', `orderForm('${id}')`, '']);
     if (doc && !p.dischargeApproved) A.push(['refer', 'Refer to another tent', `referForm('${id}')`, '']);
     if (doc && !p.dischargeApproved && p.location !== 'WARD') A.push(['bed', 'Admit to ward', `admitForm('${id}')`, '']);
+    if (doc && !p.dischargeApproved) A.push(['refer', 'Refer to another facility', `extReferralForm('${id}')`, '']);
     if (doc && !p.dischargeApproved) A.push(['exit', 'Approve discharge', `dischargeForm('${id}')`, 'danger']);
     if (doc && p.dischargeApproved) A.push(['reset', 'Cancel discharge approval', `cancelDischarge('${id}')`, '']);
   }
   if (p.state !== 'discharged' && me.role !== 'lab') A.push(['alert', 'Update allergies', `allergyForm('${id}')`, '']);
-  if (p.state === 'discharged' && ['reception', 'doctor', 'admin'].includes(me.role)) A.push(['userplus', 'Start new visit', `newVisitForm('${id}')`, 'primary']);
+  if (xr && p.state === 'discharged' && (me.role === 'doctor' || me.role === 'admin')) {
+    if (!xr.arrivedAt) A.push(['check', 'Record arrival', `arrivalForm('${id}')`, 'primary']);
+    else if (!xr.counter) A.push(['note', 'Counter-referral received', `counterForm('${id}')`, 'primary']);
+  }
+  if (xr) A.push(['note', 'Referral form', `referralPrint('${id}')`, '']);
+  if (p.state === 'discharged' && ['reception', 'doctor', 'admin'].includes(me.role)) A.push(['userplus', 'Start new visit', `newVisitForm('${id}')`, xr && !xr.counter ? '' : 'primary']);
   A.push(['tag', 'Wristband', `wristband('${id}')`, '']);
   curActions = A;
   const first = A[0];
@@ -1568,6 +1619,7 @@ function patientView(id) {
         <div>
           <div class="mrnline">${p.id}</div>
           <div class="visitline">Visit ${p.visitNo || 1} · ${encId(p)}${p.dischargeApproved && p.state !== 'discharged' ? ' · <b>Discharge approved</b>' : ''}</div>
+          ${h ? `<div class="infobar" style="margin-top:8px">${ic('refer', 'sm')}${h.to === 'WARD' ? `Bed ${p.bed} reserved. The ward has not yet confirmed the patient arrived.` : `Sent from ${esc(tentLabel(h.from))} by ${esc(h.by)}. ${esc(tentLabel(h.to))} has not yet accepted.`}</div>` : ''}
           <h1>${esc(p.name)}</h1>
           <div class="muted">${p.age} years · ${p.sex === 'F' ? 'Female' : 'Male'}${p.shelter ? ' · ' + esc(p.shelter) : ''}${p.phone ? ' · ' + esc(p.phone) : ''}</div>
           ${p.pregnant ? '<div class="mt" style="margin-top:8px"><span class="badge preg">Pregnant</span></div>' : ''}
@@ -1621,6 +1673,16 @@ function patientView(id) {
             <div>Last updated</div><div>${lastUpdated(p.id) ? fmtTime(lastUpdated(p.id)) : dash('')}</div>
           </div>
         </div>
+        ${xr ? `<div class="card"><div class="secthead">${ic('refer')}<h2>External referral · ${xr.id}</h2></div>
+          <div class="steps"><span class="done">Decided ${fmtTime(xr.decidedAt)}</span><span class="${xr.departedAt ? 'done' : ''}">Left ${xr.departedAt ? fmtTime(xr.departedAt) : ''}</span><span class="${xr.arrivedAt ? 'done' : ''}">Arrived ${xr.arrivedAt ? fmtTime(xr.arrivedAt) + ' · ' + esc(xr.arrivalStatus) : ''}</span><span class="${xr.counter ? 'done' : ''}">Counter-referral</span></div>
+          <div class="kv">
+            <div>Receiving facility</div><div>${esc(xr.facility)}${xr.focal ? ' · ' + esc(xr.focal) : ''}${xr.phone ? ' · ' + esc(xr.phone) : ''}</div>
+            <div>Reason</div><div>${esc(xr.reason)}</div>
+            <div>Mode of transfer</div><div>${esc(xr.mode)}</div>
+            <div>Transfer checklist</div><div>${xr.checklist.filter(Boolean).length} of ${TRANSFER_CHECKS.length} confirmed</div>
+            <div>Decided by</div><div>${esc(xr.decidedBy)}</div>
+            ${xr.counter ? `<div>Final diagnoses</div><div><b>${esc(xr.counter.dx)}</b></div><div>Follow-up</div><div>${dash(xr.counter.followup)}${xr.counter.next ? ' · ' + esc(xr.counter.next) : ''}</div>` : ''}
+          </div></div>` : ''}
         ${(p.visits || []).length ? `<div class="card"><div class="secthead">${ic('calendar')}<h2>Previous visits (${p.visits.length})</h2></div>${p.visits.slice().reverse().map(v => `<div class="prev"><div><b>${esc(v.enc)}</b> <span class="small muted">${fmtDay(dayKey(new Date(v.start)))}</span></div><div class="small">${esc(v.complaint)}${v.dx ? ' · <b>' + esc(v.dx) + '</b>' : ''}</div><div class="small muted">${esc(v.outcome || '')}${v.doctor ? ' · ' + esc(v.doctor) : ''}</div></div>`).join('')}</div>` : ''}
         <div class="card"><div class="secthead">${ic('note')}<h2>Notes</h2></div>${notes || '<div class="muted">No notes yet.</div>'}</div>
         <div class="card"><div class="secthead">${ic('clock')}<h2>Patient journey</h2></div><ul class="timeline">${tl.map(l => `<li><div class="t">${fmtTime(l.t)} · ${esc(l.by)}</div>${esc(l.text)}</li>`).join('')}</ul></div>
@@ -1740,11 +1802,14 @@ function saveRefer(e, id) {
   e.preventDefault();
   const p = pat(id);
   const to = $('#ref').value, why = $('#ref-why').value.trim();
-  if (p.bed) { S.beds[p.bed - 1] = null; p.bed = null; }
+  const from = p.location;
+  if (p.bed) { releaseBed(p.bed); p.bed = null; }
+  p.handover = { from, to, why, by: me.name, at: nowISO(), acceptedBy: '', acceptedAt: '' };
   p.location = to; p.state = 'waiting'; p.movedAt = nowISO();
-  log(id, `Referred to ${tentLabel(to)}${why ? ': ' + why : ''}.`);
-  done('Patient referred');
+  log(id, `Referred from ${tentLabel(from)} to ${tentLabel(to)}${why ? ': ' + why : ''}. Waiting for the receiving tent to accept.`);
+  done('Patient referred. The receiving tent must accept.');
 }
+
 function admitForm(id) {
   const free = freeBeds();
   if (!free.length) { modal('Ward is full', '<p>All 50 beds are occupied. Discharge or transfer a patient first.</p>'); return; }
@@ -1756,10 +1821,195 @@ function admitForm(id) {
 function saveAdmit(e, id) {
   e.preventDefault();
   const p = pat(id); const bed = Number($('#bed').value);
+  const from = p.location;
+  p.handover = { from, to: 'WARD', why: 'Admission', by: me.name, at: nowISO(), acceptedBy: '', acceptedAt: '' };
   p.location = 'WARD'; p.state = 'admitted'; p.bed = bed; p.movedAt = nowISO(); S.beds[bed - 1] = id;
-  log(id, `Admitted to Tent 6, bed ${bed}.`);
-  done(`Admitted to bed ${bed}`);
+  log(id, `Admission decided. Bed ${bed} reserved in Tent 6. Waiting for the ward to receive the patient.`);
+  done(`Bed ${bed} reserved. The ward must confirm arrival.`);
 }
+function acceptPatient(id) {
+  const p = pat(id), h = p.handover;
+  h.acceptedBy = me.name; h.acceptedAt = nowISO();
+  log(id, h.to === 'WARD' ? `Arrived on the ward, bed ${p.bed}. Received by ${me.name}.` : `Arrived in ${tentLabel(h.to)}. Accepted by ${me.name}.`);
+  done('Patient accepted');
+}
+function cancelHandover(id) {
+  const p = pat(id), h = p.handover;
+  if (h.to === 'WARD' && p.bed) { S.beds[p.bed - 1] = null; p.bed = null; }
+  p.location = h.from; p.state = h.from === 'WARD' ? 'admitted' : 'waiting'; p.movedAt = nowISO();
+  log(id, `Transfer to ${tentLabel(h.to)} cancelled. Patient stays in ${tentLabel(h.from)}.`);
+  p.handover = null;
+  done('Transfer cancelled');
+}
+
+const TRANSFER_CHECKS = [
+  ['Decision', 'The patient would benefit from acute care that is not available here.'],
+  ['Decision', 'The benefit of transfer is greater than the risk (security, distance, condition).'],
+  ['Decision', 'The case was discussed with the receiving facility and they agreed to receive the patient.'],
+  ['Decision', 'A provider is available to go with the patient during transport.'],
+  ['Decision', 'The level of care needed can be kept up during transport.'],
+  ['Decision', 'The patient or family was told the options and agreed to the transfer.'],
+  ['Preparation', 'The family has the receiving facility\'s contact details, including the ward.'],
+  ['Preparation', 'The relevant clinical safety checklist was completed (trauma, medical, surgical or maternal).'],
+  ['Preparation', 'Transport has been arranged.'],
+  ['Preparation', 'The transport team suits the patient\'s condition and needs.'],
+  ['Preparation', 'The referral register and this referral form are complete.'],
+  ['Preparation', 'Accompanying documents go with the patient (results, medication list, clinical forms).'],
+  ['Preparation', 'A formal SBAR handover was given to the transport team.']
+];
+const PRECAUTIONS = ['Highly infectious disease', 'Spinal precautions', 'Weight-bearing restrictions', 'Fall risk', 'Aspiration risk'];
+const vitalsLine = v => [v.bp && 'BP ' + v.bp, v.hr && 'pulse ' + v.hr, v.rr && 'RR ' + v.rr, v.spo2 && 'SpO₂ ' + v.spo2 + '%', v.temp && 'temp ' + v.temp + ' °C'].filter(Boolean).join(', ');
+function extReferralForm(id) {
+  const p = pat(id), c = p.clinical || {}, v = p.vitals || {};
+  const ab = [['A', 'Airway'], ['B', 'Breathing'], ['C', 'Circulation'], ['D', 'Disability'], ['E', 'Exposure']].map(([k, n]) =>
+    `<div class="abcde"><b>${k} · ${n}</b><label class="checkline" style="font-size:13px"><input type="checkbox" id="x-${k}-n">Normal</label><input type="text" id="x-${k}-f" placeholder="Finding"><input type="text" id="x-${k}-i" placeholder="Intervention"></div>`).join('');
+  const checks = TRANSFER_CHECKS.map((t, i) => `<label><input type="checkbox" id="tc${i}">${i + 1}. ${esc(t[1])}</label>`).join('');
+  modal('Refer to another facility', `<form onsubmit="saveExtReferral(event,'${id}')" oninput="this.dataset.warned=''" novalidate>
+    <p class="small muted">Based on the WHO Emergency Care Toolkit: Acute Referral Form and Acute Transfer Checklist.</p>
+    <div class="sec-h">Receiving facility</div>
+    <div class="fgrid">
+      <div class="field"><label for="x-fac">Facility name</label><input id="x-fac" type="text"></div>
+      <div class="field"><label for="x-fp">Focal point</label><input id="x-fp" type="text"></div>
+      <div class="field"><label for="x-ph">Phone</label><input id="x-ph" type="tel"></div>
+    </div>
+    <div class="field"><label for="x-why">Reason for referral</label><input id="x-why" type="text"></div>
+    <div class="fgrid">
+      <div class="field"><label for="x-mode">Mode of transfer</label><select id="x-mode"><option value="">— Select —</option><option>Ground (ambulance)</option><option>Ground (other vehicle)</option><option>Air</option><option>Sea</option></select></div>
+      <div class="field"><label for="x-amb">Ambulance / transport contact</label><input id="x-amb" type="text"></div>
+    </div>
+    <div class="sec-h">Situation</div>
+    <div class="fgrid">
+      <div class="field"><label for="x-cc">Chief complaint</label><input id="x-cc" type="text" value="${esc(p.complaint)}"></div>
+      <div class="field"><label for="x-dx">Primary diagnosis</label><input id="x-dx" type="text" value="${esc(c.dx || '')}"></div>
+    </div>
+    <div class="fgrid">
+      <div class="field"><label for="x-odx">Other acute diagnoses</label><input id="x-odx" type="text"></div>
+      <div class="field"><label for="x-preg">Pregnant?</label><select id="x-preg"><option ${p.pregnant ? 'selected' : ''}>Yes</option><option ${!p.pregnant && p.sex === 'M' ? 'selected' : ''}>No</option><option ${!p.pregnant && p.sex === 'F' ? 'selected' : ''}>Unknown</option></select></div>
+    </div>
+    <div class="field"><label for="x-tx">Treatments initiated</label><input id="x-tx" type="text" value="${esc([c.poc, c.procedures && c.procedures !== 'None' ? c.procedures : ''].filter(Boolean).join('; '))}"></div>
+    <div class="sec-h">Background</div>
+    <div class="field"><label for="x-hpi">Brief history of present illness</label><textarea id="x-hpi" style="min-height:56px"></textarea></div>
+    <div class="field"><label for="x-pmh">Relevant past medical and surgical history</label><input id="x-pmh" type="text" value="${esc(c.history || '')}"></div>
+    <div class="field"><label>ABCDE</label>${ab}</div>
+    <div class="field"><label for="x-oth">Other significant treatments or procedures</label><input id="x-oth" type="text"></div>
+    <div class="sec-h">Assessment</div>
+    <div class="field"><label for="x-as">What is wrong with the patient and why referral is needed. Include current vital signs.</label><textarea id="x-as" style="min-height:64px">${esc(vitalsLine(v) ? 'Current vital signs: ' + vitalsLine(v) + '. ' : '')}</textarea></div>
+    <div class="sec-h">Recommendations</div>
+    <div class="field"><label for="x-plan">Next steps, including therapies continued during transport</label><input id="x-plan" type="text"></div>
+    <div class="fgrid">
+      <div class="field"><label for="x-worse">Potential worsening</label><input id="x-worse" type="text"></div>
+      <div class="field"><label for="x-caut">Cautions about prior therapies</label><input id="x-caut" type="text"></div>
+    </div>
+    <div class="field checks"><label style="font-weight:600;color:var(--muted);font-size:13px">Precautions</label>${PRECAUTIONS.map((t, i) => `<label><input type="checkbox" id="pc${i}">${t}</label>`).join('')}<input id="pc-o" type="text" style="margin-top:4px" placeholder="Other precaution"></div>
+    <div class="sec-h">Transfer checklist</div>
+    <div class="field checks">${checks}</div>
+    <p class="small muted">If any item is "no", contact a senior clinician or the ambulance communication centre before the transfer.</p>
+    <div class="form-msg"></div>
+    <button class="btn primary">Save referral</button></form>`);
+}
+function saveExtReferral(e, id) {
+  e.preventDefault();
+  const f = e.target, p = pat(id);
+  const g = k => ($(k) ? $(k).value.trim() : '');
+  const errs = [];
+  if (!g('#x-fac')) errs.push('Write the receiving facility.');
+  if (!g('#x-why')) errs.push('Write the reason for referral.');
+  if (!g('#x-mode')) errs.push('Choose the mode of transfer.');
+  if (!g('#x-as')) errs.push('Write the assessment.');
+  const ticked = TRANSFER_CHECKS.map((_, i) => $('#tc' + i).checked);
+  const missing = ticked.map((t, i) => t ? null : i + 1).filter(Boolean);
+  const warns = missing.length ? [`Transfer checklist items not confirmed: ${missing.join(', ')}. Contact a senior clinician before the transfer.`] : [];
+  if (!formGate(f, errs, warns)) return;
+  const abcde = {};
+  ['A', 'B', 'C', 'D', 'E'].forEach(k => { abcde[k] = { normal: $(`#x-${k}-n`).checked, finding: g(`#x-${k}-f`), intervention: g(`#x-${k}-i`) }; });
+  const r = {
+    id: 'RF-' + String((S.referrals || []).length + 1).padStart(3, '0'), pid: id, enc: encId(p), status: 'decided',
+    facility: g('#x-fac'), focal: g('#x-fp'), phone: g('#x-ph'), reason: g('#x-why'), mode: g('#x-mode'), transport: g('#x-amb'),
+    complaint: g('#x-cc'), dx: g('#x-dx'), otherDx: g('#x-odx'), pregnant: g('#x-preg'), treatments: g('#x-tx'),
+    hpi: g('#x-hpi'), pmh: g('#x-pmh'), abcde, other: g('#x-oth'), assessment: g('#x-as'),
+    plan: g('#x-plan'), worse: g('#x-worse'), cautions: g('#x-caut'),
+    precautions: PRECAUTIONS.filter((_, i) => $('#pc' + i).checked).concat(g('#pc-o') ? [g('#pc-o')] : []),
+    checklist: ticked, decidedBy: me.name, decidedAt: nowISO(), departedAt: '', departedBy: '',
+    arrivedAt: '', arrivalStatus: '', receivedBy: '', counter: null
+  };
+  S.referrals = S.referrals || []; S.referrals.push(r);
+  p.extReferral = r.id;
+  log(id, `Referral to ${r.facility} decided (${r.id}). Reason: ${r.reason}.${missing.length ? ' Checklist items not confirmed: ' + missing.join(', ') + '.' : ' Transfer checklist complete.'}`);
+  done('Referral saved');
+}
+const refOf = p => p && p.extReferral ? (S.referrals || []).find(r => r.id === p.extReferral) : null;
+function referralDepart(id) {
+  const p = pat(id), r = refOf(p);
+  r.status = 'departed'; r.departedAt = nowISO(); r.departedBy = me.name;
+  p.outcomeDetail = Object.assign({}, p.outcomeDetail, { visit: 'Transferred to another facility', referral: 'Another facility', refNote: r.facility + ' · ' + r.reason });
+  p.dischargeApproved = p.dischargeApproved || { by: r.decidedBy, at: r.decidedAt };
+  const bed = p.bed; releaseBed(bed);
+  log(id, `Left for ${r.facility}${bed ? ' from bed ' + bed : ''} (${r.mode}). Departure recorded by ${me.name}.`);
+  p.bed = null; p.state = 'discharged'; p.outcome = 'Transferred to another facility'; p.movedAt = nowISO();
+  done('Departure recorded');
+}
+function arrivalForm(id) {
+  const r = refOf(pat(id));
+  modal('Arrival at receiving facility', `<form onsubmit="saveArrival(event,'${id}')" novalidate>
+    <p class="small muted">${esc(r.facility)} · ${r.id}. Step 3 of the transfer checklist.</p>
+    <div class="fgrid">
+      <div class="field"><label for="ar-t">Arrival time</label><input id="ar-t" type="time" value="${new Date().toTimeString().slice(0, 5)}"></div>
+      <div class="field"><label for="ar-by">Received by (provider)</label><input id="ar-by" type="text"></div>
+    </div>
+    <div class="field"><label>Status on arrival</label><div class="choice">${['Stable', 'Unstable', 'Dead'].map((x, i) => `<input type="radio" name="ast" id="ast${i}" value="${x}" ${i === 0 ? 'required' : ''}><label for="ast${i}">${x}</label>`).join('')}</div></div>
+    <div class="form-msg"></div><button class="btn primary">Save arrival</button></form>`);
+}
+function saveArrival(e, id) {
+  e.preventDefault();
+  const f = e.target, p = pat(id), r = refOf(p);
+  if (!formGate(f, f.ast.value ? [] : ['Choose the status on arrival.'], [])) return;
+  const [hh, mm] = ($('#ar-t').value || '00:00').split(':').map(Number);
+  const d = new Date(); d.setHours(hh, mm, 0, 0);
+  r.arrivedAt = d.toISOString(); r.arrivalStatus = f.ast.value; r.receivedBy = $('#ar-by').value.trim(); r.status = 'arrived';
+  log(id, `${r.facility} confirmed arrival at ${fmtTime(r.arrivedAt)}. Status on arrival: ${r.arrivalStatus}.${r.receivedBy ? ' Received by ' + r.receivedBy + '.' : ''}`);
+  done('Arrival recorded');
+}
+function counterForm(id) {
+  const r = refOf(pat(id));
+  modal('Counter-referral received', `<form onsubmit="saveCounter(event,'${id}')" novalidate>
+    <p class="small muted">From ${esc(r.facility)}. Based on the WHO Counter-Referral Form.</p>
+    <div class="field checks"><label style="font-weight:600;color:var(--muted);font-size:13px">Care given</label>${['ICU stay', 'Surgery', 'Hospitalized'].map((x, i) => `<label><input type="checkbox" id="cr-c${i}">${x}</label>`).join('')}</div>
+    <div class="field"><label for="cr-tx">Treatments, procedures and medication changes</label><textarea id="cr-tx" style="min-height:56px"></textarea></div>
+    <div class="field"><label for="cr-dx">Final diagnoses</label><input id="cr-dx" type="text"></div>
+    <div class="field"><label for="cr-next">Next steps (medicines to stop or continue, wound care…)</label><input id="cr-next" type="text"></div>
+    <div class="field"><label for="cr-pend">Pending results or further tests</label><input id="cr-pend" type="text"></div>
+    <div class="field"><label>Follow-up with the patient</label><div class="choice">${['Urgent (within 24 hours)', '2-6 days', '1-2 weeks', '> 2 weeks'].map((x, i) => `<input type="radio" name="crf" id="crf${i}" value="${x}"><label for="crf${i}">${x}</label>`).join('')}</div></div>
+    <div class="field"><label for="cr-det">If the condition gets worse</label><input id="cr-det" type="text"></div>
+    <div class="form-msg"></div><button class="btn primary">Save counter-referral</button></form>`);
+}
+function saveCounter(e, id) {
+  e.preventDefault();
+  const f = e.target, p = pat(id), r = refOf(p);
+  const g = k => $(k).value.trim();
+  if (!formGate(f, g('#cr-dx') ? [] : ['Write the final diagnoses from the receiving facility.'], [])) return;
+  r.counter = { care: ['ICU stay', 'Surgery', 'Hospitalized'].filter((_, i) => $('#cr-c' + i).checked), treatments: g('#cr-tx'), dx: g('#cr-dx'), next: g('#cr-next'), pending: g('#cr-pend'), followup: f.crf.value || '', worse: g('#cr-det'), at: nowISO(), by: me.name };
+  r.status = 'closed';
+  log(id, `Counter-referral received from ${r.facility}: ${r.counter.dx}.${r.counter.followup ? ' Follow-up: ' + r.counter.followup + '.' : ''}`);
+  done('Counter-referral saved');
+}
+function referralPrint(id) {
+  const p = pat(id), r = refOf(p);
+  const row = (k, v) => `<tr><td>${esc(k)}</td><td>${esc(v || '')}</td></tr>`;
+  const ab = ['A', 'B', 'C', 'D', 'E'].map(k => row(k + ' · ' + { A: 'Airway', B: 'Breathing', C: 'Circulation', D: 'Disability', E: 'Exposure' }[k], (r.abcde[k].normal ? 'Normal. ' : '') + [r.abcde[k].finding, r.abcde[k].intervention && 'Intervention: ' + r.abcde[k].intervention].filter(Boolean).join(' · '))).join('');
+  modal('Referral form', `<div class="refprint printable">
+    <h2 style="margin:0">Acute Referral · ${r.id}</h2>
+    <p class="small">EMT TentCare · based on the WHO Emergency Care Toolkit. A copy goes with the patient.</p>
+    <h3>Patient</h3><table>${row('Name', p.name)}${row('File / visit', p.id + ' · ' + r.enc)}${row('Age · sex', p.age + ' · ' + (p.sex === 'F' ? 'Female' : 'Male'))}${row('Allergies', allergyText(p))}${row('Contact', p.phone)}</table>
+    <h3>Facilities</h3><table>${row('Initiating facility', 'EMT field hospital · ' + r.decidedBy)}${row('Receiving facility', [r.facility, r.focal, r.phone].filter(Boolean).join(' · '))}${row('Reason', r.reason)}${row('Decision time', fmtDay(dayKey(new Date(r.decidedAt))) + ' ' + fmtTime(r.decidedAt))}${row('Mode of transfer', r.mode + (r.transport ? ' · ' + r.transport : ''))}</table>
+    <h3>Situation</h3><table>${row('Chief complaint', r.complaint)}${row('Primary diagnosis', r.dx)}${row('Other acute diagnoses', r.otherDx)}${row('Pregnant', r.pregnant)}${row('Treatments initiated', r.treatments)}</table>
+    <h3>Background</h3><table>${row('History of present illness', r.hpi)}${row('Past medical and surgical history', r.pmh)}${ab}${row('Other treatments or procedures', r.other)}</table>
+    <h3>Assessment</h3><table>${row('Assessment', r.assessment)}</table>
+    <h3>Recommendations</h3><table>${row('Next steps and therapies during transport', r.plan)}${row('Potential worsening', r.worse)}${row('Cautions', r.cautions)}${row('Precautions', r.precautions.join(', '))}</table>
+    <h3>For the receiving facility</h3><table>${row('Date and time of arrival', r.arrivedAt ? fmtTime(r.arrivedAt) : '')}${row('Provider name and signature', r.receivedBy)}${row('Feedback sent to initiating facility', r.counter ? 'Yes' : '')}</table>
+    <p class="small">Attach the medication chart or list of current medications, with dose and time of last dose.</p>
+  </div><div class="row mt"><button class="btn primary" onclick="window.print()">Print</button><button class="btn" onclick="closeModal()">Close</button></div>`);
+}
+
 function dischargeForm(id) {
   const p = pat(id), od = p.outcomeDetail || {};
   const pend = pendingOrders(id).filter(o => (o.enc || o.pid + '-V1') === encId(p));
@@ -1805,7 +2055,7 @@ function finishDeparture(p) {
   const od = p.outcomeDetail || {};
   if (od.fuDays) S.followups.push({ id: 'FU-' + Date.now(), pid: p.id, date: addDays(od.fuDays), reason: 'Follow-up after ' + ((p.clinical && p.clinical.dx) || p.complaint).toLowerCase(), status: 'expected' });
   const bed = p.bed;
-  if (bed) S.beds[bed - 1] = null;
+  releaseBed(bed);
   log(p.id, `Left the hospital${bed ? ' from bed ' + bed : ''}. Departure confirmed by ${me.name}.${od.fuDays ? ' Follow-up in ' + od.fuDays + ' days.' : ''}`);
   p.bed = null; p.state = 'discharged'; p.outcome = od.visit || 'Discharged'; p.movedAt = nowISO();
 }
@@ -1903,7 +2153,7 @@ function exportData() {
   const orders = [['Request no.', 'Visit', 'File no.', 'Patient name', 'Type', 'Test', 'Requested from', 'Requested at', 'Status', 'Result', 'Result at']];
   S.orders.forEach(o => { const p = pat(o.pid) || {}; orders.push([o.id, o.enc || o.pid + '-V1', o.pid, p.name, o.group, o.test, tentLabel(o.from), dt(o.at), o.status === 'done' ? 'Done' : 'Requested', o.result, dt(o.doneAt)]); });
   const beds = [['Bed', 'Status', 'File no.', 'Patient name', 'Diagnosis']];
-  S.beds.forEach((pid, i) => { const p = pid ? pat(pid) : null; beds.push([i + 1, p ? 'Occupied' : 'Free', p ? p.id : '', p ? p.name : '', p ? (p.clinical && p.clinical.dx) || '' : '']); });
+  S.beds.forEach((pid, i) => { const p = pid ? pat(pid) : null; beds.push([i + 1, p ? (p.handover && !p.handover.acceptedAt ? 'Reserved' : 'Occupied') : (S.bedClean[i] ? 'Cleaning' : 'Ready'), p ? p.id : '', p ? p.name : '', p ? (p.clinical && p.clinical.dx) || '' : '']); });
   const staff = [['Staff ID', 'Name', 'Job title', 'Group', 'Tent', 'Shift', 'Date', 'Status', 'Late', 'Check-in', 'Check-out']];
   S.staff.forEach(st => { const r = attOf(st.id); const k = attStatus(st.id); staff.push([st.id, st.name, st.title, st.group, tentLabel(st.tent), st.shift, S.att.date, STATUS_LABEL[k === 'late' ? 'present' : k], r.late ? 'Yes' : 'No', r.in ? fmtTime(r.in) : '', r.out ? fmtTime(r.out) : '']); });
   const fus = [['Follow-up no.', 'File no.', 'Patient name', 'Reason', 'Due date', 'Status', 'Attended at']];
@@ -1912,7 +2162,9 @@ function exportData() {
   S.log.slice().sort((a, b) => a.t.localeCompare(b.t)).forEach(l => { const p = pat(l.pid) || {}; logs.push([dt(l.t), l.pid, p.name, l.text, l.by]); });
   const visits = [['Visit', 'File no.', 'Patient name', 'Start', 'End', 'Complaint', 'Triage', 'Diagnosis', 'Outcome', 'Doctor', 'Take-home medication']];
   S.patients.forEach(p => (p.visits || []).forEach(v => visits.push([v.enc, p.id, p.name, dt(v.start), dt(v.end), v.complaint, TRI[v.triage] || v.triage, v.dx, v.outcome, v.doctor, v.meds])));
-  const blob = xlsx([['Patients', patients], ['Previous visits', visits], ['Lab & X-ray', orders], ['Ward beds', beds], ['Staff attendance', staff], ['Follow-ups', fus], ['Activity log', logs]]);
+  const refs = [['Referral no.', 'File no.', 'Visit', 'Patient name', 'Receiving facility', 'Reason', 'Mode', 'Decided by', 'Decided at', 'Checklist confirmed', 'Left at', 'Arrived at', 'Status on arrival', 'Final diagnoses (counter-referral)', 'Follow-up']];
+  (S.referrals || []).forEach(r => { const p = pat(r.pid) || {}; refs.push([r.id, r.pid, r.enc, p.name, r.facility, r.reason, r.mode, r.decidedBy, dt(r.decidedAt), r.checklist.filter(Boolean).length + '/' + TRANSFER_CHECKS.length, dt(r.departedAt), dt(r.arrivedAt), r.arrivalStatus, r.counter ? r.counter.dx : '', r.counter ? r.counter.followup : '']); });
+  const blob = xlsx([['Patients', patients], ['Previous visits', visits], ['External referrals', refs], ['Lab & X-ray', orders], ['Ward beds', beds], ['Staff attendance', staff], ['Follow-ups', fus], ['Activity log', logs]]);
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'TentCare-' + dayKey() + '.xlsx';
