@@ -204,6 +204,13 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
 .err{color:var(--red);font-size:13px;margin:4px 0 10px;min-height:18px}
 .offline-note{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--muted);font-size:12.5px;margin-top:14px}
 .offline-note .ic{color:var(--accent)}
+.err-box{background:var(--red-soft);color:var(--red);border-radius:6px;padding:9px 12px;font-size:13.5px;margin:6px 0 10px;line-height:1.5}
+.warn-box{background:var(--amber-soft);color:var(--amber);border-radius:6px;padding:9px 12px;font-size:13.5px;margin:6px 0 10px;line-height:1.5}
+.infobar{display:flex;align-items:center;gap:8px;background:var(--amber-soft);color:var(--amber);border-radius:6px;padding:9px 12px;font-weight:600;font-size:14px;margin-top:12px}
+.dupe{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.visitline{font-size:12.5px;color:var(--muted);margin-top:2px}
+.prev{padding:9px 0;border-bottom:1px solid var(--surface-2)}
+.prev:last-child{border-bottom:0}
 .copyright{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
 
 /* modal */
@@ -625,7 +632,7 @@ function save() { store(KEY, JSON.stringify(S)); }
 function load() {
   try {
     const d = JSON.parse(read(KEY));
-    if (d && d.v === 2) { S = d; ensureAttendance(); return d; }
+    if (d && d.v === 3) { S = d; ensureAttendance(); return d; }
   } catch (e) {}
   return seed();
 }
@@ -638,6 +645,11 @@ const minsAgo = m => new Date(Date.now() - m * 60000).toISOString();
 const tent = id => TENTS.find(t => t.id === id) || { id: 'DIAG', no: '', name: 'Lab & X-ray' };
 const tentLabel = id => id === 'DIAG' ? 'Lab & X-ray' : `Tent ${tent(id).no} · ${tent(id).name}`;
 const pat = id => S.patients.find(p => p.id === id);
+const allergyText = p => p.allergyStatus === 'known' ? p.allergies : p.allergyStatus === 'none' ? 'No known allergies (patient asked)' : 'Unknown – not yet confirmed';
+const hasAllergy = p => p.allergyStatus === 'known';
+const isDoc = () => me && (me.role === 'doctor' || me.role === 'admin');
+const encId = p => p.id + '-V' + (p.visitNo || 1);
+const normName = n => String(n || '').trim().toLowerCase().replace(/\s+/g, ' ');
 const isToday = iso => new Date(iso).toDateString() === new Date().toDateString();
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 const addDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return dayKey(d); };
@@ -679,7 +691,7 @@ function toast(msg) {
 
 /* ---------- seed data (fictional) ---------- */
 function seed() {
-  S = { v: 2, seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), staff: [], att: null, followups: [] };
+  S = { v: 3, seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), staff: [], att: null, followups: [] };
   const V = (bp, hr, t, s, rr, height, weight, muac) => ({ bp, hr, temp: t, spo2: s, rr, height: height || '', weight: weight || '', muac: muac || '' });
 
   function add(p) {
@@ -796,6 +808,14 @@ function seed() {
     ['ST-19', 'Mahmoud Halabi', 'Support', 'WARD', 'Day', 'Cleaner'], ['ST-20', 'Ismail Hamad', 'Support', 'REG', 'Day', 'Guard'], ['ST-21', 'Yasser Matar', 'Support', 'REG', 'Day', 'Driver'],
     ['ST-22', 'Saeed Abu Nada', 'Support', 'OT', 'Night', 'Cleaner'], ['ST-23', 'Hiba Awad', 'Nurse', 'ER', 'Day'], ['ST-24', 'Site Manager', 'Support', 'REG', 'Day', 'Administrator']
   ].map(r => ({ id: r[0], name: r[1], group: r[2], tent: r[3], shift: r[4], title: r[5] || (r[2] === 'Doctor' ? 'Physician' : r[2] === 'Lab & X-ray' ? 'Technician' : r[2] === 'Registration' ? 'Registration clerk' : r[2]) }));
+  S.patients.forEach(p => {
+    p.visitNo = 1; p.visits = [];
+    p.allergyStatus = /^none/i.test(p.allergies || '') ? 'none' : 'known';
+    if (p.allergyStatus === 'none') p.allergies = '';
+    p.allergyBy = 'Reem Al-Masri'; p.allergyAt = p.createdAt;
+  });
+  ['FH-0003', 'FH-0006'].forEach(id => { const p = pat(id); if (p) { p.allergyStatus = 'unknown'; p.allergyBy = ''; p.allergyAt = ''; } });
+  S.orders.forEach(o => { o.enc = o.pid + '-V1'; });
   seedAttendance();
 
   S.log.sort((x, y) => y.t.localeCompare(x.t));
@@ -909,7 +929,7 @@ function attendView() {
     const st = f.status === 'expected' && f.date < dayKey() ? 'missed' : f.status;
     const badge = { attended: '<span class="badge present">Attended</span>', missed: '<span class="badge absent">Missed</span>', expected: '<span class="badge expected">Expected</span>' }[st];
     return `<div class="fu"><div><a href="#" onclick="go('patient','${p.id}');return false"><b>${esc(p.name)}</b></a> <span class="small muted">${p.id}</span><div class="small muted">${esc(f.reason)} · due ${fmtDay(f.date)}${f.at ? ' · came ' + fmtTime(f.at) : ''}</div></div>
-      <div class="row" style="gap:8px">${badge}${canMark && f.status === 'expected' ? `<span class="acts"><button class="btn sm" onclick="setFollow('${f.id}','attended')">${ic('check', 'sm')}Attended</button><button class="btn sm danger" onclick="setFollow('${f.id}','missed')">Missed</button></span>` : ''}</div></div>`;
+      <div class="row" style="gap:8px">${badge}${canMark && f.status === 'expected' ? `<span class="acts"><button class="btn sm" onclick="${p.state === 'discharged' ? `newVisitForm('${p.id}','${f.id}')` : `setFollow('${f.id}','attended')`}">${ic('check', 'sm')}Attended</button><button class="btn sm danger" onclick="setFollow('${f.id}','missed')">Missed</button></span>` : ''}</div></div>`;
   }).join('');
   return `<h1>Attendance</h1>
     <p class="sub">Patients in the hospital right now, and follow-up visits that were attended or missed.</p>
@@ -1117,13 +1137,15 @@ function patientCard(p, opts = {}) {
     pend ? `<span class="badge warn">${pend} result${pend > 1 ? 's' : ''} pending</span>` : '',
     !pend && done ? '<span class="badge ok">Results ready</span>' : '',
     p.pregnant ? '<span class="badge preg">Pregnant</span>' : '',
-    p.allergies && !/^none/i.test(p.allergies) ? '<span class="badge allergy">Allergy</span>' : ''
+    hasAllergy(p) ? '<span class="badge allergy">Allergy</span>' : '',
+    p.dischargeApproved && p.state !== 'discharged' ? '<span class="badge warn">Discharge approved</span>' : '',
+    (p.visitNo || 1) > 1 ? `<span class="badge">Visit ${p.visitNo}</span>` : ''
   ].join(' ');
   return `<button class="pcard" onclick="go('patient','${p.id}')">
     <span class="bar ${p.triage || 'none'}"></span>
     <span class="main">
       <span class="name">${esc(p.name)}</span>
-      <div class="meta">${p.id} · ${p.age} y · ${p.sex === 'F' ? 'Female' : 'Male'}${opts.showTent ? ' · ' + esc(tentLabel(p.location)) : ''}</div>
+      <div class="meta">${p.id} · ${p.age} y · ${p.sex === 'F' ? 'Female' : 'Male'}${opts.showTent ? ' · ' + (p.state === 'discharged' ? 'Discharged · last in ' + esc(tentLabel(p.location)) : esc(tentLabel(p.location))) : ''}</div>
       <div class="cc">${esc(p.complaint)}</div>
       <div class="row" style="gap:6px;margin-top:6px">${badges}</div>
     </span>
@@ -1183,14 +1205,13 @@ function dashView() {
 }
 
 function registerView() {
-  const triPick = ['red', 'yellow', 'green'].map((t, i) =>
-    `<input type="radio" name="triage" id="t-${t}" value="${t}" ${t === 'green' ? 'checked' : ''}><label for="t-${t}" class="${t[0]}">${['Red · immediate', 'Yellow · urgent', 'Green · non-urgent'][i]}</label>`).join('');
+  const triPick = triageFields('');
   const dest = CLINICAL.map((id, i) =>
     `<input type="radio" name="dest" id="d-${id}" value="${id}" ${i === 0 ? 'checked' : ''}><label for="d-${id}">Tent ${tent(id).no} · ${tent(id).name}</label>`).join('');
   return `
     <h1>Register a patient</h1>
     <p class="sub">Tent 1 · Registration & Triage. The patient gets a file number and goes straight to the chosen tent's queue.</p>
-    <form class="card" onsubmit="doRegister(event)">
+    <form class="card" onsubmit="doRegister(event)" oninput="this.dataset.warned=''" novalidate>
       <div class="formsec">${ic('user')}<h2>Patient</h2></div>
       <div class="field"><label for="r-name">Full name</label><input id="r-name" type="text" required></div>
       <div class="fgrid">
@@ -1199,50 +1220,231 @@ function registerView() {
         <div class="field"><label for="r-phone">Phone (optional)</label><input id="r-phone" type="tel"></div>
         <div class="field"><label for="r-shelter">Shelter or area</label><input id="r-shelter" type="text" placeholder="e.g. Al-Mawasi"></div>
       </div>
-      <div class="fgrid">
-        <div class="field"><label for="r-cc">Condition · main complaint</label><input id="r-cc" type="text" required placeholder="What brought the patient in?"></div>
-        <div class="field"><label for="r-all">Allergies</label><input id="r-all" type="text" placeholder="e.g. Penicillin, or None known"></div>
-      </div>
+      <div class="field"><label for="r-cc">Condition · main complaint</label><input id="r-cc" type="text" required placeholder="What brought the patient in?"></div>
+      ${allergyField(null)}
       <p class="small muted" style="margin:-4px 0 0">Admission date: ${fmtDay(dayKey())}, recorded automatically.</p>
       <div class="formsec">${ic('alert')}<h2>Triage</h2></div>
       <div class="field choice tri-pick">${triPick}</div>
-      <div class="fgrid">
-        <div class="field"><label for="v-bp">BP</label><input id="v-bp" type="text" placeholder="120/80"></div>
-        <div class="field"><label for="v-hr">Pulse</label><input id="v-hr" type="number" placeholder="bpm"></div>
-        <div class="field"><label for="v-temp">Temp °C</label><input id="v-temp" type="number" step="0.1"></div>
-        <div class="field"><label for="v-spo2">SpO₂ %</label><input id="v-spo2" type="number"></div>
-        <div class="field"><label for="v-rr">Resp. rate</label><input id="v-rr" type="number"></div>
-        <div class="field"><label for="v-height">Height cm</label><input id="v-height" type="number"></div>
-        <div class="field"><label for="v-weight">Weight kg</label><input id="v-weight" type="number" step="0.1"></div>
-        <div class="field"><label for="v-muac">MUAC cm</label><input id="v-muac" type="number" step="0.1" placeholder="children, pregnancy"></div>
-      </div>
+      ${vitalsFields()}
       <div class="formsec">${ic('tent')}<h2>Send to</h2></div>
       <div class="field choice">${dest}</div>
+      <div class="form-msg"></div>
       <button class="btn primary mt">${ic('check')}Register and send</button>
     </form>`;
 }
+/* ---------- validation ---------- */
+function checkVitals(v) {
+  const E = [], Wn = [];
+  const num = (val, name, lo, hi, wlo, whi, unit) => {
+    if (val === '' || val == null) return;
+    const n = Number(val);
+    if (!isFinite(n)) { E.push(`${name} must be a number.`); return; }
+    if (n < lo || n > hi) { E.push(`${name} ${val}${unit} is not possible. Allowed range: ${lo} to ${hi}${unit}.`); return; }
+    if ((wlo != null && n < wlo) || (whi != null && n > whi)) Wn.push(`${name} ${val}${unit} is unusual.`);
+  };
+  if (v.bp) {
+    const m = /^(\d{2,3})\s*\/\s*(\d{2,3})$/.exec(v.bp);
+    if (!m) E.push('BP must be written like 120/80.');
+    else {
+      const sy = +m[1], di = +m[2];
+      if (sy < 50 || sy > 260 || di < 20 || di > 160 || di >= sy) E.push(`BP ${v.bp} is not possible.`);
+      else if (sy < 80 || sy > 200 || di > 120) Wn.push(`BP ${v.bp} is unusual.`);
+    }
+  }
+  num(v.hr, 'Pulse', 20, 250, 40, 180, ' bpm');
+  num(v.temp, 'Temperature', 30, 45, 35, 40.5, ' °C');
+  num(v.spo2, 'SpO₂', 30, 100, 85, null, '%');
+  num(v.rr, 'Resp. rate', 4, 80, 8, 40, '/min');
+  num(v.height, 'Height', 30, 250, null, null, ' cm');
+  num(v.weight, 'Weight', 0.5, 300, null, null, ' kg');
+  num(v.muac, 'MUAC', 5, 50, null, null, ' cm');
+  return { E, Wn };
+}
+// Shows errors or warnings in the form. Returns true when it is safe to save.
+function formGate(form, errors, warnings) {
+  const box = form.querySelector('.form-msg');
+  if (errors.length) {
+    form.dataset.warned = '';
+    box.innerHTML = `<div class="err-box" role="alert">${errors.map(esc).join('<br>')}</div>`;
+    box.scrollIntoView({ block: 'nearest' });
+    return false;
+  }
+  if (warnings.length && form.dataset.warned !== '1') {
+    form.dataset.warned = '1';
+    box.innerHTML = `<div class="warn-box" role="alert">${warnings.map(esc).join('<br>')}<br><b>Please re-check. Press the button again to save anyway.</b></div>`;
+    box.scrollIntoView({ block: 'nearest' });
+    return false;
+  }
+  box.innerHTML = '';
+  return true;
+}
+function allergyField(cur) {
+  const st = cur ? cur.allergyStatus : '';
+  const opt = (v, id, label) => `<input type="radio" name="allst" id="${id}" value="${v}" ${st === v ? 'checked' : ''} ${id === 'al-u' ? 'required' : ''} onchange="allergyToggle()"><label for="${id}">${label}</label>`;
+  return `<div class="field"><label>Allergies</label><div class="choice">${opt('unknown', 'al-u', 'Unknown / not asked yet')}${opt('none', 'al-n', 'Asked: no known allergies')}${opt('known', 'al-k', 'Has allergy')}</div>
+    <input id="r-all" type="text" placeholder="Which allergy? e.g. Penicillin" value="${esc(cur && cur.allergyStatus === 'known' ? cur.allergies : '')}" style="margin-top:8px;${st === 'known' ? '' : 'display:none'}"></div>`;
+}
+function allergyToggle() {
+  const k = $('#al-k'), box = $('#r-all');
+  if (!box) return;
+  box.style.display = k && k.checked ? '' : 'none';
+  box.required = !!(k && k.checked);
+}
+function readAllergy(form) {
+  const st = form.allst ? form.allst.value : '';
+  const txt = $('#r-all') ? $('#r-all').value.trim() : '';
+  const err = !st ? 'Choose an allergy option.' : (st === 'known' && !txt ? 'Write which allergy the patient has.' : '');
+  return { st, txt, err };
+}
+function vitalsFields(v) {
+  v = v || {};
+  return `<div class="fgrid">
+    <div class="field"><label for="v-bp">BP</label><input id="v-bp" type="text" inputmode="numeric" placeholder="120/80" value="${esc(v.bp)}"></div>
+    <div class="field"><label for="v-hr">Pulse</label><input id="v-hr" type="number" min="20" max="250" placeholder="bpm" value="${esc(v.hr)}"></div>
+    <div class="field"><label for="v-temp">Temp °C</label><input id="v-temp" type="number" step="0.1" min="30" max="45" value="${esc(v.temp)}"></div>
+    <div class="field"><label for="v-spo2">SpO₂ %</label><input id="v-spo2" type="number" min="30" max="100" value="${esc(v.spo2)}"></div>
+    <div class="field"><label for="v-rr">Resp. rate</label><input id="v-rr" type="number" min="4" max="80" value="${esc(v.rr)}"></div>
+    <div class="field"><label for="v-height">Height cm</label><input id="v-height" type="number" min="30" max="250" value="${esc(v.height)}"></div>
+    <div class="field"><label for="v-weight">Weight kg</label><input id="v-weight" type="number" step="0.1" min="0.5" max="300" value="${esc(v.weight)}"></div>
+    <div class="field"><label for="v-muac">MUAC cm</label><input id="v-muac" type="number" step="0.1" min="5" max="50" placeholder="children, pregnancy" value="${esc(v.muac)}"></div>
+  </div>`;
+}
+function triageFields(cur) {
+  return ['red', 'yellow', 'green'].map((t, i) =>
+    `<input type="radio" name="triage" id="t-${t}" value="${t}" ${cur === t ? 'checked' : ''} ${i === 0 ? 'required' : ''}><label for="t-${t}" class="${t[0]}">${['Red · immediate', 'Yellow · urgent', 'Green · non-urgent'][i]}</label>`).join('');
+}
+
 function readVitals() {
   const g = id => { const el = $(id); return el ? el.value.trim() : ''; };
   return { bp: g('#v-bp'), hr: g('#v-hr'), temp: g('#v-temp'), spo2: g('#v-spo2'), rr: g('#v-rr'), height: g('#v-height'), weight: g('#v-weight'), muac: g('#v-muac') };
 }
 
+let pendingReg = null;
 function doRegister(e) {
   e.preventDefault();
   const f = e.target;
+  const name = $('#r-name').value.trim(), age = $('#r-age').value, cc = $('#r-cc').value.trim();
+  const al = readAllergy(f);
+  const v = readVitals();
+  const errs = [];
+  if (!name) errs.push('Write the patient\'s full name.');
+  if (age === '' || Number(age) < 0 || Number(age) > 120) errs.push('Write an age between 0 and 120.');
+  if (!f.sex.value) errs.push('Choose the gender.');
+  if (!cc) errs.push('Write the main complaint.');
+  if (al.err) errs.push(al.err);
+  if (!f.triage.value) errs.push('Choose a triage colour. Nothing is selected by default.');
+  const cv = checkVitals(v);
+  if (!formGate(f, errs.concat(cv.E), cv.Wn)) return;
+  pendingReg = {
+    name, age: Number(age), sex: f.sex.value === 'M' ? 'M' : 'F', pregnant: f.sex.value === 'FP',
+    allergy: al, phone: $('#r-phone').value.trim(), shelter: $('#r-shelter').value.trim(),
+    complaint: cc, triage: f.triage.value, vitals: v, location: f.dest.value
+  };
+  const matches = S.patients.filter(q => normName(q.name) === normName(name) && q.sex === pendingReg.sex && Math.abs(q.age - pendingReg.age) <= 1);
+  if (matches.length) { dupeSheet(matches); return; }
+  createPatient(pendingReg);
+}
+
+function dupeSheet(matches) {
+  const rows = matches.map(q => `<div class="dupe"><div><b>${esc(q.name)}</b> <span class="small muted">${q.id}</span>
+      <div class="small muted">${q.age} y · ${q.sex === 'F' ? 'Female' : 'Male'}${q.shelter ? ' · ' + esc(q.shelter) : ''} · ${q.state === 'discharged' ? 'Discharged · last visit ' + fmtDay(dayKey(new Date(q.movedAt))) : 'In the hospital now · ' + esc(tentLabel(q.location))}</div>
+      <div class="small muted">Allergies: ${esc(allergyText(q))}</div></div>
+      ${q.state === 'discharged'
+        ? `<button class="btn primary sm" onclick="newVisitFromReg('${q.id}')">Same person: start a new visit</button>`
+        : `<button class="btn sm" onclick="closeModal();go('patient','${q.id}')">Same person: open file</button>`}</div>`).join('');
+  modal('Possible existing patient', `<p class="small">A patient with the same name, sex and a similar age is already registered. Check with the patient before going on. A similar name alone is not proof it is the same person.</p>
+    ${rows}
+    <button class="btn mt" onclick="closeModal();createPatient(pendingReg)">Different person: create a new file</button>`);
+}
+function createPatient(r) {
   const p = {
-    id: nextId(), name: $('#r-name').value.trim(), age: Number($('#r-age').value), sex: f.sex.value === 'M' ? 'M' : 'F', pregnant: f.sex.value === 'FP',
-    allergies: $('#r-all').value.trim() || 'None known', clinical: {}, outcomeDetail: {}, doctor: '',
-    phone: $('#r-phone').value.trim(), shelter: $('#r-shelter').value.trim(), complaint: $('#r-cc').value.trim(),
-    triage: f.triage.value, vitals: readVitals(), location: f.dest.value, state: 'waiting', bed: null,
-    notes: [], outcome: null, createdAt: nowISO(), movedAt: nowISO()
+    id: nextId(), name: r.name, age: r.age, sex: r.sex, pregnant: r.pregnant,
+    allergyStatus: r.allergy.st, allergies: r.allergy.st === 'known' ? r.allergy.txt : '',
+    allergyBy: r.allergy.st === 'unknown' ? '' : me.name, allergyAt: r.allergy.st === 'unknown' ? '' : nowISO(),
+    clinical: {}, outcomeDetail: {}, doctor: '', visitNo: 1, visits: [], dischargeApproved: null,
+    phone: r.phone, shelter: r.shelter, complaint: r.complaint, triage: r.triage, vitals: r.vitals,
+    location: r.location, state: 'waiting', bed: null, notes: [], outcome: null, createdAt: nowISO(), movedAt: nowISO()
   };
   S.patients.push(p);
-  log(p.id, `Registered at Tent 1. Triage: ${p.triage}.`);
+  log(p.id, `Registered at Tent 1 (visit ${encId(p)}). Triage: ${p.triage}.`);
   log(p.id, `Referred to ${tentLabel(p.location)}.`);
+  pendingReg = null;
   save();
   view = { name: 'patient', id: p.id };
+  closeModal();
   render();
   wristband(p.id);
+}
+function newVisitFromReg(pid) {
+  const p = pat(pid), r = pendingReg;
+  if (r.allergy.st !== 'unknown') setAllergy(p, r.allergy.st, r.allergy.txt, true);
+  if (r.phone) p.phone = r.phone;
+  if (r.shelter) p.shelter = r.shelter;
+  p.pregnant = r.pregnant;
+  startVisit(p, { complaint: r.complaint, triage: r.triage, vitals: r.vitals, location: r.location });
+  pendingReg = null;
+  save();
+  view = { name: 'patient', id: p.id };
+  closeModal();
+  render();
+  wristband(p.id);
+}
+// Closes the old visit into the patient's history and opens a new one on the same file number.
+function startVisit(p, v, fuId) {
+  p.visits = p.visits || [];
+  p.visits.push({ enc: encId(p), start: p.createdAt, end: p.movedAt, complaint: p.complaint, triage: p.triage,
+    dx: (p.clinical && p.clinical.dx) || '', outcome: p.outcome || '', doctor: p.doctor || '', meds: (p.outcomeDetail && p.outcomeDetail.meds) || '' });
+  p.visitNo = (p.visitNo || 1) + 1;
+  Object.assign(p, { complaint: v.complaint, triage: v.triage, vitals: v.vitals, location: v.location, state: 'waiting', bed: null,
+    notes: [], clinical: {}, outcomeDetail: {}, outcome: null, doctor: '', dischargeApproved: null, createdAt: nowISO(), movedAt: nowISO() });
+  const f = fuId ? S.followups.find(x => x.id === fuId) : null;
+  if (f) { f.status = 'attended'; f.at = nowISO(); f.enc = encId(p); }
+  log(p.id, `New visit ${encId(p)} opened on the same file${f ? ' for the follow-up: ' + f.reason : ''}. Triage: ${v.triage}. Sent to ${tentLabel(v.location)}.`);
+}
+function newVisitForm(pid, fuId) {
+  const p = pat(pid);
+  const f = fuId ? S.followups.find(x => x.id === fuId) : null;
+  const dest = CLINICAL.map((id, i) => `<input type="radio" name="dest" id="nd-${id}" value="${id}" ${i === 0 ? 'checked' : ''}><label for="nd-${id}">Tent ${tent(id).no} · ${tent(id).name}</label>`).join('');
+  modal('Start a new visit', `<form onsubmit="saveNewVisit(event,'${pid}','${fuId || ''}')" oninput="this.dataset.warned=''" novalidate>
+    <p class="small"><b>${esc(p.name)}</b> · ${p.id} · next visit ${p.id}-V${(p.visitNo || 1) + 1}<br><span class="muted">Allergies on file: ${esc(allergyText(p))}. Update them from the file if they changed.</span></p>
+    <div class="field"><label for="nv-cc">Reason for this visit</label><input id="nv-cc" type="text" required value="${esc(f ? f.reason : '')}"></div>
+    <div class="field"><label>Triage</label><div class="choice tri-pick">${triageFields('')}</div></div>
+    ${vitalsFields()}
+    <div class="field"><label>Send to</label><div class="choice">${dest}</div></div>
+    <div class="form-msg"></div>
+    <button class="btn primary">Start visit</button></form>`);
+}
+function saveNewVisit(e, pid, fuId) {
+  e.preventDefault();
+  const f = e.target, p = pat(pid);
+  const cc = $('#nv-cc').value.trim(), v = readVitals();
+  const errs = [];
+  if (!cc) errs.push('Write the reason for this visit.');
+  if (!f.triage.value) errs.push('Choose a triage colour.');
+  const cv = checkVitals(v);
+  if (!formGate(f, errs.concat(cv.E), cv.Wn)) return;
+  startVisit(p, { complaint: cc, triage: f.triage.value, vitals: v, location: f.dest.value }, fuId || null);
+  save(); closeModal(); go('patient', pid); toast('New visit started');
+}
+function setAllergy(p, st, txt, silent) {
+  const before = allergyText(p);
+  p.allergyStatus = st; p.allergies = st === 'known' ? txt : '';
+  p.allergyBy = st === 'unknown' ? '' : me.name; p.allergyAt = st === 'unknown' ? '' : nowISO();
+  const after = allergyText(p);
+  if (before !== after) log(p.id, `Allergies changed from "${before}" to "${after}".`);
+}
+function allergyForm(id) {
+  const p = pat(id);
+  modal('Allergies', `<form onsubmit="saveAllergy(event,'${id}')" novalidate>
+    <p class="small muted">Only choose "no known allergies" after asking the patient or family. If nobody can answer, keep it as Unknown.</p>
+    ${allergyField(p)}<div class="form-msg"></div><button class="btn primary">Save allergies</button></form>`);
+}
+function saveAllergy(e, id) {
+  e.preventDefault();
+  const al = readAllergy(e.target);
+  if (!formGate(e.target, al.err ? [al.err] : [], [])) return;
+  setAllergy(pat(id), al.st, al.txt);
+  done('Allergies saved');
 }
 
 function todayView() {
@@ -1324,35 +1526,33 @@ function patientView(id) {
   const cl = p.clinical || {};
   const od = p.outcomeDetail || {};
   const act = canAct(p);
-  const ords = S.orders.filter(o => o.pid === id).sort((a, b) => b.at.localeCompare(a.at));
+  const ords = S.orders.filter(o => o.pid === id && (o.enc || o.pid + '-V1') === encId(p)).sort((a, b) => b.at.localeCompare(a.at));
   const tl = S.log.filter(l => l.pid === id);
   const where = p.state === 'discharged' ? esc(p.outcome || 'Discharged') : `${esc(tentLabel(p.location))}${p.bed ? ' · bed ' + p.bed : ''}`;
 
   const A = [];
+  const doc = me.role === 'doctor' || me.role === 'admin';
+  const nurse = me.role === 'nurse';
   if (act) {
-    if (p.state === 'waiting') A.push(['steth', 'Start consultation', `startCare('${id}')`, 'primary']);
-    A.push(['note', 'Clinical assessment', `noteForm('${id}')`, '']);
+    if (p.dischargeApproved) {
+      if (doc || (nurse && p.location === 'WARD')) A.push(['exit', 'Confirm departure', `departureForm('${id}')`, 'primary']);
+    } else if (p.state === 'waiting' && doc) A.push(['steth', 'Start consultation', `startCare('${id}')`, 'primary']);
+    if (doc) A.push(['note', 'Clinical assessment', `noteForm('${id}')`, '']);
+    if (nurse) A.push(['note', 'Nursing note', `nurseNoteForm('${id}')`, '']);
     A.push(['pulse', 'Update vitals', `vitalsForm('${id}')`, '']);
     A.push(['flask', 'Request lab / X-ray', `orderForm('${id}')`, '']);
-    A.push(['refer', 'Refer to another tent', `referForm('${id}')`, '']);
-    if (p.location !== 'WARD') A.push(['bed', 'Admit to ward', `admitForm('${id}')`, '']);
-    A.push(['exit', 'Discharge', `dischargeForm('${id}')`, 'danger']);
+    if (doc && !p.dischargeApproved) A.push(['refer', 'Refer to another tent', `referForm('${id}')`, '']);
+    if (doc && !p.dischargeApproved && p.location !== 'WARD') A.push(['bed', 'Admit to ward', `admitForm('${id}')`, '']);
+    if (doc && !p.dischargeApproved) A.push(['exit', 'Approve discharge', `dischargeForm('${id}')`, 'danger']);
+    if (doc && p.dischargeApproved) A.push(['reset', 'Cancel discharge approval', `cancelDischarge('${id}')`, '']);
   }
+  if (p.state !== 'discharged' && me.role !== 'lab') A.push(['alert', 'Update allergies', `allergyForm('${id}')`, '']);
+  if (p.state === 'discharged' && ['reception', 'doctor', 'admin'].includes(me.role)) A.push(['userplus', 'Start new visit', `newVisitForm('${id}')`, 'primary']);
   A.push(['tag', 'Wristband', `wristband('${id}')`, '']);
   curActions = A;
   const first = A[0];
-  const actionbar = `<div class="actionbar m-only"><button class="btn primary" onclick="${first[2]}">${ic(first[0])}${esc(first[1])}</button>${A.length > 1 ? `<button class="btn more" onclick="actionsSheet()" aria-label="All actions">${ic('grid')}Actions</button>` : ''}</div>`;
-  let buttons = '';
-  if (act) {
-    if (p.state === 'waiting') buttons += `<button class="btn primary" onclick="startCare('${id}')">${ic('steth')}Start consultation</button>`;
-    buttons += `<button class="btn" onclick="noteForm('${id}')">${ic('note')}Clinical assessment</button>`;
-    buttons += `<button class="btn" onclick="vitalsForm('${id}')">${ic('pulse')}Update vitals</button>`;
-    buttons += `<button class="btn" onclick="orderForm('${id}')">${ic('flask')}Request lab / X-ray</button>`;
-    buttons += `<button class="btn" onclick="referForm('${id}')">${ic('refer')}Refer to another tent</button>`;
-    if (p.location !== 'WARD') buttons += `<button class="btn" onclick="admitForm('${id}')">${ic('bed')}Admit to ward</button>`;
-    buttons += `<button class="btn danger" onclick="dischargeForm('${id}')">${ic('exit')}Discharge</button>`;
-  }
-  buttons += `<button class="btn" onclick="wristband('${id}')">${ic('tag')}Wristband</button>`;
+  const actionbar = `<div class="actionbar m-only"><button class="btn ${first[3] === 'danger' ? '' : 'primary'}" onclick="${first[2]}">${ic(first[0])}${esc(first[1])}</button>${A.length > 1 ? `<button class="btn more" onclick="actionsSheet()" aria-label="All actions">${ic('grid')}Actions</button>` : ''}</div>`;
+  const buttons = A.map(a => `<button class="btn ${a[3]}" onclick="${a[2]}">${ic(a[0])}${esc(a[1])}</button>`).join('');
 
   const vit = [['BP', v.bp], ['Heart rate', v.hr && v.hr + ' bpm'], ['Resp. rate', v.rr && v.rr + '/min'], ['SpO₂', v.spo2 && v.spo2 + '%'], ['Temp', v.temp && v.temp + ' °C'], ['Height', v.height && v.height + ' cm'], ['Weight', v.weight && v.weight + ' kg'], ['MUAC', v.muac && v.muac + ' cm']]
     .map(([l, x]) => `<div><span>${l}</span><b>${esc(x || '–')}</b></div>`).join('');
@@ -1367,13 +1567,14 @@ function patientView(id) {
       <div class="phead">
         <div>
           <div class="mrnline">${p.id}</div>
+          <div class="visitline">Visit ${p.visitNo || 1} · ${encId(p)}${p.dischargeApproved && p.state !== 'discharged' ? ' · <b>Discharge approved</b>' : ''}</div>
           <h1>${esc(p.name)}</h1>
           <div class="muted">${p.age} years · ${p.sex === 'F' ? 'Female' : 'Male'}${p.shelter ? ' · ' + esc(p.shelter) : ''}${p.phone ? ' · ' + esc(p.phone) : ''}</div>
           ${p.pregnant ? '<div class="mt" style="margin-top:8px"><span class="badge preg">Pregnant</span></div>' : ''}
         </div>
         <div class="pmeta" style="text-align:right"><span class="tri ${p.triage}">${p.triage}</span><div class="mt"><span class="where">${ic(p.state === 'discharged' ? 'exit' : (TENT_IC[p.location] || 'tent'), 'sm')}${where}</span></div><div class="small muted">Arrived ${fmtTime(p.createdAt)}</div></div>
       </div>
-      ${p.allergies && !/^none/i.test(p.allergies) ? `<div class="alertbar">${ic('alert', 'sm')}Allergy: ${esc(p.allergies)}</div>` : ''}
+      ${hasAllergy(p) ? `<div class="alertbar">${ic('alert', 'sm')}Allergy: ${esc(p.allergies)}</div>` : p.allergyStatus === 'unknown' ? `<div class="infobar">${ic('alert', 'sm')}Allergies unknown. Ask the patient or family before giving medicine.</div>` : ''}
       <div class="mt"><span class="muted small">Condition · main complaint</span><div><b>${esc(p.complaint)}</b></div></div>
       <div class="vitals mt">${vit}</div>
       <div class="actions mt d-only">${buttons}</div>
@@ -1405,6 +1606,8 @@ function patientView(id) {
             <div>Referral note</div><div>${dash(od.refNote)}</div>
             <div>Outcome note</div><div>${dash(od.note)}</div>
             <div>Follow-up visit</div><div>${od.followup ? fmtDay(od.followup) : dash('')}</div>
+            <div>Discharge approved by</div><div>${p.dischargeApproved ? esc(p.dischargeApproved.by) + ' · ' + fmtTime(p.dischargeApproved.at) : dash('')}</div>
+            <div>Pending results owner</div><div>${dash(od.pendingOwner)}</div>
           </div>
         </div>
       </div>
@@ -1414,10 +1617,11 @@ function patientView(id) {
             <div>Admission date</div><div>${new Date(p.createdAt).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}</div>
             <div>Assigned doctor</div><div>${dash(p.doctor)}</div>
             <div>Assigned tent</div><div>${p.state === 'discharged' ? '<span class="none">Discharged</span>' : esc(tentLabel(p.location)) + (p.bed ? ' · bed ' + p.bed : '')}</div>
-            <div>Allergies</div><div>${dash(p.allergies)}</div>
+            <div>Allergies</div><div>${esc(allergyText(p))}${p.allergyBy ? `<div class="small muted">Recorded by ${esc(p.allergyBy)} · ${fmtDay(dayKey(new Date(p.allergyAt)))} ${fmtTime(p.allergyAt)}</div>` : ''}</div>
             <div>Last updated</div><div>${lastUpdated(p.id) ? fmtTime(lastUpdated(p.id)) : dash('')}</div>
           </div>
         </div>
+        ${(p.visits || []).length ? `<div class="card"><div class="secthead">${ic('calendar')}<h2>Previous visits (${p.visits.length})</h2></div>${p.visits.slice().reverse().map(v => `<div class="prev"><div><b>${esc(v.enc)}</b> <span class="small muted">${fmtDay(dayKey(new Date(v.start)))}</span></div><div class="small">${esc(v.complaint)}${v.dx ? ' · <b>' + esc(v.dx) + '</b>' : ''}</div><div class="small muted">${esc(v.outcome || '')}${v.doctor ? ' · ' + esc(v.doctor) : ''}</div></div>`).join('')}</div>` : ''}
         <div class="card"><div class="secthead">${ic('note')}<h2>Notes</h2></div>${notes || '<div class="muted">No notes yet.</div>'}</div>
         <div class="card"><div class="secthead">${ic('clock')}<h2>Patient journey</h2></div><ul class="timeline">${tl.map(l => `<li><div class="t">${fmtTime(l.t)} · ${esc(l.by)}</div>${esc(l.text)}</li>`).join('')}</ul></div>
       </div>
@@ -1450,19 +1654,19 @@ function startCare(id) {
 
 function noteForm(id) {
   const p = pat(id), c = p.clinical || {};
-  const opt = (list, cur) => list.map(x => `<option ${x === cur ? 'selected' : ''}>${esc(x)}</option>`).join('');
+  const opt = (list, cur) => '<option value="">— Select —</option>' + list.map(x => `<option ${x === cur ? 'selected' : ''}>${esc(x)}</option>`).join('');
   modal('Clinical assessment', `<form onsubmit="saveNote(event,'${id}')">
     <div class="field"><label for="n-hist">History · past illnesses, operations, medicines</label><textarea id="n-hist" style="min-height:64px">${esc(c.history)}</textarea></div>
     <div class="fgrid">
-      <div class="field"><label for="n-sys">System examined</label><select id="n-sys">${opt(SYSTEMS, c.system)}</select></div>
-      <div class="field"><label for="n-cat">Emergency category</label><select id="n-cat">${opt(EMERG_CAT, c.category)}</select></div>
+      <div class="field"><label for="n-sys">System examined</label><select id="n-sys" required>${opt(SYSTEMS, c.system)}</select></div>
+      <div class="field"><label for="n-cat">Emergency category</label><select id="n-cat" required>${opt(EMERG_CAT, c.category)}</select></div>
     </div>
     <div class="field"><label for="n-exam">Physical findings</label><textarea id="n-exam" style="min-height:64px">${esc(c.exam)}</textarea></div>
     <div class="field"><label for="n-dx">Diagnosis</label><input id="n-dx" type="text" required value="${esc(c.dx)}"></div>
     <div class="fgrid">
-      <div class="field"><label for="n-proc">Procedure</label><select id="n-proc">${opt(PROCEDURES, c.procedures || 'None')}</select></div>
-      <div class="field"><label for="n-srh">Sexual & reproductive health</label><select id="n-srh">${opt(SRH, c.srh || 'None')}</select></div>
-      <div class="field"><label for="n-resp">Response</label><select id="n-resp">${opt(RESPONSES, c.response || 'Stable')}</select></div>
+      <div class="field"><label for="n-proc">Procedure</label><select id="n-proc">${opt(PROCEDURES, c.procedures)}</select></div>
+      <div class="field"><label for="n-srh">Sexual & reproductive health</label><select id="n-srh">${opt(SRH, c.srh)}</select></div>
+      <div class="field"><label for="n-resp">Response</label><select id="n-resp" required>${opt(RESPONSES, c.response)}</select></div>
     </div>
     <div class="field"><label for="n-poc">Medication given here</label><input id="n-poc" type="text" value="${esc(c.poc)}" placeholder="Drug, dose, route"></div>
     <div class="field"><label class="checkline"><input type="checkbox" id="n-tx" ${c.transfusion ? 'checked' : ''}> Blood transfusion given</label></div>
@@ -1483,22 +1687,15 @@ function saveNote(e, id) {
 }
 
 function vitalsForm(id) {
-  const v = pat(id).vitals || {};
-  modal('Update vitals', `<form onsubmit="saveVitals(event,'${id}')"><div class="fgrid">
-    <div class="field"><label for="v-bp">BP</label><input id="v-bp" type="text" value="${esc(v.bp)}"></div>
-    <div class="field"><label for="v-hr">Pulse</label><input id="v-hr" type="number" value="${esc(v.hr)}"></div>
-    <div class="field"><label for="v-temp">Temp °C</label><input id="v-temp" type="number" step="0.1" value="${esc(v.temp)}"></div>
-    <div class="field"><label for="v-spo2">SpO₂ %</label><input id="v-spo2" type="number" value="${esc(v.spo2)}"></div>
-    <div class="field"><label for="v-rr">Resp. rate</label><input id="v-rr" type="number" value="${esc(v.rr)}"></div>
-    <div class="field"><label for="v-height">Height cm</label><input id="v-height" type="number" value="${esc(v.height)}"></div>
-    <div class="field"><label for="v-weight">Weight kg</label><input id="v-weight" type="number" step="0.1" value="${esc(v.weight)}"></div>
-    <div class="field"><label for="v-muac">MUAC cm</label><input id="v-muac" type="number" step="0.1" value="${esc(v.muac)}"></div>
-    </div><button class="btn primary">Save vitals</button></form>`);
+  modal('Update vitals', `<form onsubmit="saveVitals(event,'${id}')" oninput="this.dataset.warned=''" novalidate>${vitalsFields(pat(id).vitals)}<div class="form-msg"></div><button class="btn primary">Save vitals</button></form>`);
 }
+
 function saveVitals(e, id) {
   e.preventDefault();
-  const p = pat(id); p.vitals = readVitals();
-  const v = p.vitals;
+  const v = readVitals();
+  const cv = checkVitals(v);
+  if (!formGate(e.target, cv.E, cv.Wn)) return;
+  const p = pat(id); p.vitals = v;
   log(id, `Vitals: BP ${v.bp || '–'}, pulse ${v.hr || '–'}, resp. ${v.rr || '–'}, temp ${v.temp || '–'}, SpO2 ${v.spo2 || '–'}${v.weight ? ', weight ' + v.weight + ' kg' : ''}${v.muac ? ', MUAC ' + v.muac + ' cm' : ''}.`);
   done('Vitals updated');
 }
@@ -1513,7 +1710,7 @@ function saveOrder(e, id) {
   e.preventDefault();
   const p = pat(id);
   const [group, test] = $('#o-test').value.split('|');
-  S.orders.push({ id: 'OR-' + (S.orders.length + 1001), pid: id, group, test, status: 'requested', result: '', from: p.location, at: nowISO(), doneAt: null });
+  S.orders.push({ id: 'OR-' + (S.orders.length + 1001), pid: id, enc: encId(p), group, test, status: 'requested', result: '', from: p.location, at: nowISO(), doneAt: null });
   log(id, `${test} requested.`);
   done('Request sent to Lab & X-ray');
 }
@@ -1564,29 +1761,78 @@ function saveAdmit(e, id) {
   done(`Admitted to bed ${bed}`);
 }
 function dischargeForm(id) {
-  modal('Discharge and outcome', `<form onsubmit="saveDischarge(event,'${id}')">
-    <div class="field"><label>Visit outcome</label><div class="choice">${VISIT_OUTCOMES.map((o, i) => `<input type="radio" name="out" id="out${i}" value="${o}" ${i === 0 ? 'checked' : ''}><label for="out${i}">${o}</label>`).join('')}</div></div>
-    <div class="field"><label for="dis-meds">Medication to take home</label><input id="dis-meds" type="text" placeholder="e.g. Ibuprofen 400 mg, three times a day"></div>
+  const p = pat(id), od = p.outcomeDetail || {};
+  const pend = pendingOrders(id).filter(o => (o.enc || o.pid + '-V1') === encId(p));
+  const doctors = Array.from(new Set([me.name].concat(S.staff.filter(st => st.group === 'Doctor').map(st => st.name))));
+  const pendBlock = pend.length ? `<div class="warn-box"><b>${pend.length} result${pend.length > 1 ? 's' : ''} still pending:</b> ${pend.map(o => esc(o.test)).join(', ')}.<br>Discharge is allowed, but someone must own these results.</div>
+    <div class="field"><label for="dis-owner">Who will follow up the pending results?</label><select id="dis-owner"><option value="">— Select —</option>${doctors.map(d => `<option>${esc(d)}</option>`).join('')}</select></div>` : '';
+  modal('Approve discharge', `<form onsubmit="saveDischarge(event,'${id}')" novalidate>
+    <div class="field"><label>Visit outcome</label><div class="choice">${VISIT_OUTCOMES.map((o, i) => `<input type="radio" name="out" id="out${i}" value="${o}" ${od.visit === o ? 'checked' : ''} ${i === 0 ? 'required' : ''}><label for="out${i}">${o}</label>`).join('')}</div></div>
+    <div class="field"><label for="dis-meds">Medication to take home</label><textarea id="dis-meds" style="min-height:64px" placeholder="One per line: drug, dose, route, how often, how long. e.g. Ibuprofen 400 mg by mouth, three times a day, 5 days">${esc(od.meds || '')}</textarea></div>
     <div class="fgrid">
-      <div class="field"><label for="dis-ref">Referral</label><select id="dis-ref">${REFERRALS.map(r => `<option>${r}</option>`).join('')}</select></div>
+      <div class="field"><label for="dis-ref">Referral</label><select id="dis-ref">${REFERRALS.map(r => `<option ${od.referral === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
       <div class="field"><label for="dis-fu">Follow-up visit</label><select id="dis-fu"><option value="">None</option><option value="3">In 3 days</option><option value="7">In 7 days</option><option value="14">In 14 days</option></select></div>
     </div>
-    <div class="field"><label for="dis-refnote">Referral note</label><input id="dis-refnote" type="text"></div>
-    <div class="field"><label for="dis-note">Outcome note</label><textarea id="dis-note" placeholder="Advice, warning signs"></textarea></div>
-    <button class="btn primary">Confirm discharge</button></form>`);
+    <div class="field"><label for="dis-refnote">Referral note</label><input id="dis-refnote" type="text" value="${esc(od.refNote || '')}"></div>
+    <div class="field"><label for="dis-note">Outcome note</label><textarea id="dis-note" placeholder="Advice, warning signs">${esc(od.note || '')}</textarea></div>
+    ${pendBlock}
+    <div class="form-msg"></div>
+    <div class="row"><button class="btn primary" name="mode" value="approve">Approve discharge</button>${p.location !== 'WARD' ? '<button class="btn" name="mode" value="now">Approve and confirm the patient has left</button>' : ''}</div>
+    <p class="small muted">On the ward, the nurse confirms when the patient has actually left. That frees the bed.</p></form>`);
 }
 
 function saveDischarge(e, id) {
   e.preventDefault();
+  const f = e.target, p = pat(id);
+  const g = k => $(k) ? $(k).value.trim() : '';
+  const out = f.out.value, fu = g('#dis-fu'), meds = g('#dis-meds'), owner = g('#dis-owner');
+  const pend = pendingOrders(id).filter(o => (o.enc || o.pid + '-V1') === encId(p));
+  const errs = [];
+  if (!out) errs.push('Choose the visit outcome.');
+  if (out === 'Discharged with medication' && !meds) errs.push('Write the medication to take home (drug, dose, route, how often, how long), or choose "Discharged without medication".');
+  if (out === 'Discharged without medication' && meds) errs.push('You wrote take-home medication. Choose "Discharged with medication" or clear the medication.');
+  if (pend.length && !owner) errs.push('Choose who will follow up the pending results.');
+  if (!formGate(f, errs, [])) return;
+  p.outcomeDetail = { visit: out, meds, referral: g('#dis-ref'), refNote: g('#dis-refnote'), note: g('#dis-note'), fuDays: fu ? Number(fu) : 0, followup: fu ? addDays(Number(fu)) : '', pendingOwner: owner };
+  pend.forEach(o => { o.followBy = owner; });
+  p.dischargeApproved = { by: me.name, at: nowISO() };
+  log(id, `Discharge approved: ${out}.${p.outcomeDetail.referral !== 'None' ? ' Referral: ' + p.outcomeDetail.referral + '.' : ''}${pend.length ? ' Pending results followed up by ' + owner + '.' : ''}`);
+  const submitter = e.submitter;
+  if (submitter && submitter.value === 'now') { finishDeparture(p); done('Patient discharged'); return; }
+  done('Discharge approved');
+}
+function finishDeparture(p) {
+  const od = p.outcomeDetail || {};
+  if (od.fuDays) S.followups.push({ id: 'FU-' + Date.now(), pid: p.id, date: addDays(od.fuDays), reason: 'Follow-up after ' + ((p.clinical && p.clinical.dx) || p.complaint).toLowerCase(), status: 'expected' });
+  const bed = p.bed;
+  if (bed) S.beds[bed - 1] = null;
+  log(p.id, `Left the hospital${bed ? ' from bed ' + bed : ''}. Departure confirmed by ${me.name}.${od.fuDays ? ' Follow-up in ' + od.fuDays + ' days.' : ''}`);
+  p.bed = null; p.state = 'discharged'; p.outcome = od.visit || 'Discharged'; p.movedAt = nowISO();
+}
+function departureForm(id) {
+  const p = pat(id), a = p.dischargeApproved;
+  modal('Confirm departure', `<p>${esc(p.name)} · ${p.id}</p>
+    <p class="small muted">Discharge approved by ${esc(a.by)} at ${fmtTime(a.at)}: ${esc(p.outcomeDetail.visit)}.${p.bed ? ' Bed ' + p.bed + ' will be freed.' : ''}</p>
+    ${p.outcomeDetail.meds ? `<p class="small"><b>Take-home medication:</b> ${esc(p.outcomeDetail.meds)}</p>` : ''}
+    <div class="row"><button class="btn primary" onclick="confirmDeparture('${id}')">Patient has left</button><button class="btn" onclick="closeModal()">Not yet</button></div>`);
+}
+function confirmDeparture(id) { finishDeparture(pat(id)); done('Departure confirmed'); }
+function cancelDischarge(id) {
+  const p = pat(id); p.dischargeApproved = null;
+  log(id, 'Discharge approval cancelled.');
+  done('Discharge approval cancelled');
+}
+function nurseNoteForm(id) {
+  modal('Nursing note', `<form onsubmit="saveNurseNote(event,'${id}')" novalidate><div class="field"><label for="nn">Note</label><textarea id="nn" required></textarea></div><div class="form-msg"></div><button class="btn primary">Save note</button></form>`);
+}
+function saveNurseNote(e, id) {
+  e.preventDefault();
+  const t = $('#nn').value.trim();
+  if (!formGate(e.target, t ? [] : ['Write the note.'], [])) return;
   const p = pat(id);
-  const g = k => $(k).value.trim();
-  const out = e.target.out.value, fu = g('#dis-fu');
-  p.outcomeDetail = { visit: out, meds: g('#dis-meds'), referral: g('#dis-ref'), refNote: g('#dis-refnote'), note: g('#dis-note'), followup: fu ? addDays(Number(fu)) : '' };
-  if (fu) S.followups.push({ id: 'FU-' + Date.now(), pid: id, date: addDays(Number(fu)), reason: 'Follow-up after ' + (p.clinical.dx || p.complaint).toLowerCase(), status: 'expected' });
-  if (p.bed) { S.beds[p.bed - 1] = null; }
-  log(id, `${out}${p.bed ? ' from bed ' + p.bed : ''}.${p.outcomeDetail.referral !== 'None' ? ' Referral: ' + p.outcomeDetail.referral + '.' : ''}${fu ? ' Follow-up in ' + fu + ' days.' : ''}${p.outcomeDetail.note ? ' ' + p.outcomeDetail.note : ''}`);
-  p.bed = null; p.state = 'discharged'; p.outcome = out; p.movedAt = nowISO();
-  done('Patient discharged');
+  p.notes.push({ t: nowISO(), by: me.name, tent: p.location, dx: 'Nursing note', plan: t });
+  log(id, 'Nursing note added.');
+  done('Note saved');
 }
 
 function wristband(id) {
@@ -1642,20 +1888,20 @@ function exportData() {
   const num = v => v === '' || v === null || v === undefined || isNaN(Number(v)) ? (v || '') : Number(v);
   const TRI = { red: 'Red', yellow: 'Yellow', green: 'Green' };
   const STATE = { waiting: 'Waiting', 'in-care': 'In care', admitted: 'Admitted', discharged: 'Discharged' };
-  const patients = [['File no.', 'Admission date', 'Patient name', 'Age', 'Gender', 'Pregnant', 'Phone', 'Shelter / area', 'Condition', 'Triage', 'Status', 'Assigned tent', 'Bed', 'Assigned doctor', 'Allergies',
+  const patients = [['File no.', 'Current visit', 'Admission date', 'Patient name', 'Age', 'Gender', 'Pregnant', 'Phone', 'Shelter / area', 'Condition', 'Triage', 'Status', 'Assigned tent', 'Bed', 'Assigned doctor', 'Allergies',
     'Blood pressure', 'Heart rate', 'Resp. rate', 'SpO2 %', 'Temp °C', 'Height cm', 'Weight kg', 'MUAC cm',
     'History', 'System examined', 'Physical findings', 'Diagnosis', 'Emergency category', 'SRH services', 'Medication given here', 'Procedure', 'Blood transfusion', 'Response',
     'Visit outcome', 'Medication to take home', 'Referral', 'Referral note', 'Outcome note', 'Follow-up date', 'Last updated']];
   S.patients.forEach(p => {
     const v = p.vitals || {}, c = p.clinical || {}, o = p.outcomeDetail || {};
-    patients.push([p.id, dt(p.createdAt), p.name, num(p.age), p.sex === 'F' ? 'Female' : 'Male', p.pregnant ? 'Yes' : 'No', p.phone, p.shelter, p.complaint, TRI[p.triage] || p.triage, STATE[p.state] || p.state,
-      p.state === 'discharged' ? '' : tentLabel(p.location), p.bed || '', p.doctor, p.allergies,
+    patients.push([p.id, encId(p), dt(p.createdAt), p.name, num(p.age), p.sex === 'F' ? 'Female' : 'Male', p.pregnant ? 'Yes' : 'No', p.phone, p.shelter, p.complaint, TRI[p.triage] || p.triage, STATE[p.state] || p.state,
+      p.state === 'discharged' ? '' : tentLabel(p.location), p.bed || '', p.doctor, allergyText(p),
       v.bp, num(v.hr), num(v.rr), num(v.spo2), num(v.temp), num(v.height), num(v.weight), num(v.muac),
       c.history, c.system, c.exam, c.dx, c.category, c.srh, c.poc, c.procedures, c.dx ? (c.transfusion ? 'Yes' : 'No') : '', c.response,
       o.visit || p.outcome || '', o.meds, o.referral, o.refNote, o.note, o.followup, dt(lastUpdated(p.id))]);
   });
-  const orders = [['Request no.', 'File no.', 'Patient name', 'Type', 'Test', 'Requested from', 'Requested at', 'Status', 'Result', 'Result at']];
-  S.orders.forEach(o => { const p = pat(o.pid) || {}; orders.push([o.id, o.pid, p.name, o.group, o.test, tentLabel(o.from), dt(o.at), o.status === 'done' ? 'Done' : 'Requested', o.result, dt(o.doneAt)]); });
+  const orders = [['Request no.', 'Visit', 'File no.', 'Patient name', 'Type', 'Test', 'Requested from', 'Requested at', 'Status', 'Result', 'Result at']];
+  S.orders.forEach(o => { const p = pat(o.pid) || {}; orders.push([o.id, o.enc || o.pid + '-V1', o.pid, p.name, o.group, o.test, tentLabel(o.from), dt(o.at), o.status === 'done' ? 'Done' : 'Requested', o.result, dt(o.doneAt)]); });
   const beds = [['Bed', 'Status', 'File no.', 'Patient name', 'Diagnosis']];
   S.beds.forEach((pid, i) => { const p = pid ? pat(pid) : null; beds.push([i + 1, p ? 'Occupied' : 'Free', p ? p.id : '', p ? p.name : '', p ? (p.clinical && p.clinical.dx) || '' : '']); });
   const staff = [['Staff ID', 'Name', 'Job title', 'Group', 'Tent', 'Shift', 'Date', 'Status', 'Late', 'Check-in', 'Check-out']];
@@ -1664,7 +1910,9 @@ function exportData() {
   S.followups.forEach(f => { const p = pat(f.pid) || {}; const st = f.status === 'expected' && f.date < dayKey() ? 'Missed' : f.status[0].toUpperCase() + f.status.slice(1); fus.push([f.id, f.pid, p.name, f.reason, f.date, st, dt(f.at)]); });
   const logs = [['Time', 'File no.', 'Patient name', 'Action', 'Recorded by']];
   S.log.slice().sort((a, b) => a.t.localeCompare(b.t)).forEach(l => { const p = pat(l.pid) || {}; logs.push([dt(l.t), l.pid, p.name, l.text, l.by]); });
-  const blob = xlsx([['Patients', patients], ['Lab & X-ray', orders], ['Ward beds', beds], ['Staff attendance', staff], ['Follow-ups', fus], ['Activity log', logs]]);
+  const visits = [['Visit', 'File no.', 'Patient name', 'Start', 'End', 'Complaint', 'Triage', 'Diagnosis', 'Outcome', 'Doctor', 'Take-home medication']];
+  S.patients.forEach(p => (p.visits || []).forEach(v => visits.push([v.enc, p.id, p.name, dt(v.start), dt(v.end), v.complaint, TRI[v.triage] || v.triage, v.dx, v.outcome, v.doctor, v.meds])));
+  const blob = xlsx([['Patients', patients], ['Previous visits', visits], ['Lab & X-ray', orders], ['Ward beds', beds], ['Staff attendance', staff], ['Follow-ups', fus], ['Activity log', logs]]);
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'TentCare-' + dayKey() + '.xlsx';

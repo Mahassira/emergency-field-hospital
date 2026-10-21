@@ -15,9 +15,9 @@ All passwords are `demo123`.
 | Work email | Role | What to try |
 | --- | --- | --- |
 | `reception@emttentcare.com` | Registration clerk | Register a patient, pick a triage colour, send them to a tent |
-| `doctor@emttentcare.com` | Physician | See the queue, fill in the clinical assessment, order an X-ray, refer, admit |
+| `doctor@emttentcare.com` | Physician | See the queue, fill in the clinical assessment, order an X-ray, refer, admit, approve discharge |
 | `lab@emttentcare.com` | Lab & X-ray | Enter results that go straight back to the patient's file |
-| `nurse@emttentcare.com` | Ward nurse | 50-bed ward map, discharge with outcome and follow-up |
+| `nurse@emttentcare.com` | Ward nurse | 50-bed ward map, vitals and nursing notes, confirm a patient has left |
 | `admin@emttentcare.com` | Site manager | Dashboard for the whole hospital, staff attendance, export everything to Excel |
 
 ## The tents
