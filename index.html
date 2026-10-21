@@ -259,6 +259,28 @@ details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:
 .fast .tri-pick label{min-width:120px;justify-content:center}
 .recent{margin-top:14px}
 .recent .order{padding:8px 0}
+.ps-sec{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:10px}
+.ps-sec>.ps-h{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.ps-sec>.ps-h b{font-size:15px}
+.ps-sec>.ps-h .checkline{margin-left:auto;font-size:13px}
+.ps-sec.is-normal .ps-body{opacity:.45}
+.ps-row{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;align-items:center;margin:4px 0 8px;font-size:13.5px}
+.ps-row .opts{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.ps-row>span.lbl{font-size:12px;font-weight:600;color:var(--muted)}
+@media(max-width:720px){.ps-row{grid-template-columns:1fr}}
+.ps-row label{display:inline-flex;gap:6px;align-items:center;font-weight:400;color:var(--text);margin:0}
+.ps-row input[type=checkbox],.ps-row input[type=radio]{width:16px;height:16px;accent-color:var(--primary)}
+.ps-row input[type=number],.ps-row input[type=text],.ps-row select{min-height:34px;padding:4px 8px;width:auto;max-width:150px}
+.ps-row input.wide{max-width:none;flex:1;min-width:160px}
+.gcs-total{font-weight:700;font-size:14px;padding:3px 10px;border-radius:999px;background:var(--surface-2)}
+.gcs-total.low{background:var(--red-soft);color:var(--red)}
+.ps-line{display:grid;grid-template-columns:28px 1fr;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.ps-line:last-child{border-bottom:0}
+.ps-line b.k{display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--primary-soft);color:var(--primary);align-items:center;justify-content:center;font-size:12.5px}
+.ps-line.ok b.k{background:var(--green-soft);color:var(--green)}
+.mar{display:grid;grid-template-columns:62px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.mar:last-child{border-bottom:0}
+.mar .t{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:var(--muted);padding-top:1px}
 .copyright{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
 
 /* modal */
@@ -682,7 +704,7 @@ function save() { store(KEY, JSON.stringify(S)); }
 function load() {
   try {
     const d = JSON.parse(read(KEY));
-    if (d && d.v === 5) { S = d; ensureAttendance(); return d; }
+    if (d && d.v === 6) { S = d; ensureAttendance(); return d; }
   } catch (e) {}
   return seed();
 }
@@ -758,7 +780,7 @@ function toast(msg) {
 
 /* ---------- seed data (fictional) ---------- */
 function seed() {
-  S = { v: 5, mci: null, mcis: [], seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), bedClean: Array(BEDS).fill(false), referrals: [], staff: [], att: null, followups: [] };
+  S = { v: 6, mci: null, mcis: [], seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), bedClean: Array(BEDS).fill(false), referrals: [], staff: [], att: null, followups: [] };
   const V = (bp, hr, t, s, rr, height, weight, muac) => ({ bp, hr, temp: t, spo2: s, rr, height: height || '', weight: weight || '', muac: muac || '' });
 
   function add(p) {
@@ -884,6 +906,15 @@ function seed() {
   ['FH-0003', 'FH-0006'].forEach(id => { const p = pat(id); if (p) { p.allergyStatus = 'unknown'; p.allergyBy = ''; p.allergyAt = ''; } });
   S.orders.forEach(o => { o.enc = o.pid + '-V1'; });
   [5, 18].forEach(b => { if (!S.beds[b - 1]) S.bedClean[b - 1] = true; });
+  const lina = S.patients.find(x => x.name === 'Lina Abed');
+  if (lina) {
+    const at = new Date(Date.now() - 20 * 60000).toISOString();
+    lina.surveys = [{ A: { normal: true, find: [], obs: [], int: [], spine: '' }, B: { normal: false, rr: '30', rise: ['Retractions'], trachea: 'Midline', sounds: 'Wheeze both sides', o2: '6', dev: 'Facemask', tube: [] },
+      C: { normal: true, signs: [], skin: [], cr: '', bleed: [], access: ['IV'], fluids: '', ftype: '', blood: '', pelvis: '' }, D: { normal: true, avpu: 'Alert', gcs: { e: '4', v: '5', m: '6' }, moves: [], pl: '', pr: '', react: [], glucose: '', int: [] },
+      E: { normal: true, exposed: true, find: '' }, F: { status: 'Not indicated', abd: '', chest: [] }, mech: '', intent: '', at, by: 'Dr. Khaled Nasser' }];
+    lina.mar = [{ kind: 'med', name: 'Salbutamol', dose: '5 mg', route: 'Inhaled / nebulised', at, by: 'Dr. Khaled Nasser', enc: lina.id + '-V1' },
+      { kind: 'med', name: 'Hydrocortisone', dose: '100 mg', route: 'IV', at: new Date(Date.now() - 15 * 60000).toISOString(), by: 'Dr. Khaled Nasser', enc: lina.id + '-V1' }];
+  }
   seedAttendance();
 
   S.log.sort((x, y) => y.t.localeCompare(x.t));
@@ -1777,7 +1808,10 @@ function patientView(id) {
     if (p.dischargeApproved) {
       if (doc || (nurse && p.location === 'WARD')) A.push(['exit', 'Confirm departure', `departureForm('${id}')`, 'primary']);
     } else if (p.state === 'waiting' && doc) A.push(['steth', 'Start consultation', `startCare('${id}')`, 'primary']);
+    if (doc) A.push(['heart', 'Primary survey (ABCDE)', `surveyForm('${id}')`, '']);
     if (doc) A.push(['note', 'Clinical assessment', `noteForm('${id}')`, '']);
+    if (doc || nurse) A.push(['flask', 'Medication or procedure given', `medForm('${id}')`, '']);
+    if (doc || nurse) A.push(['pulse', 'Reassess', `reassessForm('${id}')`, '']);
     if (nurse) A.push(['note', 'Nursing note', `nurseNoteForm('${id}')`, '']);
     A.push(['pulse', 'Update vitals', `vitalsForm('${id}')`, '']);
     A.push(['flask', 'Request lab / X-ray', `orderForm('${id}')`, '']);
@@ -1847,6 +1881,14 @@ function patientView(id) {
             <div>Response</div><div>${dash(cl.response)}</div>
           </div>
         </div>
+        ${(() => { const x = (p.surveys || []).slice(-1)[0]; if (!x) return ''; const t = gcsTotal(x.D.gcs);
+          return `<div class="card"><div class="secthead">${ic('heart')}<h2>Primary survey</h2>${t ? `<span class="gcs-total ${t <= 8 ? 'low' : ''}" style="margin-left:auto">GCS ${t}</span>` : ''}</div>
+          <p class="small muted" style="margin:-4px 0 6px">${fmtTime(x.at)} · ${esc(x.by)}${p.surveys.length > 1 ? ` · ${p.surveys.length} surveys this visit` : ''}</p>
+          ${surveyLines(x).map(([k, txt]) => `<div class="ps-line ${txt.startsWith('Normal') ? 'ok' : ''}">${k ? `<b class="k">${k}</b>` : '<span></span>'}<div>${esc(txt || '—')}</div></div>`).join('')}</div>`; })()}
+        ${(p.mar || []).filter(m => m.enc === encId(p)).length ? `<div class="card"><div class="secthead">${ic('flask')}<h2>Medication & procedures given</h2></div>
+          ${p.mar.filter(m => m.enc === encId(p)).sort((a, b) => b.at.localeCompare(a.at)).map(m => `<div class="mar"><span class="t">${fmtTime(m.at)}</span><div><b>${esc(m.name)}</b>${m.kind === 'med' ? ` ${esc(m.dose)} · ${esc(m.route)}` : ' <span class="badge">Procedure</span>'}<div class="small muted">${esc(m.by)}</div></div></div>`).join('')}</div>` : ''}
+        ${(p.reassess || []).length ? `<div class="card"><div class="secthead">${ic('pulse')}<h2>Reassessments</h2></div>
+          ${p.reassess.slice().reverse().map(r => `<div class="mar"><span class="t">${fmtTime(r.at)}</span><div><span class="badge ${r.cond === 'Worse' ? 'allergy' : r.cond === 'Improving' ? 'ok' : ''}">${esc(r.cond)}</span> ${esc(vitalsLine(r.vitals))}${r.avpu ? ' · AVPU ' + esc(r.avpu) : ''}${r.pain !== '' ? ' · pain ' + esc(r.pain) + '/10' : ''}${r.triTo !== r.triFrom ? ` · triage ${TRI_NAME[r.triFrom]} → <b>${TRI_NAME[r.triTo]}</b>` : ''}${r.note ? `<div>${esc(r.note)}</div>` : ''}<div class="small muted">${esc(r.by)}</div></div></div>`).join('')}</div>` : ''}
         <div class="card"><div class="secthead">${ic('flask')}<h2>Lab & imaging</h2></div>${orderRows || '<div class="muted">No tests or imaging requested.</div>'}</div>
         <div class="card"><div class="secthead">${ic('exit')}<h2>Outcome & referral</h2></div>
           <div class="kv">
@@ -1944,6 +1986,162 @@ function saveNote(e, id) {
   if (!p.doctor && (me.role === 'doctor' || me.role === 'admin')) p.doctor = me.name;
   log(id, `Assessment: ${p.clinical.dx} (${p.clinical.category}).`);
   done('Assessment saved');
+}
+
+// Primary survey based on the WHO Emergency Care Toolkit trauma form (A to F).
+const PS = {
+  aFind: ['Swelling', 'Stridor', 'Voice changes', 'Burns'], aObs: ['Tongue', 'Blood', 'Secretions', 'Vomit', 'Foreign body'],
+  aInt: ['Repositioning', 'Suction', 'OPA', 'NPA', 'LMA', 'BVM', 'ETT'], spine: ['Done before arrival', 'Done here', 'Not needed'],
+  bRise: ['Shallow', 'Retractions', 'Paradoxical'], o2: ['Nasal', 'Facemask', 'Non-rebreather', 'BVM', 'CPAP/BiPAP', 'Ventilator'],
+  skin: ['Warm', 'Dry', 'Cool', 'Moist', 'Pale'], bleed: ['Direct pressure', 'Bandage', 'Tourniquet'], access: ['IV', 'Central', 'IO'],
+  limbs: ['Right arm', 'Left arm', 'Right leg', 'Left leg'], dInt: ['Glucose', 'Antidote', 'Antiepileptic', 'Raise head of bed'],
+  mech: ['Road traffic: driver', 'Road traffic: passenger', 'Road traffic: pedestrian', 'Fall', 'Hit by falling object', 'Stab or cut', 'Gunshot', 'Blast or explosion', 'Other blunt force', 'Burn', 'Suffocation, choking or hanging', 'Drowning', 'Poisoning or toxic exposure', 'Sexual assault', 'Unknown'],
+  intent: ['Unintentional', 'Self-harm', 'Assault', 'Legal process, political unrest or war', 'Unknown']
+};
+const cbs = (pre, list, cur) => list.map((t, i) => `<label><input type="checkbox" id="${pre}${i}" ${(cur || []).includes(t) ? 'checked' : ''}>${esc(t)}</label>`).join('');
+const rds = (name, list, cur) => list.map((t, i) => `<label><input type="radio" name="${name}" value="${esc(t)}" ${cur === t ? 'checked' : ''}>${esc(t)}</label>`).join('');
+const readCbs = (pre, list) => list.filter((_, i) => $('#' + pre + i) && $('#' + pre + i).checked);
+const gcsTotal = g => g && g.e && g.v && g.m ? Number(g.e) + Number(g.v) + Number(g.m) : 0;
+function surveyForm(id) {
+  const p = pat(id), last = (p.surveys || []).slice(-1)[0] || {};
+  const sec = (k, title, body) => `<div class="ps-sec" id="ps-${k}"><div class="ps-h"><b>${k} · ${title}</b><label class="checkline"><input type="checkbox" id="${k}-ok" onchange="this.closest('.ps-sec').classList.toggle('is-normal',this.checked)">Normal</label></div><div class="ps-body">${body}</div></div>`;
+  const row = (l, h) => `<div class="ps-row"><span class="lbl">${l}</span><div class="opts">${h}</div></div>`;
+  const sel = (id, list) => `<select id="${id}"><option value="">—</option>${list.map(x => `<option>${x}</option>`).join('')}</select>`;
+  modal('Primary survey · ABCDE', `<form onsubmit="saveSurvey(event,'${id}')" oninput="this.dataset.warned='';gcsShow()" novalidate>
+    <p class="small muted">Based on the WHO Emergency Care Toolkit trauma form. Tick Normal, or record what you found and did. ${last.at ? 'Last survey ' + fmtTime(last.at) + ' by ' + esc(last.by) + '.' : ''}</p>
+    ${sec('A', 'Airway', row('Findings', cbs('af', PS.aFind)) + row('Obstructed by', cbs('ao', PS.aObs)) + row('Interventions', cbs('ai', PS.aInt)) + row('Spine', rds('spine', PS.spine)))}
+    ${sec('B', 'Breathing', row('Resp. rate', `<input type="number" id="b-rr" min="0" max="80" value="${esc((p.vitals || {}).rr || '')}">/min`) + row('Chest rise', cbs('br', PS.bRise)) + row('Trachea', rds('trach', ['Midline', 'Deviated left', 'Deviated right'])) + row('Breath sounds', `<input type="text" id="b-snd" class="wide" placeholder="e.g. reduced on the left">`) + row('Oxygen', `<input type="number" id="b-o2" min="0" max="15" placeholder="L/min"> ${sel('b-dev', PS.o2)}`) + row('Chest tube', cbs('bt', ['Left', 'Right'])))}
+    ${sec('C', 'Circulation', row('Signs', cbs('cs', ['Cyanosis', 'Weak pulses', 'Asymmetric pulses', 'Raised JVP', 'Unstable pelvis'])) + row('Skin', cbs('ck', PS.skin)) + row('Capillary refill', `<input type="number" id="c-cr" min="0" max="15" step="0.5" placeholder="sec">`) + row('Bleeding control', cbs('cb', PS.bleed)) + row('Access', cbs('ca', PS.access)) + row('Fluids', `<input type="number" id="c-fl" min="0" max="10000" placeholder="mL"> ${sel('c-ft', ['Normal saline', 'Ringer\'s lactate', 'Other'])}`) + row('Blood', rds('blood', ['Ordered', 'Given'])) + row('Pelvis', rds('pelv', ['Stabilised', 'Not indicated'])))}
+    ${sec('D', 'Disability', row('AVPU', rds('avpu', ['Alert', 'Voice', 'Pain', 'Unresponsive'])) + row('GCS', `E <input type="number" id="g-e" min="1" max="4" style="width:58px"> V <input type="number" id="g-v" min="1" max="5" style="width:58px"> M <input type="number" id="g-m" min="1" max="6" style="width:58px"> <span class="gcs-total" id="g-t">—</span>`) + row('Moves', cbs('dm', PS.limbs)) + row('Pupils', `L <input type="number" id="d-pl" min="1" max="9" placeholder="mm" style="width:64px"> R <input type="number" id="d-pr" min="1" max="9" placeholder="mm" style="width:64px"> ${cbs('dr', ['Left reactive', 'Right reactive'])}`) + row('Glucose', `<input type="number" id="d-glu" min="10" max="900" placeholder="mg/dL">`) + row('Interventions', cbs('di', PS.dInt)))}
+    ${sec('E', 'Exposure', row('', `<label><input type="checkbox" id="e-exp">Fully exposed and examined</label>`) + row('Findings', `<input type="text" id="e-f" class="wide" placeholder="Wounds, burns, deformities, temperature">`))}
+    <div class="ps-sec"><div class="ps-h"><b>F · FAST ultrasound</b></div>${row('', rds('fast', ['Done', 'Not indicated', 'Not available']))}${row('Abdomen', rds('fper', ['Negative', 'Indeterminate', 'Free fluid']))}${row('Chest', cbs('fc', ['Pneumothorax', 'Pleural fluid', 'Pericardial effusion']))}</div>
+    <div class="sec-h">Injury</div>
+    <div class="fgrid"><div class="field"><label for="m-mech">Mechanism of injury</label>${sel('m-mech', PS.mech)}</div><div class="field"><label for="m-int">Intent</label>${sel('m-int', PS.intent)}</div></div>
+    <div class="form-msg"></div><button class="btn primary">Save primary survey</button></form>`);
+}
+function gcsShow() {
+  const el = $('#g-t'); if (!el) return;
+  const t = gcsTotal({ e: $('#g-e').value, v: $('#g-v').value, m: $('#g-m').value });
+  el.textContent = t ? 'GCS ' + t : '—'; el.classList.toggle('low', t && t <= 8);
+}
+function saveSurvey(e, id) {
+  e.preventDefault();
+  const f = e.target, p = pat(id), g = k => $(k).value.trim(), r = n => f[n] ? f[n].value : '';
+  const ok = k => $('#' + k + '-ok').checked;
+  const S0 = {
+    A: { normal: ok('A'), find: readCbs('af', PS.aFind), obs: readCbs('ao', PS.aObs), int: readCbs('ai', PS.aInt), spine: r('spine') },
+    B: { normal: ok('B'), rr: g('#b-rr'), rise: readCbs('br', PS.bRise), trachea: r('trach'), sounds: g('#b-snd'), o2: g('#b-o2'), dev: g('#b-dev'), tube: readCbs('bt', ['Left', 'Right']) },
+    C: { normal: ok('C'), signs: readCbs('cs', ['Cyanosis', 'Weak pulses', 'Asymmetric pulses', 'Raised JVP', 'Unstable pelvis']), skin: readCbs('ck', PS.skin), cr: g('#c-cr'), bleed: readCbs('cb', PS.bleed), access: readCbs('ca', PS.access), fluids: g('#c-fl'), ftype: g('#c-ft'), blood: r('blood'), pelvis: r('pelv') },
+    D: { normal: ok('D'), avpu: r('avpu'), gcs: { e: g('#g-e'), v: g('#g-v'), m: g('#g-m') }, moves: readCbs('dm', PS.limbs), pl: g('#d-pl'), pr: g('#d-pr'), react: readCbs('dr', ['Left reactive', 'Right reactive']), glucose: g('#d-glu'), int: readCbs('di', PS.dInt) },
+    E: { normal: ok('E'), exposed: $('#e-exp').checked, find: g('#e-f') },
+    F: { status: r('fast'), abd: r('fper'), chest: readCbs('fc', ['Pneumothorax', 'Pleural fluid', 'Pericardial effusion']) },
+    mech: g('#m-mech'), intent: g('#m-int')
+  };
+  const filled = k => Object.entries(S0[k]).some(([kk, v]) => kk !== 'normal' && (Array.isArray(v) ? v.length : typeof v === 'object' ? Object.values(v).some(Boolean) : v));
+  const findingsFilled = { A: S0.A.find.length || S0.A.obs.length, B: S0.B.rise.length || S0.B.sounds || (S0.B.trachea && S0.B.trachea !== 'Midline'), C: S0.C.signs.length || S0.C.bleed.length || S0.C.blood, D: (S0.D.avpu && S0.D.avpu !== 'Alert') || S0.D.int.length };
+  const errs = [], warns = [];
+  ['A', 'B', 'C', 'D', 'E'].forEach(k => { if (!S0[k].normal && !filled(k)) errs.push(`${k}: tick Normal or record a finding.`); });
+  ['A', 'B', 'C', 'D'].forEach(k => { if (S0[k].normal && findingsFilled[k]) errs.push(`${k} is ticked Normal but has abnormal findings. Untick Normal or clear the findings.`); });
+  const gc = S0.D.gcs, gParts = [gc.e, gc.v, gc.m].filter(Boolean).length;
+  if (gParts && gParts < 3) errs.push('GCS: fill all three parts (E, V and M) or leave all empty.');
+  if ((gc.e && (gc.e < 1 || gc.e > 4)) || (gc.v && (gc.v < 1 || gc.v > 5)) || (gc.m && (gc.m < 1 || gc.m > 6))) errs.push('GCS is out of range: E 1 to 4, V 1 to 5, M 1 to 6.');
+  const rr = Number(S0.B.rr);
+  if (S0.B.rr && (rr < 0 || rr > 80)) errs.push('Respiratory rate must be between 0 and 80.');
+  const t = gcsTotal(gc);
+  if (t && t <= 8) warns.push(`GCS ${t}: the patient may not protect the airway. Consider airway protection and a senior review.`);
+  if (S0.D.glucose && Number(S0.D.glucose) < 65) warns.push(`Glucose ${S0.D.glucose} mg/dL is low (under 65). Give glucose and recheck.`);
+  if (S0.D.avpu === 'Alert' && t && t < 14) warns.push(`AVPU says Alert but GCS is ${t}. Check both.`);
+  if (S0.F.abd === 'Free fluid' || S0.F.chest.length) warns.push('FAST is positive. Consider urgent surgical review.');
+  if (!formGate(f, errs, warns)) return;
+  S0.at = nowISO(); S0.by = me.name;
+  p.surveys = p.surveys || []; p.surveys.push(S0);
+  if (S0.B.rr) p.vitals = Object.assign({}, p.vitals, { rr: S0.B.rr });
+  if (p.state === 'waiting') p.state = 'in-care';
+  if (!p.doctor && (me.role === 'doctor' || me.role === 'admin')) p.doctor = me.name;
+  log(id, 'Primary survey: ' + surveyLines(S0).map(([k, txt]) => k + ' ' + txt).join(' · ') + '.');
+  done('Primary survey saved');
+}
+// One readable line per letter, for the file, the log and the referral form.
+function surveyLines(x) {
+  const j = a => a && a.length ? a.join(', ') : '';
+  const L = [];
+  L.push(['A', x.A.normal ? 'Normal' : [j(x.A.find), x.A.obs.length ? 'obstructed by ' + j(x.A.obs).toLowerCase() : '', x.A.int.length ? 'done: ' + j(x.A.int) : '', x.A.spine ? 'spine: ' + x.A.spine.toLowerCase() : ''].filter(Boolean).join('; ')]);
+  L.push(['B', x.B.normal ? 'Normal' + (x.B.rr ? ', RR ' + x.B.rr : '') : [x.B.rr ? 'RR ' + x.B.rr : '', j(x.B.rise), x.B.trachea && x.B.trachea !== 'Midline' ? 'trachea ' + x.B.trachea.toLowerCase() : '', x.B.sounds, x.B.o2 ? 'oxygen ' + x.B.o2 + ' L/min' + (x.B.dev ? ' ' + x.B.dev : '') : '', x.B.tube.length ? 'chest tube ' + j(x.B.tube).toLowerCase() : ''].filter(Boolean).join('; ')]);
+  L.push(['C', x.C.normal ? 'Normal' : [j(x.C.signs), x.C.skin.length ? 'skin ' + j(x.C.skin).toLowerCase() : '', x.C.cr ? 'cap refill ' + x.C.cr + ' s' : '', x.C.bleed.length ? 'bleeding: ' + j(x.C.bleed).toLowerCase() : '', x.C.access.length ? 'access ' + j(x.C.access) : '', x.C.fluids ? x.C.fluids + ' mL ' + (x.C.ftype || 'fluids') : '', x.C.blood ? 'blood ' + x.C.blood.toLowerCase() : '', x.C.pelvis === 'Stabilised' ? 'pelvis stabilised' : ''].filter(Boolean).join('; ')]);
+  const t = gcsTotal(x.D.gcs);
+  L.push(['D', x.D.normal ? 'Normal' + (t ? ', GCS ' + t : '') : [x.D.avpu ? 'AVPU ' + x.D.avpu[0] : '', t ? `GCS ${t} (E${x.D.gcs.e} V${x.D.gcs.v} M${x.D.gcs.m})` : '', x.D.moves.length ? 'moves ' + j(x.D.moves).toLowerCase() : '', x.D.pl || x.D.pr ? `pupils L ${x.D.pl || '?'} R ${x.D.pr || '?'} mm` : '', x.D.react.length ? j(x.D.react).toLowerCase() : '', x.D.glucose ? 'glucose ' + x.D.glucose + ' mg/dL' : '', x.D.int.length ? 'done: ' + j(x.D.int) : ''].filter(Boolean).join('; ')]);
+  L.push(['E', x.E.normal ? 'Normal' : [x.E.exposed ? 'fully exposed' : '', x.E.find].filter(Boolean).join('; ')]);
+  if (x.F && x.F.status) L.push(['F', x.F.status === 'Done' ? ['FAST', x.F.abd ? 'abdomen ' + x.F.abd.toLowerCase() : '', x.F.chest.length ? 'chest: ' + j(x.F.chest).toLowerCase() : 'chest negative'].filter(Boolean).join('; ') : 'FAST ' + x.F.status.toLowerCase()]);
+  if (x.mech || x.intent) L.push(['', 'Mechanism: ' + [x.mech, x.intent].filter(Boolean).join(' · ')]);
+  return L;
+}
+function medForm(id) {
+  const p = pat(id), now = new Date().toTimeString().slice(0, 5);
+  modal('Medication or procedure given', `<form onsubmit="saveMed(event,'${id}')" oninput="this.dataset.warned=''" novalidate>
+    ${hasAllergy(p) ? `<div class="alertbar" style="margin-top:0">${ic('alert', 'sm')}Allergy: ${esc(p.allergies)}</div>` : p.allergyStatus === 'unknown' ? `<div class="infobar" style="margin-top:0">${ic('alert', 'sm')}Allergies unknown. Ask before giving medicine.</div>` : ''}
+    <div class="field mt"><label>Type</label><div class="choice"><input type="radio" name="mk" id="mk-m" value="med" checked onchange="medKind()"><label for="mk-m">Medication</label><input type="radio" name="mk" id="mk-p" value="proc" onchange="medKind()"><label for="mk-p">Procedure</label></div></div>
+    <div class="field"><label for="md-n" id="md-nl">Drug</label><input id="md-n" type="text" list="md-list" placeholder="e.g. Paracetamol"><datalist id="md-list">${['Paracetamol', 'Ibuprofen', 'Morphine', 'Tramadol', 'Ceftriaxone', 'Amoxicillin', 'Metronidazole', 'Tranexamic acid', 'Ondansetron', 'Salbutamol', 'Hydrocortisone', 'Adrenaline', 'Diazepam', 'Glucose 10%', 'Tetanus toxoid', 'Oxytocin', 'Magnesium sulfate'].map(x => `<option>${x}</option>`).join('')}</datalist></div>
+    <div class="fgrid" id="md-dose">
+      <div class="field"><label for="md-d">Dose</label><input id="md-d" type="text" placeholder="e.g. 1 g"></div>
+      <div class="field"><label for="md-r">Route</label><select id="md-r"><option value="">— Select —</option>${['By mouth', 'IV', 'IM', 'Subcutaneous', 'Inhaled / nebulised', 'Rectal', 'Topical'].map(x => `<option>${x}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><label for="md-t">Time given</label><input id="md-t" type="time" value="${now}" style="max-width:160px"></div>
+    <div class="form-msg"></div><button class="btn primary">Save</button></form>`);
+}
+function medKind() { const proc = $('#mk-p').checked; $('#md-dose').style.display = proc ? 'none' : ''; $('#md-nl').textContent = proc ? 'Procedure' : 'Drug'; $('#md-n').placeholder = proc ? 'e.g. Wound suturing, splint, chest tube' : 'e.g. Paracetamol'; }
+function saveMed(e, id) {
+  e.preventDefault();
+  const f = e.target, p = pat(id), g = k => $(k).value.trim();
+  const kind = f.mk.value, name = g('#md-n'), dose = g('#md-d'), route = g('#md-r'), tm = g('#md-t');
+  const errs = [], warns = [];
+  if (!name) errs.push(kind === 'med' ? 'Write the drug.' : 'Write the procedure.');
+  if (kind === 'med' && !dose) errs.push('Write the dose.');
+  if (kind === 'med' && !route) errs.push('Choose the route.');
+  if (!tm) errs.push('Write the time.');
+  if (kind === 'med' && name) {
+    const words = (p.allergies || '').toLowerCase().split(/[^a-z]+/).filter(w => w.length > 3);
+    const nm = name.toLowerCase();
+    const PEN = ['amoxicillin', 'ampicillin', 'penicillin', 'cloxacillin', 'flucloxacillin'];
+    if (hasAllergy(p) && (words.some(w => nm.includes(w) || w.includes(nm)) || (words.some(w => w.startsWith('penicil')) && PEN.some(x => nm.includes(x)))))
+      warns.push(`The patient is allergic to ${p.allergies}. ${name} may cause a reaction. Check before giving.`);
+    else if (p.allergyStatus === 'unknown') warns.push('Allergies are not known yet. Ask the patient or family before giving medicine.');
+  }
+  if (!formGate(f, errs, warns)) return;
+  const [hh, mm] = tm.split(':').map(Number); const d = new Date(); d.setHours(hh, mm, 0, 0);
+  if (d > new Date()) d.setDate(d.getDate() - 1);
+  p.mar = p.mar || [];
+  p.mar.push({ kind, name, dose, route, at: d.toISOString(), by: me.name, enc: encId(p) });
+  log(id, kind === 'med' ? `Given ${name} ${dose} ${route.toLowerCase()} at ${fmtTime(d.toISOString())}.` : `Procedure: ${name} at ${fmtTime(d.toISOString())}.`);
+  done('Saved');
+}
+function reassessForm(id) {
+  const p = pat(id);
+  modal('Reassess patient', `<form onsubmit="saveReassess(event,'${id}')" oninput="this.dataset.warned=''" novalidate>
+    <div class="field"><label>Since the last check, the patient is</label><div class="choice">${['Improving', 'The same', 'Worse'].map((x, i) => `<input type="radio" name="rc" id="rc${i}" value="${x}"><label for="rc${i}">${x}</label>`).join('')}</div></div>
+    ${vitalsFields(p.vitals)}
+    <div class="fgrid">
+      <div class="field"><label for="ra-avpu">AVPU</label><select id="ra-avpu"><option value="">—</option>${['Alert', 'Voice', 'Pain', 'Unresponsive'].map(x => `<option>${x}</option>`).join('')}</select></div>
+      <div class="field"><label for="ra-pain">Pain score (0 to 10)</label><input id="ra-pain" type="number" min="0" max="10"></div>
+      <div class="field"><label for="ra-tri">Triage colour now</label><select id="ra-tri">${['red', 'yellow', 'green'].map(t => `<option value="${t}" ${p.triage === t ? 'selected' : ''}>${TRI_NAME[t]}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><label for="ra-n">Note</label><input id="ra-n" type="text" placeholder="What changed, what you did"></div>
+    <div class="form-msg"></div><button class="btn primary">Save reassessment</button></form>`);
+}
+function saveReassess(e, id) {
+  e.preventDefault();
+  const f = e.target, p = pat(id), v = readVitals(), cv = checkVitals(v);
+  const cond = f.rc.value, pain = $('#ra-pain').value, tri = $('#ra-tri').value;
+  const errs = cv.E.slice(), warns = cv.Wn.slice();
+  if (!cond) errs.push('Choose Improving, The same or Worse.');
+  if (pain !== '' && (Number(pain) < 0 || Number(pain) > 10)) errs.push('Pain score must be 0 to 10.');
+  if (cond === 'Worse' && triOrder[tri] >= triOrder[p.triage] && p.triage !== 'red') warns.push(`The patient is worse but the triage colour is still ${TRI_NAME[p.triage]}. Consider a higher colour and tell the doctor.`);
+  if (!formGate(f, errs, warns)) return;
+  const r = { at: nowISO(), by: me.name, cond, vitals: v, avpu: $('#ra-avpu').value, pain, triFrom: p.triage, triTo: tri, note: $('#ra-n').value.trim() };
+  p.reassess = p.reassess || []; p.reassess.push(r);
+  p.vitals = v;
+  log(id, `Reassessed: ${cond.toLowerCase()}.${vitalsLine(v) ? ' ' + vitalsLine(v) + '.' : ''}${r.avpu ? ' AVPU ' + r.avpu + '.' : ''}${pain !== '' ? ' Pain ' + pain + '/10.' : ''}${tri !== p.triage ? ' Triage changed from ' + TRI_NAME[p.triage] + ' to ' + TRI_NAME[tri] + '.' : ''}${r.note ? ' ' + r.note : ''}`);
+  p.triage = tri;
+  done('Reassessment saved');
 }
 
 function vitalsForm(id) {
@@ -2059,8 +2257,10 @@ const PRECAUTIONS = ['Highly infectious disease', 'Spinal precautions', 'Weight-
 const vitalsLine = v => [v.bp && 'BP ' + v.bp, v.hr && 'pulse ' + v.hr, v.rr && 'RR ' + v.rr, v.spo2 && 'SpO₂ ' + v.spo2 + '%', v.temp && 'temp ' + v.temp + ' °C'].filter(Boolean).join(', ');
 function extReferralForm(id) {
   const p = pat(id), c = p.clinical || {}, v = p.vitals || {};
+  const lastS = (p.surveys || []).slice(-1)[0];
+  const sl = lastS ? Object.fromEntries(surveyLines(lastS)) : {};
   const ab = [['A', 'Airway'], ['B', 'Breathing'], ['C', 'Circulation'], ['D', 'Disability'], ['E', 'Exposure']].map(([k, n]) =>
-    `<div class="abcde"><b>${k} · ${n}</b><label class="checkline" style="font-size:13px"><input type="checkbox" id="x-${k}-n">Normal</label><input type="text" id="x-${k}-f" placeholder="Finding"><input type="text" id="x-${k}-i" placeholder="Intervention"></div>`).join('');
+    `<div class="abcde"><b>${k} · ${n}</b><label class="checkline" style="font-size:13px"><input type="checkbox" id="x-${k}-n" ${lastS && lastS[k].normal ? 'checked' : ''}>Normal</label><input type="text" id="x-${k}-f" placeholder="Finding" value="${esc(lastS && !lastS[k].normal ? sl[k] : '')}"><input type="text" id="x-${k}-i" placeholder="Intervention"></div>`).join('');
   const checks = TRANSFER_CHECKS.map((t, i) => `<label><input type="checkbox" id="tc${i}">${i + 1}. ${esc(t[1])}</label>`).join('');
   modal('Refer to another facility', `<form onsubmit="saveExtReferral(event,'${id}')" oninput="this.dataset.warned=''" novalidate>
     <p class="small muted">Based on the WHO Emergency Care Toolkit: Acute Referral Form and Acute Transfer Checklist.</p>
@@ -2084,11 +2284,11 @@ function extReferralForm(id) {
       <div class="field"><label for="x-odx">Other acute diagnoses</label><input id="x-odx" type="text"></div>
       <div class="field"><label for="x-preg">Pregnant?</label><select id="x-preg"><option ${p.pregnant ? 'selected' : ''}>Yes</option><option ${!p.pregnant && p.sex === 'M' ? 'selected' : ''}>No</option><option ${!p.pregnant && p.sex === 'F' ? 'selected' : ''}>Unknown</option></select></div>
     </div>
-    <div class="field"><label for="x-tx">Treatments initiated</label><input id="x-tx" type="text" value="${esc([c.poc, c.procedures && c.procedures !== 'None' ? c.procedures : ''].filter(Boolean).join('; '))}"></div>
+    <div class="field"><label for="x-tx">Treatments initiated</label><input id="x-tx" type="text" value="${esc([c.poc, c.procedures && c.procedures !== 'None' ? c.procedures : ''].concat((p.mar || []).filter(m => m.enc === encId(p)).map(m => m.name + (m.dose ? ' ' + m.dose : '') + ' at ' + fmtTime(m.at))).filter(Boolean).join('; '))}"></div>
     <div class="sec-h">Background</div>
     <div class="field"><label for="x-hpi">Brief history of present illness</label><textarea id="x-hpi" style="min-height:56px"></textarea></div>
     <div class="field"><label for="x-pmh">Relevant past medical and surgical history</label><input id="x-pmh" type="text" value="${esc(c.history || '')}"></div>
-    <div class="field"><label>ABCDE</label>${ab}</div>
+    <div class="field"><label>ABCDE${lastS ? ` <span class="small muted" style="font-weight:400">· filled from the primary survey at ${fmtTime(lastS.at)}</span>` : ''}</label>${ab}</div>
     <div class="field"><label for="x-oth">Other significant treatments or procedures</label><input id="x-oth" type="text"></div>
     <div class="sec-h">Assessment</div>
     <div class="field"><label for="x-as">What is wrong with the patient and why referral is needed. Include current vital signs.</label><textarea id="x-as" style="min-height:64px">${esc(vitalsLine(v) ? 'Current vital signs: ' + vitalsLine(v) + '. ' : '')}</textarea></div>
@@ -2222,6 +2422,7 @@ function dischargeForm(id) {
       <div class="field"><label for="dis-fu">Follow-up visit</label><select id="dis-fu"><option value="">None</option><option value="3">In 3 days</option><option value="7">In 7 days</option><option value="14">In 14 days</option></select></div>
     </div>
     <div class="field"><label for="dis-refnote">Referral note</label><input id="dis-refnote" type="text" value="${esc(od.refNote || '')}"></div>
+    ${vitalsLine(p.vitals || {}) ? `<p class="small muted">Vital signs at disposition: ${esc(vitalsLine(p.vitals))}. Update them first if they are old.</p>` : ''}
     <div class="field"><label for="dis-note">Outcome note</label><textarea id="dis-note" placeholder="Advice, warning signs">${esc(od.note || '')}</textarea></div>
     ${pendBlock}
     <div class="form-msg"></div>
@@ -2241,7 +2442,7 @@ function saveDischarge(e, id) {
   if (out === 'Discharged without medication' && meds) errs.push('You wrote take-home medication. Choose "Discharged with medication" or clear the medication.');
   if (pend.length && !owner) errs.push('Choose who will follow up the pending results.');
   if (!formGate(f, errs, [])) return;
-  p.outcomeDetail = { visit: out, meds, referral: g('#dis-ref'), refNote: g('#dis-refnote'), note: g('#dis-note'), fuDays: fu ? Number(fu) : 0, followup: fu ? addDays(Number(fu)) : '', pendingOwner: owner };
+  p.outcomeDetail = { dispVitals: vitalsLine(p.vitals || {}), visit: out, meds, referral: g('#dis-ref'), refNote: g('#dis-refnote'), note: g('#dis-note'), fuDays: fu ? Number(fu) : 0, followup: fu ? addDays(Number(fu)) : '', pendingOwner: owner };
   pend.forEach(o => { o.followBy = owner; });
   p.dischargeApproved = { by: me.name, at: nowISO() };
   log(id, `Discharge approved: ${out}.${p.outcomeDetail.referral !== 'None' ? ' Referral: ' + p.outcomeDetail.referral + '.' : ''}${pend.length ? ' Pending results followed up by ' + owner + '.' : ''}`);
@@ -2362,7 +2563,13 @@ function exportData() {
   S.patients.forEach(p => (p.visits || []).forEach(v => visits.push([v.enc, p.id, p.name, dt(v.start), dt(v.end), v.complaint, TRI[v.triage] || v.triage, v.dx, v.outcome, v.doctor, v.meds])));
   const refs = [['Referral no.', 'File no.', 'Visit', 'Patient name', 'Receiving facility', 'Reason', 'Mode', 'Decided by', 'Decided at', 'Checklist confirmed', 'Left at', 'Arrived at', 'Status on arrival', 'Final diagnoses (counter-referral)', 'Follow-up']];
   (S.referrals || []).forEach(r => { const p = pat(r.pid) || {}; refs.push([r.id, r.pid, r.enc, p.name, r.facility, r.reason, r.mode, r.decidedBy, dt(r.decidedAt), r.checklist.filter(Boolean).length + '/' + TRANSFER_CHECKS.length, dt(r.departedAt), dt(r.arrivedAt), r.arrivalStatus, r.counter ? r.counter.dx : '', r.counter ? r.counter.followup : '']); });
-  const blob = xlsx([['Patients', patients], ['Previous visits', visits], ['External referrals', refs], ['Lab & X-ray', orders], ['Ward beds', beds], ['Staff attendance', staff], ['Follow-ups', fus], ['Activity log', logs]]);
+  const surv = [['File no.', 'Visit', 'Patient name', 'Time', 'By', 'A · Airway', 'B · Breathing', 'C · Circulation', 'D · Disability', 'E · Exposure', 'F · FAST', 'GCS', 'Mechanism', 'Intent']];
+  S.patients.forEach(p => (p.surveys || []).forEach(x => { const L = Object.fromEntries(surveyLines(x)); surv.push([p.id, encId(p), p.name, dt(x.at), x.by, L.A, L.B, L.C, L.D, L.E, L.F || '', gcsTotal(x.D.gcs) || '', x.mech, x.intent]); }));
+  const mar = [['File no.', 'Visit', 'Patient name', 'Type', 'Drug or procedure', 'Dose', 'Route', 'Given at', 'Given by']];
+  S.patients.forEach(p => (p.mar || []).forEach(m => mar.push([p.id, m.enc, p.name, m.kind === 'med' ? 'Medication' : 'Procedure', m.name, m.dose, m.route, dt(m.at), m.by])));
+  const rea = [['File no.', 'Patient name', 'Time', 'By', 'Condition', 'Vital signs', 'AVPU', 'Pain /10', 'Triage before', 'Triage after', 'Note']];
+  S.patients.forEach(p => (p.reassess || []).forEach(r => rea.push([p.id, p.name, dt(r.at), r.by, r.cond, vitalsLine(r.vitals), r.avpu, num(r.pain), TRI_NAME[r.triFrom], TRI_NAME[r.triTo], r.note])));
+  const blob = xlsx([['Patients', patients], ['Previous visits', visits], ['Primary surveys', surv], ['Medication & procedures', mar], ['Reassessments', rea], ['External referrals', refs], ['Lab & X-ray', orders], ['Ward beds', beds], ['Staff attendance', staff], ['Follow-ups', fus], ['Activity log', logs]]);
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'TentCare-' + dayKey() + '.xlsx';

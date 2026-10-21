@@ -59,6 +59,13 @@ Based on the WHO Emergency Care Toolkit (Acute Referral Form, Acute Transfer Che
 - **Mass casualty mode:** reception or admin starts it with an incident name. Every user then sees a red banner with counts by colour. Registration drops to triage colour, sex and age group. Each patient gets a temporary ID (MCI-001…), and Red and Yellow go to Emergency, Green to Outpatients. Staff can find the patient by the temporary ID and press **Identify patient** later. The file number stays the same.
 - New visit outcomes: **Left without being seen** and **Died**.
 
+## Emergency assessment
+
+- **Primary survey (ABCDE):** the doctor records A to E, plus FAST ultrasound and the mechanism and intent of injury, following the WHO trauma form. Each letter must be ticked Normal or have a finding. GCS is added up as you type; GCS 8 or less, low glucose or a positive FAST give a warning. The latest survey shows in the patient file and fills the ABCDE part of an external referral.
+- **Medication or procedure given:** drug, dose, route and time, or a procedure and time. If the drug matches a known allergy (including penicillin-type antibiotics), or allergies are not yet known, a warning appears first.
+- **Reassess:** the doctor or ward nurse records Improving / The same / Worse, vital signs, AVPU, pain score and the triage colour now. "Worse" without a higher colour gives a warning.
+- The discharge form shows the vital signs at disposition. The Excel export has sheets for primary surveys, medication and procedures, and reassessments.
+
 ## Attendance
 
 <p align="center"><img src="docs/screen-attendance-phone.png" alt="Attendance on a phone" width="300"> &nbsp; <img src="docs/screen-er-phone.png" alt="Emergency queue on a phone" width="300"></p>
