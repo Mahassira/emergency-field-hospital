@@ -281,6 +281,12 @@ details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:
 .mar{display:grid;grid-template-columns:62px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
 .mar:last-child{border-bottom:0}
 .mar .t{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:var(--muted);padding-top:1px}
+.fb-rate{display:flex;gap:6px}
+.fb-rate input{position:absolute;opacity:0;pointer-events:none}
+.fb-rate label{flex:1;min-height:44px;display:grid;place-items:center;border:1px solid var(--line);border-radius:6px;font-weight:600;cursor:pointer;background:#fff;margin:0}
+.fb-rate input:checked+label{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.fb-rate input:focus-visible+label{outline:2px solid var(--primary);outline-offset:2px}
+.fb-link{display:inline-flex;align-items:center;gap:6px;background:none;border:0;color:var(--primary);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;padding:6px 0}
 .copyright{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
 
 /* modal */
@@ -625,6 +631,7 @@ const CLINICAL = ['ER', 'OPD', 'MAT', 'OT'];
 
 /* ---------- icons (stroke, 24px grid) ---------- */
 const ICONS = {
+  feedback: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
   dash: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
   userplus: '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M19 8v6M16 11h6"/>',
   users: '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 4.5a4 4 0 0 1 0 7M22 21a7 7 0 0 0-4-6.3"/>',
@@ -1108,6 +1115,7 @@ function loginView() {
       </div>
     </div>
     <div class="offline-note">${ic('wifioff', 'sm')} Works without internet once it has been opened</div>
+    <div style="text-align:center"><button class="fb-link" onclick="feedbackForm()">${ic('feedback', 'sm')}Tried the demo? Send your feedback</button></div>
     <div class="copyright">© 2026 Mahassira. All rights reserved.</div>
   </div>`;
 }
@@ -1184,11 +1192,92 @@ function moreSheet() {
   }).join('');
   sheet('More', `<div class="sheetlist">${rows}</div>`);
 }
+/* ---------- Feedback from people trying the demo ---------- */
+const FEEDBACK_TO = 'mahassira@outlook.com';
+const ROLE_NAMES = { reception: 'Registration clerk', doctor: 'Doctor', lab: 'Lab & X-ray', nurse: 'Ward nurse', admin: 'Site manager' };
+let feedbackText = '';
+function feedbackForm() {
+  const roleOpts = ['', ...Object.keys(ROLE_NAMES), 'none'].map(r => `<option value="${r}" ${me && me.role === r ? 'selected' : ''}>${r === '' ? '— Select —' : r === 'none' ? 'I did not sign in' : ROLE_NAMES[r]}</option>`).join('');
+  const rate = (name, labels) => `<div class="fb-rate">${labels.map((l, i) => `<input type="radio" name="${name}" id="${name}${i}" value="${esc(l)}"><label for="${name}${i}">${esc(l)}</label>`).join('')}</div>`;
+  modal('Feedback on the demo', `<form onsubmit="sendFeedback(event)" oninput="this.dataset.warned=''" novalidate>
+    <p class="small muted" style="margin-top:0">Your feedback helps improve EMT TentCare. It takes about 2 minutes. Please do not write any real patient information.</p>
+    <div class="fgrid">
+      <div class="field"><label for="fb-role">Account you used</label><select id="fb-role">${roleOpts}</select></div>
+      <div class="field"><label for="fb-job">Your job</label><input id="fb-job" type="text" placeholder="e.g. ER doctor, nurse, IT, M&E"></div>
+    </div>
+    <div class="field"><label>Overall, how useful is the system? (1 = not useful, 5 = very useful)</label>${rate('fb-score', ['1', '2', '3', '4', '5'])}</div>
+    <div class="field"><label>How easy was it to use?</label>${rate('fb-ease', ['Easy', 'OK', 'Hard'])}</div>
+    <div class="field"><label for="fb-good">What worked well?</label><textarea id="fb-good" style="min-height:56px"></textarea></div>
+    <div class="field"><label for="fb-better">What should be improved or added?</label><textarea id="fb-better" style="min-height:64px"></textarea></div>
+    <div class="field"><label for="fb-problem">Did you face any problem? What happened and on which screen?</label><textarea id="fb-problem" style="min-height:64px"></textarea></div>
+    <div class="field"><label>Would it help in your field hospital?</label>${rate('fb-use', ['Yes', 'Maybe', 'No'])}</div>
+    <div class="fgrid">
+      <div class="field"><label for="fb-name">Name (optional)</label><input id="fb-name" type="text"></div>
+      <div class="field"><label for="fb-org">Organisation (optional)</label><input id="fb-org" type="text"></div>
+    </div>
+    <div class="form-msg"></div>
+    <div class="row"><button class="btn primary">${ic('feedback')}Send by email</button><button type="button" class="btn" onclick="copyFeedback()">Copy text</button></div>
+    <p class="small muted">Send opens your email app with the message ready to ${FEEDBACK_TO}. If no email app opens, press Copy text and paste it into any email or message.</p>
+  </form>`);
+}
+function buildFeedback() {
+  const f = $('#modal-root form'), g = k => ($(k) ? $(k).value.trim() : ''), r = n => (f.querySelector(`input[name="${n}"]:checked`) || {}).value || '';
+  const role = g('#fb-role');
+  const lines = [
+    'EMT TentCare demo feedback',
+    '',
+    'Account used: ' + (ROLE_NAMES[role] || (role === 'none' ? 'Did not sign in' : '-')),
+    'Job: ' + (g('#fb-job') || '-'),
+    'Usefulness (1-5): ' + (r('fb-score') || '-'),
+    'Ease of use: ' + (r('fb-ease') || '-'),
+    'Would help in a field hospital: ' + (r('fb-use') || '-'),
+    '',
+    'What worked well:', g('#fb-good') || '-',
+    '',
+    'What to improve or add:', g('#fb-better') || '-',
+    '',
+    'Problems faced:', g('#fb-problem') || '-',
+    '',
+    'Name: ' + (g('#fb-name') || '-') + ' · Organisation: ' + (g('#fb-org') || '-'),
+    'Screen: ' + (me ? screenTitle() : 'Sign-in page') + ' · Device: ' + (window.innerWidth < 720 ? 'phone' : window.innerWidth < 1024 ? 'tablet' : 'computer') + ' · ' + (navigator.onLine ? 'online' : 'offline'),
+    'Sent: ' + new Date().toLocaleString()
+  ];
+  return { f, text: lines.join('\n'), score: r('fb-score'), filled: [g('#fb-good'), g('#fb-better'), g('#fb-problem')].some(Boolean) };
+}
+function sendFeedback(e) {
+  e.preventDefault();
+  const fb = buildFeedback();
+  const errs = [];
+  if (!fb.score) errs.push('Choose a score from 1 to 5.');
+  if (!fb.filled) errs.push('Write at least one comment: what worked, what to improve, or a problem.');
+  if (!formGate(fb.f, errs, [])) return;
+  feedbackText = fb.text;
+  const subject = 'EMT TentCare feedback · ' + fb.score + '/5';
+  window.location.href = 'mailto:' + FEEDBACK_TO + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(fb.text);
+  setTimeout(() => {
+    modal('Thank you', `<p>Your email app should now be open with your feedback. Please press <b>Send</b> there.</p>
+      <p class="small muted">Nothing opened? Copy the text and send it to <b>${FEEDBACK_TO}</b> by email or message.</p>
+      <div class="row"><button class="btn" onclick="copyFeedback()">Copy text</button><button class="btn primary" onclick="closeModal()">Done</button></div>`);
+  }, 400);
+}
+function copyFeedback() {
+  const t = $('#modal-root form') ? buildFeedback().text : feedbackText;
+  const ok = () => toast('Feedback copied');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, () => fallbackCopy(t));
+  else fallbackCopy(t);
+}
+function fallbackCopy(t) {
+  const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('Feedback copied'); } catch (err) { toast('Could not copy. Please select the text by hand.'); }
+  ta.remove();
+}
+
 function accountSheet() {
   sheet('Account', `<div class="acct"><span class="avatar">${initials(me.name)}</span><div><b>${esc(me.name)}</b><div class="small muted">${esc(me.title)}</div><div class="small muted">${me.username}@${DOMAIN}</div><div class="small muted">${navigator.onLine ? 'Online' : 'Offline · data saved on this device'}</div></div></div>
     <div class="sheetlist">
       ${myStaff() ? (['present', 'late'].includes(attStatus(me.sid)) ? `<button onclick="setAtt('${me.sid}','out')">${ic('exit')}Check out of my shift</button>` : `<button onclick="setAtt('${me.sid}','present')">${ic('enter')}Check in for my shift</button>`) : ''}
       <button onclick="closeModal();attTab='staff';go('attend')">${ic('usercheck')}Attendance</button>
+      <button onclick="closeModal();feedbackForm()">${ic('feedback')}Give feedback on the demo</button>
       <button onclick="closeModal();resetDemo()">${ic('reset')}Reset demo data</button>
       <button class="danger" onclick="logout()">${ic('logout')}Sign out</button>
     </div>`);
@@ -1217,6 +1306,7 @@ function shell(inner) {
     <div class="who d-only"><b>${esc(me.name)}</b><br><span class="role">${esc(me.title)}</span></div>
     ${hasSearch && view.name !== 'search' ? `<button class="iconbtn m-only" onclick="go('search')" aria-label="Search">${ic('search')}</button>` : ''}
     <button class="avatar m-only" onclick="accountSheet()" aria-label="Account">${initials(me.name)}</button>
+    <button class="iconbtn d-only" onclick="feedbackForm()" title="Give feedback" aria-label="Give feedback">${ic('feedback')}</button>
     <button class="iconbtn d-only" onclick="logout()" title="Sign out" aria-label="Sign out">${ic('logout')}</button>
   </div></header>
   <nav class="nav ${hideMobileNav ? 'm-hide' : ''}"><div class="wrap">${tabs}${more}</div></nav>
