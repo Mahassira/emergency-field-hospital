@@ -7,8 +7,8 @@
 <meta name="description" content="EMT TentCare: offline-first patient flow for a six-tent emergency field hospital. Demo with fictional data.">
 <meta name="theme-color" content="#0f6cbd">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.png" type="image/png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="assets/icons/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TentCare">
 <style>
@@ -664,7 +664,7 @@ const ICONS = {
 };
 const TENT_IC = { REG: 'userplus', ER: 'pulse', OPD: 'steth', MAT: 'heart', OT: 'scissors', WARD: 'bed', DIAG: 'flask' };
 const ic = (n, cls) => `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
-const empty = msg => `<div class="empty"><img src="tent.png" alt="">${msg}</div>`;
+const empty = msg => `<div class="empty"><img src="assets/brand/tent.png" alt="">${msg}</div>`;
 
 
 const TESTS = {
@@ -1096,7 +1096,7 @@ function loginView() {
   ).join('');
   return `
   <div class="login">
-    <img class="logo" src="logo.png" alt="EMT TentCare – Emergency medical tents. Know every patient's status.">
+    <img class="logo" src="assets/brand/logo.png" alt="EMT TentCare – Emergency medical tents. Know every patient's status.">
     <div class="box">
       <p class="lead">Patient flow for a six-tent emergency field hospital.</p>
       <form onsubmit="doLogin(event)">
@@ -1142,7 +1142,7 @@ function resetDemo() {
 
 /* ---------- shell ---------- */
 function logo() {
-  return `<span class="mark"><img src="tent.png" alt=""></span>`;
+  return `<span class="mark"><img src="assets/brand/tent.png" alt=""></span>`;
 }
 
 function tabLabel(t) {
@@ -1312,7 +1312,7 @@ function shell(inner) {
   </div></header>
   <nav class="nav ${hideMobileNav ? 'm-hide' : ''}"><div class="wrap">${tabs}${more}</div></nav>
   <main><div class="wrap">${mciBar()}${inner}
-    <div class="foot"><img src="tent.png" alt=""><span>Demo with fictional data. Changes stay on this device. © 2026 Mahassira. All rights reserved.</span><a href="#" class="d-only" onclick="resetDemo();return false">Reset demo data</a></div>
+    <div class="foot"><img src="assets/brand/tent.png" alt=""><span>Demo with fictional data. Changes stay on this device. © 2026 Mahassira. All rights reserved.</span><a href="#" class="d-only" onclick="resetDemo();return false">Reset demo data</a></div>
   </div></main>`;
 }
 
@@ -2579,7 +2579,7 @@ function wristband(id) {
   const p = pat(id);
   modal('Patient wristband', `<div class="band printable">
       <div><div class="mrn">${p.id}</div><div><b>${esc(p.name)}</b></div><div class="small muted">${ageTxt(p)} · ${p.sex || 'U'} · ${fmtTime(p.createdAt)}</div>${p.tempId ? `<div class="mrn" style="font-size:13px">${p.tempId}</div>` : ''}</div>
-      <div style="text-align:right"><img src="tent.png" alt=""><br><span class="tri ${p.triage}">${p.triage}</span></div></div>
+      <div style="text-align:right"><img src="assets/brand/tent.png" alt=""><br><span class="tri ${p.triage}">${p.triage}</span></div></div>
     <p class="small muted">Print on a wristband label, or write the file number on the patient's band. Staff search by this number.</p>
     <div class="row"><button class="btn primary" onclick="window.print()">Print</button><button class="btn" onclick="closeModal()">Done</button></div>`);
 }
