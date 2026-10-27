@@ -6,6 +6,7 @@ All notable changes to EMT TentCare. Dates are when the change went live on the 
 - WHO EMT Minimum Data Set (MDS) daily report for the site manager, built from the patient files: items by age group, daily summary, needs and risks, team details.
 - MDS coding section in the clinical assessment form.
 - Report downloads as Excel or CSV, prints, and opens an email to the coordination cell.
+- Sign-in page: role boxes at the top with short instructions for phone and computer; choosing a role fills in the account and the button says who you will sign in as.
 
 ## 1.4.0 · 27 October 2026
 - Feedback form for people trying the demo, sent by email.

@@ -193,13 +193,25 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
 .login .logo{width:min(300px,78vw);height:auto;display:block;margin:0 auto 18px}
 .login .box{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;width:100%;max-width:440px;box-shadow:0 10px 30px rgba(17,58,96,.10)}
 .login .lead{color:var(--muted);margin:0 0 16px;text-align:center}
-.accounts{display:grid;gap:6px;margin-top:8px}
-.accounts button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface-2);border:1px solid transparent;border-radius:12px;padding:9px 12px;cursor:pointer}
+.pick-h{font-size:17px;margin:0 0 8px;text-align:center}
+.howto{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px;font-size:13.5px;color:var(--text)}
+.howto li{display:flex;gap:10px;align-items:flex-start}
+.howto li>b{flex:none;width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:grid;place-items:center;margin-top:1px}
+.only-mouse{display:none}
+@media(hover:hover) and (pointer:fine){.only-mouse{display:inline}.only-touch{display:none}}
+.accounts{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.accounts button:last-child:nth-child(odd){grid-column:1/-1}
+.accounts button{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;width:100%;min-height:44px;text-align:left;background:var(--surface-2);border:2px solid transparent;border-radius:12px;padding:12px;cursor:pointer;font:inherit;color:inherit}
+.accounts .atext{display:flex;flex-direction:column;gap:2px}
+.accounts .try{font-size:12px;color:var(--muted);line-height:1.35;margin-top:2px}
+.accounts .tick{position:absolute;top:8px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:none;place-items:center}
+.accounts button.on{border-color:var(--primary)}
+.accounts button.on .tick{display:grid}
+.accounts button:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
 .accounts button:hover{border-color:var(--line);background:#ece2d2}
 .accounts .aic{width:34px;height:34px;border-radius:10px;background:var(--surface);color:var(--accent);display:grid;place-items:center;flex:none}
 .accounts .atext{flex:1;min-width:0}
 .accounts .atext b{color:var(--primary)}
-.accounts code{font-size:12px;color:#0f6cbd}
 .disclaimer{font-size:12px;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 .err{color:var(--red);font-size:13px;margin:4px 0 10px;min-height:18px}
 .offline-note{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--muted);font-size:12.5px;margin-top:14px}
@@ -407,15 +419,14 @@ details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:
   .login .logo{width:min(230px,62vw);margin-bottom:14px}
   .login .box{padding:18px;border-radius:18px}
   .login .lead{font-size:14px;margin-bottom:12px}
-  .accounts button{padding:8px 10px}
+  .accounts button{padding:10px}
   .accounts .aic{width:32px;height:32px}
-  .accounts code{font-size:10.5px}
   .beds{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
   .bed{min-height:60px;padding:7px;border-radius:10px}
   .order{flex-direction:column;align-items:stretch}
   .order .btn{width:100%}
 }
-@media(min-width:721px){.login .logo{width:260px}}
+@media(min-width:721px){.login .logo{width:260px}.login .box{max-width:640px}.accounts{display:flex;flex-wrap:wrap;justify-content:center}.accounts button{width:calc((100% - 16px) / 3)}.login form{max-width:400px;margin:0 auto}}
 
 /* ---------- v2: data lists, attendance, responsive ---------- */
 .kv{display:grid;grid-template-columns:minmax(130px,36%) 1fr}
@@ -586,7 +597,9 @@ html.fluent{
 .fluent .login{background:#f5f5f5}
 .fluent .login .box{border:0;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.14),0 0 2px rgba(0,0,0,.12)}
 .fluent .accounts button{border-radius:4px;background:#f5f5f5}
-.fluent .accounts button:hover{background:#ebebeb;border-color:transparent}
+.fluent .accounts button:hover{background:#ebebeb}
+.fluent .accounts button.on{border-color:#0f6cbd;background:#ebf3fc}
+.fluent .accounts .tick,.fluent .howto li>b{background:#0f6cbd}
 .fluent .accounts .aic{border-radius:4px;color:#0f6cbd}
 .fluent .accounts .atext b{color:#242424}
 /* navigation: tabs on tablets, a left side menu from 900px */
@@ -1166,23 +1179,28 @@ function goBack() {
 
 function loginView() {
   const aic = { reception: 'userplus', doctor: 'steth', lab: 'flask', nurse: 'bed', admin: 'dash' };
+  const tries = { reception: 'Register and triage patients', doctor: 'Assess, request tests, refer, discharge', lab: 'Enter lab and X-ray results', nurse: 'Ward beds and admissions', admin: 'Dashboard and WHO daily report' };
   const accts = Object.entries(USERS).map(([u, x]) =>
-    `<button type="button" onclick="quick('${u}')"><span class="aic">${ic(aic[u])}</span><span class="atext"><b>${esc(x.title)}</b><br><span class="small muted">${esc(x.name)}</span><br><code>${u}@${DOMAIN}</code></span></button>`
+    `<button type="button" id="acct-${u}" aria-pressed="false" onclick="quick('${u}')"><span class="aic">${ic(aic[u])}</span><span class="atext"><b>${esc(x.title)}</b><span class="small muted">${esc(x.name)}</span><span class="try">${tries[u]}</span></span><span class="tick" aria-hidden="true">✓</span></button>`
   ).join('');
   return `
   <div class="login">
     <img class="logo" src="assets/brand/logo.png" alt="EMT TentCare – Emergency medical tents. Know every patient's status.">
     <div class="box">
       <p class="lead">Patient flow for a six-tent emergency field hospital.</p>
+      <h2 class="pick-h">Choose who you want to try</h2>
+      <ol class="howto">
+        <li><b>1</b><span><span class="only-touch">Tap</span><span class="only-mouse">Click</span> a role below. The email and password fill in for you.</span></li>
+        <li><b>2</b><span>Press <i>Sign in</i>. You can sign out and try another role at any time.</span></li>
+      </ol>
+      <div class="accounts">${accts}</div>
+      <p class="small muted" style="margin:10px 0 14px;text-align:center">Or type it yourself. Password for all accounts: <code>${PASSWORD}</code></p>
       <form onsubmit="doLogin(event)">
         <div class="field"><label for="u">Work email</label><input id="u" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="name@emttentcare.com" required></div>
         <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
         <div class="err" id="err"></div>
-        <button class="btn primary" style="width:100%">Sign in</button>
+        <button class="btn primary" id="signin" style="width:100%">Sign in</button>
       </form>
-      <h3 class="mt">Demo accounts · tap one to fill in</h3>
-      <p class="small muted" style="margin:-4px 0 8px">Password for all accounts: <code>${PASSWORD}</code></p>
-      <div class="accounts">${accts}</div>
       <div class="disclaimer">
         <p style="margin:0 0 8px"><b>Demo only.</b> All patients and staff here are fictional.</p>
         <p style="margin:0 0 8px"><b>Works online and offline.</b> With a connection, every registration, result and discharge is saved to the central database straight away. When the internet drops, staff keep working on the same phone or tablet: each change is saved on the device and queued, then sent automatically when the connection returns, with nothing to re-enter.</p>
@@ -1196,7 +1214,12 @@ function loginView() {
   </div>`;
 }
 
-function quick(u) { $('#u').value = u + '@' + DOMAIN; $('#pw').value = PASSWORD; }
+function quick(u) {
+  $('#u').value = u + '@' + DOMAIN; $('#pw').value = PASSWORD; $('#err').textContent = '';
+  document.querySelectorAll('.accounts button').forEach(b => { const on = b.id === 'acct-' + u; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  const btn = $('#signin'); btn.textContent = 'Sign in as ' + USERS[u].title;
+  btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); btn.focus({ preventScroll: true });
+}
 function doLogin(e) {
   e.preventDefault();
   const u = $('#u').value.trim().toLowerCase().replace('@' + DOMAIN, '');
