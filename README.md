@@ -146,6 +146,27 @@ npm test
 
 The demo stores data only in your browser. It counts visits anonymously with Cloudflare Web Analytics, without cookies or personal data. Feedback is only sent if you choose to send it from your own email.
 
+## References
+
+The design draws on these sources. The full list, with where each one is used, is in chapter 23 of the [user guide](docs/EMT-TentCare-User-Guide.pdf).
+
+**Emergency care and field hospitals**
+- World Health Organization. [Emergency Care Toolkit](https://www.who.int/teams/integrated-health-services/clinical-services-and-systems/emergency-and-critical-care/emergency-care-toolkit): referral, transfer, counter-referral and trauma forms.
+- World Health Organization. [Classification and minimum standards for emergency medical teams](https://www.who.int/publications/i/item/9789240029330), 2021.
+- WHO, ICRC and MSF. [Interagency Integrated Triage Tool](https://www.who.int/tools/triage).
+- WHO and ICRC. [Basic Emergency Care: approach to the acutely ill and injured](https://www.who.int/publications/i/item/9789241513081), 2018.
+- World Health Organization. [Mass casualty management systems](https://www.who.int/publications/i/item/9789241596053), 2007.
+- Teasdale G, Jennett B. [Assessment of coma and impaired consciousness: a practical scale](https://pubmed.ncbi.nlm.nih.gov/4136544/). The Lancet, 1974.
+- [Reviewing the implementation of the Emergency Medical Team Minimum Data Set](https://www.cambridge.org/core/journals/prehospital-and-disaster-medicine/article/reviewing-the-implementation-of-the-emergency-medical-team-minimum-data-set/95CBC212AD30F3421C2C1D5DF380CEA6). Prehospital and Disaster Medicine.
+- International Medical Corps. [Gaza: Two-Year Update](https://internationalmedicalcorps.org/wp-content/uploads/2026/01/IntlMedicalCorps-Gaza-2Year-Update.pdf), January 2026.
+
+**Humanitarian data protection**
+- Inter-Agency Standing Committee. [Operational Guidance on Data Responsibility in Humanitarian Action](https://interagencystandingcommittee.org/node/43830), 2023.
+- ICRC. [Handbook on Data Protection in Humanitarian Action](https://www.cambridge.org/core/product/859CF5AE06C6D93B5C021D37910928B7/core-reader), 3rd edition, 2024.
+
+**Microsoft 365 and Power Platform**
+- [Mobile offline for canvas apps](https://learn.microsoft.com/en-us/power-apps/mobile/canvas-mobile-offline-overview) · [Customer-managed encryption key](https://learn.microsoft.com/en-us/power-platform/admin/customer-managed-key) · [Dataverse auditing](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/auditing/overview) · [Data loss prevention policies](https://learn.microsoft.com/en-us/power-platform/admin/wp-data-loss-prevention) · [Conditional Access](https://learn.microsoft.com/entra/identity/conditional-access) · [Backup retention for Managed Environments](https://learn.microsoft.com/en-us/power-platform/release-plan/2023wave1/data-platform/dataverse-backup-retention-managed-environments)
+
 ## Author
 
 **Mohammed Abu Hassira**
