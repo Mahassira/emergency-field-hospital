@@ -19,6 +19,11 @@ Field hospitals will keep being set up in emergencies and conflict zones, often 
 
 EMT TentCare is a working demo of that system: one patient file that follows the person from the registration tent to the ward, and a clear picture of the whole hospital for the site manager.
 
+### Which kind of field hospital
+
+The layout (registration and triage, emergency, outpatients, maternity, an operating theatre and a 50-bed ward) matches a WHO **Emergency Medical Team Type 2**: inpatient acute care, general and obstetric surgery, at least 20 beds and one operating theatre, open 24 hours a day ([WHO, 2021](https://www.who.int/publications/i/item/9789240029330)). With an intensive care unit it can serve a **Type 3** referral hospital, and **Type 1** outpatient teams can use the registration, triage and outpatient parts.
+
+
 ## Try the demo
 
 Open the [live demo](https://mahassira.github.io/emergency-field-hospital/) and sign in with any of these accounts. The password for all of them is `demo123`.
