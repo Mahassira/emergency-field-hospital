@@ -194,6 +194,12 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
 .login .box{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;width:100%;max-width:440px;box-shadow:0 10px 30px rgba(17,58,96,.10)}
 .login .lead{color:var(--muted);margin:0 0 16px;text-align:center}
 .pick-h{font-size:17px;margin:0 0 8px;text-align:center}
+.accounts .short,.howto-m{display:none}
+.disclaimer summary{cursor:pointer;font-weight:600;color:var(--text);text-align:center;list-style:none}
+.disclaimer summary::-webkit-details-marker{display:none}
+.disclaimer summary::after{content:' ▾'}
+.disclaimer[open] summary{margin-bottom:8px}
+.disclaimer p{margin:0 0 8px}
 .howto{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px;font-size:13.5px;color:var(--text)}
 .howto li{display:flex;gap:10px;align-items:flex-start}
 .howto li>b{flex:none;width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:grid;place-items:center;margin-top:1px}
@@ -416,11 +422,25 @@ details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:
   .foot{font-size:12px;margin-top:18px}
   .foot img{width:22px}
   .login{justify-content:flex-start;padding-top:calc(28px + env(safe-area-inset-top))}
-  .login .logo{width:min(230px,62vw);margin-bottom:14px}
-  .login .box{padding:18px;border-radius:18px}
-  .login .lead{font-size:14px;margin-bottom:12px}
-  .accounts button{padding:10px}
-  .accounts .aic{width:32px;height:32px}
+  .login{padding-top:calc(14px + env(safe-area-inset-top))}
+  .login .logo{width:min(150px,42vw);margin-bottom:8px}
+  .login .box{padding:14px;border-radius:14px}
+  .login .lead{display:none}
+  .pick-h{font-size:16px;margin-bottom:4px}
+  .howto{display:none}
+  .howto-m{display:block;text-align:center;font-size:13px;color:var(--muted);margin:0 0 10px}
+  .howto-m b{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;margin-right:2px}
+  .accounts{gap:6px}
+  .accounts button{flex-direction:row;align-items:center;gap:8px;padding:8px 10px;min-height:48px;border-radius:10px}
+  .accounts .atext .small,.accounts .try,.accounts .full{display:none}
+  .accounts .short{display:inline}
+  .accounts .atext b{font-size:14px}
+  .accounts .tick{top:50%;transform:translateY(-50%);right:8px;width:18px;height:18px;font-size:11px}
+  .login .field{margin-bottom:10px}
+  .offline-note{margin-top:10px}
+  .login .lead{display:none}
+  .accounts button{padding:8px 10px}
+  .accounts .aic{width:28px;height:28px;border-radius:8px}
   .beds{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
   .bed{min-height:60px;padding:7px;border-radius:10px}
   .order{flex-direction:column;align-items:stretch}
@@ -599,7 +619,7 @@ html.fluent{
 .fluent .accounts button{border-radius:4px;background:#f5f5f5}
 .fluent .accounts button:hover{background:#ebebeb}
 .fluent .accounts button.on{border-color:#0f6cbd;background:#ebf3fc}
-.fluent .accounts .tick,.fluent .howto li>b{background:#0f6cbd}
+.fluent .accounts .tick,.fluent .howto li>b,.fluent .howto-m b{background:#0f6cbd}
 .fluent .accounts .aic{border-radius:4px;color:#0f6cbd}
 .fluent .accounts .atext b{color:#242424}
 /* navigation: tabs on tablets, a left side menu from 900px */
@@ -1180,8 +1200,9 @@ function goBack() {
 function loginView() {
   const aic = { reception: 'userplus', doctor: 'steth', lab: 'flask', nurse: 'bed', admin: 'dash' };
   const tries = { reception: 'Register and triage patients', doctor: 'Assess, request tests, refer, discharge', lab: 'Enter lab and X-ray results', nurse: 'Ward beds and admissions', admin: 'Dashboard and WHO daily report' };
+  const short = { reception: 'Registration', doctor: 'Doctor', lab: 'Lab & X-ray', nurse: 'Ward nurse', admin: 'Site manager' };
   const accts = Object.entries(USERS).map(([u, x]) =>
-    `<button type="button" id="acct-${u}" aria-pressed="false" onclick="quick('${u}')"><span class="aic">${ic(aic[u])}</span><span class="atext"><b>${esc(x.title)}</b><span class="small muted">${esc(x.name)}</span><span class="try">${tries[u]}</span></span><span class="tick" aria-hidden="true">✓</span></button>`
+    `<button type="button" id="acct-${u}" aria-pressed="false" onclick="quick('${u}')"><span class="aic">${ic(aic[u])}</span><span class="atext"><b><span class="full">${esc(x.title)}</span><span class="short">${short[u]}</span></b><span class="small muted">${esc(x.name)}</span><span class="try">${tries[u]}</span></span><span class="tick" aria-hidden="true">✓</span></button>`
   ).join('');
   return `
   <div class="login">
@@ -1189,24 +1210,25 @@ function loginView() {
     <div class="box">
       <p class="lead">Patient flow for a six-tent emergency field hospital.</p>
       <h2 class="pick-h">Choose who you want to try</h2>
+      <p class="howto-m"><b>1</b> Tap a role &nbsp;<b>2</b> Press <i>Sign in</i></p>
       <ol class="howto">
         <li><b>1</b><span><span class="only-touch">Tap</span><span class="only-mouse">Click</span> a role below. The email and password fill in for you.</span></li>
         <li><b>2</b><span>Press <i>Sign in</i>. You can sign out and try another role at any time.</span></li>
       </ol>
       <div class="accounts">${accts}</div>
-      <p class="small muted" style="margin:10px 0 14px;text-align:center">Or type it yourself. Password for all accounts: <code>${PASSWORD}</code></p>
+      <p class="small muted" style="margin:10px 0 14px;text-align:center">Or type it in. Password for all: <code>${PASSWORD}</code></p>
       <form onsubmit="doLogin(event)">
         <div class="field"><label for="u">Work email</label><input id="u" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="name@emttentcare.com" required></div>
         <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
         <div class="err" id="err"></div>
         <button class="btn primary" id="signin" style="width:100%">Sign in</button>
       </form>
-      <div class="disclaimer">
-        <p style="margin:0 0 8px"><b>Demo only.</b> All patients and staff here are fictional.</p>
+      <p class="small muted" style="margin:12px 0 0;text-align:center"><b>Demo only.</b> All patients and staff are fictional.</p>
+      <details class="disclaimer"><summary>About this demo</summary>
         <p style="margin:0 0 8px"><b>Works online and offline.</b> With a connection, every registration, result and discharge is saved to the central database straight away. When the internet drops, staff keep working on the same phone or tablet: each change is saved on the device and queued, then sent automatically when the connection returns, with nothing to re-enter.</p>
         <p style="margin:0"><b>Runs inside Microsoft 365.</b> The system is designed to run inside the organisation's own Microsoft 365 environment: staff sign in with their work account and patient data is stored in Microsoft Dataverse. This demo saves only to this device.</p>
         <p style="margin:8px 0 0"><b>Visit counts.</b> This demo counts visits anonymously with Cloudflare Web Analytics, without cookies or personal data.</p>
-      </div>
+      </details>
     </div>
     <div class="offline-note">${ic('wifioff', 'sm')} Works without internet once it has been opened</div>
     <div style="text-align:center"><button class="fb-link" onclick="feedbackForm()">${ic('feedback', 'sm')}Tried the demo? Send your feedback</button></div>
@@ -1217,7 +1239,7 @@ function loginView() {
 function quick(u) {
   $('#u').value = u + '@' + DOMAIN; $('#pw').value = PASSWORD; $('#err').textContent = '';
   document.querySelectorAll('.accounts button').forEach(b => { const on = b.id === 'acct-' + u; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
-  const btn = $('#signin'); btn.textContent = 'Sign in as ' + USERS[u].title;
+  const btn = $('#signin'), lab = [...document.querySelectorAll('#acct-' + u + ' .atext b span')].find(x => x.offsetParent); btn.textContent = 'Sign in as ' + (lab ? lab.textContent : USERS[u].title);
   btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); btn.focus({ preventScroll: true });
 }
 function doLogin(e) {

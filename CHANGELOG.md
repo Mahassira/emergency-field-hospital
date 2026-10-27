@@ -7,6 +7,7 @@ All notable changes to EMT TentCare. Dates are when the change went live on the 
 - MDS coding section in the clinical assessment form.
 - Report downloads as Excel or CSV, prints, and opens an email to the coordination cell.
 - Sign-in page: role boxes at the top with short instructions for phone and computer; choosing a role fills in the account and the button says who you will sign in as.
+- Compact sign-in page on phones: smaller logo, short role buttons, and the demo notes folded under "About this demo", so everything fits on one screen.
 
 ## 1.4.0 · 27 October 2026
 - Feedback form for people trying the demo, sent by email.
