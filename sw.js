@@ -1,7 +1,7 @@
 // Keeps the app working with no internet connection.
 // Pages: try the network first so updates show straight away; use the saved copy when offline.
 // Images and other files: use the saved copy first, refresh it in the background.
-const CACHE = 'tentcare-v16';
+const CACHE = 'tentcare-v17';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './logo.png', './tent.png', './favicon.png', './apple-touch-icon.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 
 self.addEventListener('install', event => {
@@ -27,6 +27,7 @@ function saveCopy(request, response) {
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
+  if (new URL(req.url).origin !== location.origin) return; // other sites, such as the visit counter, go straight to the network
 
   if (req.mode === 'navigate') {
     event.respondWith(

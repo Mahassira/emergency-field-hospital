@@ -1112,6 +1112,7 @@ function loginView() {
         <p style="margin:0 0 8px"><b>Demo only.</b> All patients and staff here are fictional.</p>
         <p style="margin:0 0 8px"><b>Works online and offline.</b> With a connection, every registration, result and discharge is saved to the central database straight away. When the internet drops, staff keep working on the same phone or tablet: each change is saved on the device and queued, then sent automatically when the connection returns, with nothing to re-enter.</p>
         <p style="margin:0"><b>Runs inside Microsoft 365.</b> The system is designed to run inside the organisation's own Microsoft 365 environment: staff sign in with their work account and patient data is stored in Microsoft Dataverse. This demo saves only to this device.</p>
+        <p style="margin:8px 0 0"><b>Visit counts.</b> This demo counts visits anonymously with Cloudflare Web Analytics, without cookies or personal data.</p>
       </div>
     </div>
     <div class="offline-note">${ic('wifioff', 'sm')} Works without internet once it has been opened</div>
@@ -2713,5 +2714,8 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 </script>
+<!-- Cloudflare Web Analytics: anonymous visit counts, no cookies -->
+<script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e6b324180df64faf8b40076b25b6dbe8"}'></script>
+<!-- End Cloudflare Web Analytics -->
 </body>
 </html>
