@@ -34,7 +34,7 @@ Open the [live demo](https://mahassira.github.io/emergency-field-hospital/) and 
 | `doctor@emttentcare.com` | Doctor | Queue, ABCDE primary survey, assessment, tests, referral, discharge |
 | `lab@emttentcare.com` | Lab & X-ray | Enter results that go straight back to the patient's file |
 | `nurse@emttentcare.com` | Ward nurse | 50-bed ward map, receive patients, reassess, confirm departures |
-| `admin@emttentcare.com` | Site manager | Dashboard, staff attendance, export everything to Excel |
+| `admin@emttentcare.com` | Site manager | Dashboard, WHO daily report (MDS), staff attendance, export to Excel |
 
 All patients and staff are fictional. The demo saves everything on your own device and does not connect to any server. Please do not enter real patient data.
 
@@ -64,6 +64,7 @@ All patients and staff are fictional. The demo saves everything on your own devi
 
 **Management**
 - Live dashboard, staff and patient attendance, follow-up visits.
+- Daily report in the format of the WHO EMT Minimum Data Set (MDS), built from the patient files and ready to send to the coordination cell (EMTCC) as Excel or CSV.
 - Excel export built in the browser, so it works offline.
 - In-app feedback form for people trying the demo.
 
@@ -162,6 +163,7 @@ The design draws on these sources. The full list, with where each one is used, i
 - WHO and ICRC. [Basic Emergency Care: approach to the acutely ill and injured](https://www.who.int/publications/i/item/9789241513081), 2018.
 - World Health Organization. [Mass casualty management systems](https://www.who.int/publications/i/item/9789241596053), 2007.
 - Teasdale G, Jennett B. [Assessment of coma and impaired consciousness: a practical scale](https://pubmed.ncbi.nlm.nih.gov/4136544/). The Lancet, 1974.
+- World Health Organization. [EMT Minimum Data Set (MDS)](https://www.mdsgateway.net/) and the [MDS reporting instructions](https://teams-project.s3-eu-west-1.amazonaws.com/docs/attachments/MDS_Report_Instructions.pdf).
 - [Reviewing the implementation of the Emergency Medical Team Minimum Data Set](https://www.cambridge.org/core/journals/prehospital-and-disaster-medicine/article/reviewing-the-implementation-of-the-emergency-medical-team-minimum-data-set/95CBC212AD30F3421C2C1D5DF380CEA6). Prehospital and Disaster Medicine.
 - International Medical Corps. [Gaza: Two-Year Update](https://internationalmedicalcorps.org/wp-content/uploads/2026/01/IntlMedicalCorps-Gaza-2Year-Update.pdf), January 2026.
 

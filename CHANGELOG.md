@@ -2,6 +2,11 @@
 
 All notable changes to EMT TentCare. Dates are when the change went live on the demo.
 
+## 1.5.0 · 27 October 2026
+- WHO EMT Minimum Data Set (MDS) daily report for the site manager, built from the patient files: items by age group, daily summary, needs and risks, team details.
+- MDS coding section in the clinical assessment form.
+- Report downloads as Excel or CSV, prints, and opens an email to the coordination cell.
+
 ## 1.4.0 · 27 October 2026
 - Feedback form for people trying the demo, sent by email.
 - Anonymous visit counts with Cloudflare Web Analytics (no cookies).

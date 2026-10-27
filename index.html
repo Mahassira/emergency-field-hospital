@@ -244,6 +244,15 @@ details.crit summary::before{content:'▸';color:var(--muted);transition:transfo
 details.crit[open] summary::before{transform:rotate(90deg)}
 details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
 .critcols{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;padding-bottom:10px}
+.mdstbl{width:100%;border-collapse:collapse;font-size:13px}
+.mdstbl th,.mdstbl td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:right}
+.mdstbl th:first-child,.mdstbl td:first-child,.mdstbl th:nth-child(2),.mdstbl td:nth-child(2){text-align:left}
+.mdstbl td:first-child{color:var(--muted);width:34px}
+.mdstbl tr.grp td{background:var(--surface);font-weight:600;text-align:left;color:var(--text);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+.mdstbl td.z{color:var(--muted)}
+.mdstbl .tot{font-weight:600}
+.mdswrap{overflow-x:auto}
+.mdswrap .mdstbl{min-width:600px}
 .critcols h4{margin:10px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
 .critcols h3{margin:6px 0 0;font-size:13.5px}
 @media(max-width:720px){.critcols{grid-template-columns:1fr}}
@@ -640,6 +649,7 @@ const ICONS = {
   steth: '<path d="M6 3v6a4 4 0 0 0 8 0V3"/><path d="M10 13v2a5 5 0 0 0 10 0v-1"/><circle cx="20" cy="12" r="2"/>',
   heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
   scissors: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.2 8.2 20 20M8.2 15.8 20 4"/>',
+  report: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 17v-3M12.5 17v-6M16 17v-2"/>',
   flask: '<path d="M9 3h6M10 3v6l-5.5 9.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3"/><path d="M7.5 15h9"/>',
   bed: '<path d="M3 6v14M3 16h18v4M21 16v-4a3 3 0 0 0-3-3h-8v7"/><circle cx="6.5" cy="11.5" r="2"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
@@ -699,6 +709,60 @@ let view = { name: 'login' };
 let prevView = null;
 let curActions = [];
 const tentTab = {};
+/* WHO EMT Minimum Data Set (MDS). Items follow the WHO EMT MDS reporting instructions (2016);
+   check against the official MDS ver1.0 forms before any real reporting. */
+const MDS_AGES = ['<1', '1-4', '5-17', '18-64', '65+'];
+const MDS_GROUPS = [
+  ['Sex', [[1, 'Male'], [2, 'Female, not pregnant'], [3, 'Female, pregnant']]],
+  ['Trauma', [[4, 'Major head / spine injury'], [5, 'Major torso injury'], [6, 'Major extremity injury'], [7, 'Moderate injury'], [8, 'Minor injury']]],
+  ['Infectious disease', [[9, 'Acute respiratory infection'], [10, 'Acute watery diarrhoea'], [11, 'Acute bloody diarrhoea'], [12, 'Acute jaundice syndrome'], [13, 'Suspected measles'], [14, 'Suspected meningitis'], [15, 'Suspected tetanus'], [16, 'Acute flaccid paralysis'], [17, 'Acute haemorrhagic fever'], [18, 'Fever of unknown origin']]],
+  ['Surgical and medical emergency', [[19, 'Surgical emergency (non-trauma)'], [20, 'Medical emergency']]],
+  ['Other key diseases', [[21, 'Skin disease'], [22, 'Acute mental health and psychosocial problem'], [23, 'Obstetric complication'], [24, 'Severe acute malnutrition (SAM)'], [25, 'Other diagnosis, not specified above']]],
+  ['Procedures', [[26, 'Major procedure (except limb amputation and obstetric)'], [27, 'Minor procedure'], [28, 'Limb amputation (excluding digits)'], [29, 'Normal vaginal delivery'], [30, 'Caesarean section'], [31, 'Other obstetrics and gynaecology']]],
+  ['Outcome', [[32, 'Discharge without follow-up'], [33, 'Discharge with follow-up'], [34, 'Admission'], [35, 'Referral / transfer'], [36, 'Left against medical advice'], [37, 'Dead on arrival'], [38, 'Death within facility'], [39, 'Requiring long-term rehabilitation']]],
+  ['Relation to the event', [[40, 'Directly related to the event'], [41, 'Indirectly related to the event'], [42, 'Not related to the event']]],
+  ['Protection', [[43, 'Vulnerable child'], [44, 'Vulnerable adult'], [45, 'Sexual and gender-based violence'], [46, 'Violence (other than SGBV)']]]
+];
+const MDS_NAME = Object.fromEntries(MDS_GROUPS.flatMap(g => g[1]));
+const MDS_FORM = ['Trauma', 'Infectious disease', 'Surgical and medical emergency', 'Other key diseases', 'Procedures', 'Protection'];
+const MDS_NEEDS = [
+  ['Report immediately', [[51, 'Unexpected death'], [52, 'Disease that must be reported immediately'], [53, 'Critical incident affecting the team or community'], [55, 'Any other issue']]],
+  ['Public health risks', [[56, 'Water, sanitation and hygiene'], [57, 'Infectious disease reported in the community'], [58, 'Environmental risk or exposure'], [59, 'Shelter and non-food items'], [60, 'Food security']]],
+  ['Operational constraints', [[61, 'Logistics and operational support'], [62, 'Supplies'], [63, 'Human resources'], [64, 'Finance'], [65, 'Other']]]
+];
+const MDS_TEAM = { org: 'Demo organisation', team: 'EMT TentCare demo team', type: 'Type 2', contact: 'Site Manager', phone: '', email: '', depart: '', location: 'Demo site', geo: '' };
+function mdsAge(p) {
+  if (p.ageGroup) return { Infant: '<1', Child: '5-17', Adult: '18-64', 'Older adult': '65+' }[p.ageGroup] || '18-64';
+  const a = Number(p.age);
+  return a < 1 ? '<1' : a < 5 ? '1-4' : a < 18 ? '5-17' : a < 65 ? '18-64' : '65+';
+}
+function mdsSex(p) { return p.sex === 'F' ? (p.pregnant ? 3 : 2) : p.sex === 'M' ? 1 : null; }
+function mdsOutcome(p) {
+  if (p.triage === 'black' || p.outcome === 'Dead on arrival') return 37;
+  if (p.location === 'WARD' || p.state === 'admitted') return 34;
+  if (p.state !== 'discharged') return null;
+  const od = p.outcomeDetail || {};
+  switch (p.outcome) {
+    case 'Discharged with medication': case 'Discharged without medication': return od.fuDays || od.followup ? 33 : 32;
+    case 'Transferred to another facility': return 35;
+    case 'Left against medical advice': return 36;
+    case 'Died': return 38;
+    default: return null;
+  }
+}
+const MDS_SEX_IDS = [1, 2, 3];
+function mdsRows(day) {
+  return S.patients.filter(p => dayKey(new Date(p.createdAt)) === day).map(p => {
+    const c = p.clinical || {}, items = [];
+    const sx = mdsSex(p); if (sx) items.push(sx);
+    (c.mds || []).forEach(n => items.push(n));
+    const o = mdsOutcome(p); if (o) items.push(o);
+    if (c.mdsCtx) items.push(c.mdsCtx);
+    const dead = o === 37;
+    return { p, age: mdsAge(p), items, coded: dead || (c.mds || []).length > 0, outcome: o };
+  });
+}
+
 const MOBILE_PRIMARY = { admin: ['dash', 'tent:ER', 'ward', 'attend'] };
 let attTab = 'staff';
 let attRole = 'all';
@@ -711,7 +775,7 @@ function save() { store(KEY, JSON.stringify(S)); }
 function load() {
   try {
     const d = JSON.parse(read(KEY));
-    if (d && d.v === 6) { S = d; ensureAttendance(); return d; }
+    if (d && d.v === 7) { S = d; ensureAttendance(); return d; }
   } catch (e) {}
   return seed();
 }
@@ -787,7 +851,7 @@ function toast(msg) {
 
 /* ---------- seed data (fictional) ---------- */
 function seed() {
-  S = { v: 6, mci: null, mcis: [], seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), bedClean: Array(BEDS).fill(false), referrals: [], staff: [], att: null, followups: [] };
+  S = { v: 7, mdsNotes: {}, team: Object.assign({}, MDS_TEAM), mci: null, mcis: [], seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), bedClean: Array(BEDS).fill(false), referrals: [], staff: [], att: null, followups: [] };
   const V = (bp, hr, t, s, rr, height, weight, muac) => ({ bp, hr, temp: t, spo2: s, rr, height: height || '', weight: weight || '', muac: muac || '' });
 
   function add(p) {
@@ -922,6 +986,17 @@ function seed() {
     lina.mar = [{ kind: 'med', name: 'Salbutamol', dose: '5 mg', route: 'Inhaled / nebulised', at, by: 'Dr. Khaled Nasser', enc: lina.id + '-V1' },
       { kind: 'med', name: 'Hydrocortisone', dose: '100 mg', route: 'IV', at: new Date(Date.now() - 15 * 60000).toISOString(), by: 'Dr. Khaled Nasser', enc: lina.id + '-V1' }];
   }
+  const RULES = [
+    [/laparotomy|abdominal injury|abdomen/i, [5, 26], 40], [/shrapnel|fracture/i, [6], 40], [/burn/i, [7], 40], [/laceration|cut\b/i, [8, 27], 40],
+    [/caesarean/i, [30], 42], [/diarrh/i, [10], 41], [/cough|pneumonia|chest infection|respiratory/i, [9], 41],
+    [/wound infection|cellulitis|scabies/i, [21], 41], [/asthma|diabet|hypertens|heart|stroke/i, [20], 42]
+  ];
+  S.patients.forEach(p => {
+    const c = p.clinical || {};
+    if (!c.dx || /labour/i.test(c.dx)) return;
+    const r = RULES.find(x => x[0].test(c.dx + ' ' + (c.procedures || '')));
+    c.mds = r ? r[1].slice() : [25]; c.mdsCtx = r ? r[2] : 42;
+  });
   seedAttendance();
 
   S.log.sort((x, y) => y.t.localeCompare(x.t));
@@ -1059,7 +1134,7 @@ function navFor(role) {
     doctor: ['tent:ER', 'tent:OPD', 'tent:MAT', 'tent:OT', 'ward', 'attend', 'search'],
     lab: ['orders', 'attend', 'search'],
     nurse: ['ward', 'attend', 'search'],
-    admin: ['dash', 'register', 'tent:ER', 'tent:OPD', 'tent:MAT', 'tent:OT', 'orders', 'ward', 'attend', 'search']
+    admin: ['dash', 'register', 'tent:ER', 'tent:OPD', 'tent:MAT', 'tent:OT', 'orders', 'ward', 'attend', 'mds', 'search']
   };
   return tabs[role];
 }
@@ -1154,7 +1229,7 @@ function tabLabel(t) {
   }
   const L = {
     dash: ['dash', 'Dashboard', 'Home'], register: ['userplus', 'Register patient', 'Register'], today: ['users', "Today's patients", 'Today'],
-    orders: ['flask', 'Lab & X-ray', 'Lab'], ward: ['bed', 'Ward', 'Ward'], attend: ['usercheck', 'Attendance', 'Attendance'], search: ['search', 'Search', 'Search']
+    orders: ['flask', 'Lab & X-ray', 'Lab'], ward: ['bed', 'Ward', 'Ward'], attend: ['usercheck', 'Attendance', 'Attendance'], mds: ['report', 'WHO daily report (MDS)', 'MDS'], search: ['search', 'Search', 'Search']
   }[t];
   let count = null;
   if (t === 'orders') count = S.orders.filter(o => o.status === 'requested').length;
@@ -1174,6 +1249,7 @@ function screenTitle() {
     case 'ward': return 'Ward · ' + BEDS + ' beds';
     case 'search': return 'Find a patient';
     case 'attend': return 'Attendance';
+    case 'mds': return 'WHO EMT daily report';
     case 'patient': return 'Patient file';
     default: return 'EMT TentCare';
   }
@@ -1396,7 +1472,7 @@ function dashView() {
       </div>
       <div class="card"><div class="secthead">${ic('clock')}<h2>Latest activity</h2></div><ul class="timeline">${feed}</ul></div>
     </div>
-    <div class="row mt"><button class="btn" onclick="exportData()">${ic('download')}Export to Excel</button><span class="small muted">In a real deployment, this file would sync to the central server when the connection returns.</span></div>`;
+    <div class="row mt"><button class="btn" onclick="exportData()">${ic('download')}Export to Excel</button><button class="btn" onclick="go('mds')">${ic('report')}WHO daily report (MDS)</button><span class="small muted">In a real deployment, this file would sync to the central server when the connection returns.</span></div>`;
 }
 
 const mciActive = () => S.mci && S.mci.on;
@@ -2063,15 +2139,28 @@ function noteForm(id) {
     </div>
     <div class="field"><label for="n-poc">Medication given here</label><input id="n-poc" type="text" value="${esc(c.poc)}" placeholder="Drug, dose, route"></div>
     <div class="field"><label class="checkline"><input type="checkbox" id="n-tx" ${c.transfusion ? 'checked' : ''}> Blood transfusion given</label></div>
+    ${mdsFormPart(c)}
     <div class="field"><label for="n-plan">Plan</label><textarea id="n-plan" style="min-height:64px"></textarea></div>
     <button class="btn primary">Save assessment</button></form>`);
 }
+
+function mdsFormPart(c) {
+  const sel = c.mds || [];
+  const grp = name => { const g = MDS_GROUPS.find(x => x[0] === name); return `<div><h4>${g[0]}</h4>${g[1].map(([n, l]) => `<label><input type="checkbox" name="mds" value="${n}" ${sel.includes(n) ? 'checked' : ''} onchange="mdsCount()"> <span><span class="muted">${n}</span> · ${esc(l)}</span></label>`).join('')}</div>`; };
+  const ctx = MDS_GROUPS.find(x => x[0] === 'Relation to the event')[1].map(([n, l]) => `<label><input type="radio" name="mdsctx" value="${n}" ${c.mdsCtx === n ? 'checked' : ''}> <span><span class="muted">${n}</span> · ${esc(l)}</span></label>`).join('');
+  const rehab = `<label><input type="checkbox" name="mds" value="39" ${sel.includes(39) ? 'checked' : ''} onchange="mdsCount()"> <span><span class="muted">39</span> · Requiring long-term rehabilitation</span></label>`;
+  return `<details class="crit" id="mdsbox"><summary>WHO EMT Minimum Data Set <span class="cnt" id="mds-n">${sel.length ? sel.length + ' ticked' : 'Not coded yet'}</span></summary>
+    <p class="small muted" style="margin:0 0 4px">Tick every item that applies to this visit. Age, sex and outcome are filled in automatically for the daily report.</p>
+    <div class="critcols checks">${MDS_FORM.map(grp).join('')}<div><h4>Relation to the event</h4>${ctx}<h4>Follow-up</h4>${rehab}</div></div></details>`;
+}
+function mdsCount() { const n = document.querySelectorAll('input[name=mds]:checked').length; const el = $('#mds-n'); if (el) el.textContent = n ? n + ' ticked' : 'Not coded yet'; }
 
 function saveNote(e, id) {
   e.preventDefault();
   const p = pat(id);
   const g = k => $(k).value.trim();
-  p.clinical = { history: g('#n-hist'), system: g('#n-sys'), exam: g('#n-exam'), dx: g('#n-dx'), category: g('#n-cat'), procedures: g('#n-proc'), srh: g('#n-srh'), response: g('#n-resp'), poc: g('#n-poc'), transfusion: $('#n-tx').checked };
+  p.clinical = { history: g('#n-hist'), system: g('#n-sys'), exam: g('#n-exam'), dx: g('#n-dx'), category: g('#n-cat'), procedures: g('#n-proc'), srh: g('#n-srh'), response: g('#n-resp'), poc: g('#n-poc'), transfusion: $('#n-tx').checked,
+    mds: [...document.querySelectorAll('input[name=mds]:checked')].map(x => Number(x.value)), mdsCtx: Number((document.querySelector('input[name=mdsctx]:checked') || {}).value) || null };
   p.notes.push({ t: nowISO(), by: me.name, tent: p.location, dx: p.clinical.dx, plan: g('#n-plan') });
   if (p.state === 'waiting') p.state = 'in-care';
   if (!p.doctor && (me.role === 'doctor' || me.role === 'admin')) p.doctor = me.name;
@@ -2583,6 +2672,107 @@ function wristband(id) {
     <p class="small muted">Print on a wristband label, or write the file number on the patient's band. Staff search by this number.</p>
     <div class="row"><button class="btn primary" onclick="window.print()">Print</button><button class="btn" onclick="closeModal()">Done</button></div>`);
 }
+/* ---------- WHO EMT Minimum Data Set daily report ---------- */
+let mdsDay = null;
+function mdsTable(day) {
+  const rows = mdsRows(day);
+  const cnt = {}; rows.forEach(r => r.items.forEach(n => { cnt[n] = cnt[n] || {}; cnt[n][r.age] = (cnt[n][r.age] || 0) + 1; }));
+  const summary = {
+    o: rows.filter(r => r.outcome !== 34 && r.outcome !== 37).length,
+    p: rows.filter(r => r.outcome === 34).length,
+    q: rows.filter(r => r.items.includes(29) || r.items.includes(30)).length,
+    r: BEDS, s: day === dayKey() ? freeBeds().length : '', t: 0
+  };
+  return { rows, cnt, summary };
+}
+function mdsView() {
+  if (!S.team) S.team = Object.assign({}, MDS_TEAM);
+  if (!S.mdsNotes) S.mdsNotes = {};
+  const day = mdsDay || dayKey();
+  const { rows, cnt, summary } = mdsTable(day);
+  const days = [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - i); return dayKey(d); });
+  const uncoded = rows.filter(r => r.outcome && !r.coded), open = rows.filter(r => !r.outcome);
+  const cell = (n, a) => { const v = (cnt[n] || {})[a] || 0; return `<td class="${v ? '' : 'z'}">${v}</td>`; };
+  const tot = n => Object.values(cnt[n] || {}).reduce((x, y) => x + y, 0);
+  const body = MDS_GROUPS.map(([g, items]) => `<tr class="grp"><td colspan="${MDS_AGES.length + 3}">${g}</td></tr>` +
+    items.map(([n, l]) => `<tr><td>${n}</td><td>${esc(l)}</td>${MDS_AGES.map(a => cell(n, a)).join('')}<td class="tot">${tot(n)}</td></tr>`).join('')).join('');
+  const notes = S.mdsNotes[day] || { items: [], comment: '' };
+  const needs = MDS_NEEDS.map(([g, items]) => `<div><h4>${g}</h4>${items.map(([n, l]) => `<label><input type="checkbox" value="${n}" ${notes.items.includes(n) ? 'checked' : ''} onchange="mdsNote('${day}')" class="mdsneed"> <span><span class="muted">${n}</span> · ${esc(l)}</span></label>`).join('')}</div>`).join('');
+  const sm = (k, l, v) => `<div class="fu"><div><span class="muted small">${k}</span> · ${l}</div><b style="font-size:18px;color:var(--primary)">${v === '' ? '–' : v}</b></div>`;
+  const tm = S.team;
+  const pl = list => list.map(r => `<a href="#" onclick="go('patient','${r.p.id}');return false">${esc(r.p.name)}</a>`).join(', ');
+  return `<div class="printable">
+    <div class="card"><div class="secthead">${ic('report')}<h2>WHO EMT Minimum Data Set · daily report</h2></div>
+      <p class="small muted" style="margin-top:0">Built automatically from the patient files of the selected day, in the format of the WHO EMT Minimum Data Set (MDS). Teams send this report every day to the Emergency Medical Team Coordination Cell (EMTCC) or the Ministry of Health. Item numbers follow the WHO EMT MDS reporting instructions; check them against the official MDS forms before real use.</p>
+      <div class="row" style="gap:8px;flex-wrap:wrap">${days.map(d => `<button class="btn sm ${d === day ? 'primary' : ''}" onclick="mdsDay='${d}';render()">${fmtDay(d)}</button>`).join('')}</div>
+    </div>
+    <div class="grid g2 mt">
+      <div class="card"><div class="secthead">${ic('users')}<h2>Team</h2><button class="btn sm" style="margin-left:auto" onclick="mdsTeamForm()">Edit</button></div>
+        <div class="small" style="line-height:1.7"><b>${esc(tm.team)}</b> · ${esc(tm.org)}<br>EMT ${esc(tm.type)} · ${esc(tm.location)}<br>Contact: ${esc(tm.contact)}${tm.phone ? ' · ' + esc(tm.phone) : ''}${tm.email ? ' · ' + esc(tm.email) : ''}<br>Date of activity: ${fmtDay(day)} (${day})</div></div>
+      <div class="card"><div class="secthead">${ic('dash')}<h2>Daily summary</h2></div>
+        ${sm('o', 'Outpatient consultations (not admitted)', summary.o)}${sm('p', 'New admissions', summary.p)}${sm('q', 'Live births', summary.q)}${sm('r', 'Total bed capacity', summary.r)}${sm('s', 'Empty regular beds' + (day === dayKey() ? '' : ' (today only)'), summary.s)}${sm('t', 'Empty ICU beds (no ICU)', summary.t)}</div>
+    </div>
+    ${uncoded.length || open.length ? `<div class="card mt" style="border-left:4px solid #c19c00"><b>Check before sending</b><div class="small" style="line-height:1.7">${uncoded.length ? `${uncoded.length} patient${uncoded.length > 1 ? 's have' : ' has'} an outcome but no MDS health event: ${pl(uncoded)}. Open the file, then <i>Clinical assessment</i>.<br>` : ''}${open.length ? `${open.length} still in care. They are counted with their health event and outcome once assessed and discharged or admitted: ${pl(open)}.` : ''}</div></div>` : `<div class="card mt small" style="border-left:4px solid #107c10">All ${rows.length} patients of this day are coded and have an outcome.</div>`}
+    <div class="card mt"><div class="secthead">${ic('report')}<h2>Patients by item and age group</h2><span class="small muted" style="margin-left:auto">${rows.length} patient${rows.length === 1 ? '' : 's'} seen</span></div>
+      <div class="mdswrap"><table class="mdstbl"><thead><tr><th>No.</th><th>Item</th>${MDS_AGES.map(a => `<th>${a}</th>`).join('')}<th>Total</th></tr></thead><tbody>${body}</tbody></table></div>
+      <p class="small muted">Age groups in years. Patients registered in mass casualty mode with "Child" are counted under 5-17.</p></div>
+    <div class="card mt"><div class="secthead">${ic('alert')}<h2>Needs and risks</h2></div>
+      <div class="critcols checks">${needs}</div>
+      <div class="field"><label for="mds-comment">Comment for the coordination cell</label><textarea id="mds-comment" style="min-height:60px" onchange="mdsNote('${day}')">${esc(notes.comment)}</textarea></div></div>
+  </div>
+  <div class="row mt" style="flex-wrap:wrap;gap:8px"><button class="btn primary" onclick="mdsExport('${day}')">${ic('download')}Download Excel</button><button class="btn" onclick="mdsCsv('${day}')">${ic('download')}Download CSV</button><button class="btn" onclick="window.print()">Print</button><button class="btn" onclick="mdsEmail('${day}')">Email to the coordination cell</button></div>`;
+}
+function mdsNote(day) {
+  S.mdsNotes[day] = { items: [...document.querySelectorAll('.mdsneed:checked')].map(x => Number(x.value)), comment: ($('#mds-comment') || {}).value || '' };
+  save();
+}
+function mdsTeamForm() {
+  const t = S.team, f = (k, l, ph) => `<div class="field"><label for="tm-${k}">${l}</label><input id="tm-${k}" type="text" value="${esc(t[k])}" placeholder="${ph || ''}"></div>`;
+  modal('Team details for the report', `<form onsubmit="saveTeam(event)">
+    ${f('org', 'Organisation')}${f('team', 'Team name')}
+    <div class="field"><label for="tm-type">EMT type</label><select id="tm-type">${['Type 1 mobile', 'Type 1 fixed', 'Type 2', 'Type 3', 'Specialised care cell'].map(x => `<option ${x === t.type ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+    ${f('contact', 'Contact person')}<div class="fgrid">${f('phone', 'Phone')}${f('email', 'Email')}</div>
+    ${f('location', 'Location (area, city, facility)')}${f('geo', 'GPS (latitude, longitude)', '31.50, 34.46')}${f('depart', 'Expected departure date', 'YYYY-MM-DD')}
+    <button class="btn primary">Save</button></form>`);
+}
+function saveTeam(e) {
+  e.preventDefault();
+  ['org', 'team', 'type', 'contact', 'phone', 'email', 'location', 'geo', 'depart'].forEach(k => S.team[k] = $('#tm-' + k).value.trim());
+  done('Team details saved');
+}
+function mdsSheet(day) {
+  const { rows, cnt, summary } = mdsTable(day), t = S.team, notes = (S.mdsNotes || {})[day] || { items: [], comment: '' };
+  const out = [['WHO EMT Minimum Data Set · daily report'], ['Made with EMT TentCare (demo). Item numbers follow the WHO EMT MDS reporting instructions.'], [],
+    ['Organisation', t.org], ['Team', t.team], ['EMT type', t.type], ['Contact', [t.contact, t.phone, t.email].filter(Boolean).join(' · ')], ['Location', t.location], ['GPS', t.geo], ['Expected departure', t.depart],
+    ['Date of activity', day], ['Time of reporting', new Date().toTimeString().slice(0, 5)], [],
+    ['o', 'Outpatient consultations (not admitted)', summary.o], ['p', 'New admissions', summary.p], ['q', 'Live births', summary.q], ['r', 'Total bed capacity', summary.r], ['s', 'Empty regular beds', summary.s], ['t', 'Empty ICU beds', summary.t], [],
+    ['No.', 'Item', ...MDS_AGES, 'Total']];
+  MDS_GROUPS.forEach(([g, items]) => { out.push(['', g]); items.forEach(([n, l]) => { const c = cnt[n] || {}; out.push([n, l, ...MDS_AGES.map(a => c[a] || 0), MDS_AGES.reduce((x, a) => x + (c[a] || 0), 0)]); }); });
+  out.push([], ['No.', 'Needs and risks', 'Reported']);
+  MDS_NEEDS.forEach(([g, items]) => { out.push(['', g]); items.forEach(([n, l]) => out.push([n, l, notes.items.includes(n) ? 'Yes' : ''])); });
+  out.push([], ['Comment', notes.comment]);
+  const list = [['File no.', 'Patient name', 'Age group', 'MDS items', 'Coded']];
+  rows.forEach(r => list.push([r.p.id, r.p.name, r.age, r.items.join(', '), r.coded ? 'Yes' : 'No']));
+  return { out, list };
+}
+function mdsDownload(blob, ext, day) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'MDS-' + day + '.' + ext;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+function mdsExport(day) { const { out, list } = mdsSheet(day); mdsDownload(xlsx([['MDS report', out], ['Patients (internal)', list]]), 'xlsx', day); toast('MDS report downloaded'); }
+function mdsCsv(day) {
+  const q = v => { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  mdsDownload(new Blob(['﻿' + mdsSheet(day).out.map(r => r.map(q).join(',')).join('\r\n')], { type: 'text/csv' }), 'csv', day); toast('CSV downloaded');
+}
+function mdsEmail(day) {
+  const { rows, summary } = mdsTable(day), t = S.team;
+  const body = `WHO EMT Minimum Data Set, daily report\n\nTeam: ${t.team} (${t.org}), EMT ${t.type}\nLocation: ${t.location}\nDate of activity: ${day}\n\nOutpatient consultations: ${summary.o}\nNew admissions: ${summary.p}\nLive births: ${summary.q}\nBed capacity: ${summary.r}\nEmpty beds: ${summary.s}\nPatients seen: ${rows.length}\n\nThe full report is attached (MDS-${day}.xlsx).\n\n${t.contact}`;
+  location.href = 'mailto:?subject=' + encodeURIComponent('MDS daily report · ' + t.team + ' · ' + day) + '&body=' + encodeURIComponent(body);
+  toast('Attach the downloaded Excel file to the email');
+}
+
 /* ---------- Excel export (built in the browser, works offline) ---------- */
 const CRC_T = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
@@ -2683,6 +2873,7 @@ function render() {
     case 'ward': inner = wardView(); break;
     case 'search': inner = searchView(); break;
     case 'attend': inner = attendView(); break;
+    case 'mds': inner = mdsView(); break;
     case 'patient': inner = patientView(view.id); break;
     default: view = homeFor(me.role); return render();
   }
