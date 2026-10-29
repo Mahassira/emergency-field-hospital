@@ -2,6 +2,34 @@
 
 All notable changes to EMT TentCare. Dates are when the change went live on the demo.
 
+## 2.0.0 · 30 October 2026
+Patient safety and clinical modules, after a review against WHO standards for emergency medical teams.
+
+**Patient safety**
+- NEWS2 early warning score (simplified paediatric score for children) on every set of vital signs, with an observation chart and the next observation time.
+- Alerts centre: early warning, critical results, disease alerts, low stock and protection follow-up. Alerts need acknowledgement with the action taken; response times are measured.
+- Prescribing with weight-based child doses, maximum dose, allergy, pregnancy and interaction checks. Medication chart with due and overdue doses and a wristband identity check before each dose.
+- Critical lab results with read-back.
+- Assessment history: amendments keep the earlier version and the reason.
+- Photo and identifying features for unidentified patients; unaccompanied children flagged.
+
+**Clinical modules**
+- WHO Surgical Safety Checklist with consent and the operation record.
+- Partograph, delivery record with PPH check, and newborn files linked to the mother.
+- Nutrition classification from MUAC and oedema.
+- ICD-10 codes that suggest the WHO MDS item.
+- Disease alerts (EWARN) with isolation, and MDS item 52 ticked automatically.
+- Blood transfusion record with a second checker and an ABO/Rh compatibility stop.
+- Death record following the WHO medical certificate of cause of death.
+- Confidential protection record with logged access.
+
+**Management and security**
+- Indicators (M&E) with definitions, and Excel download.
+- DHIS2 import file for the MDS report.
+- Pharmacy stock with automatic use, low-stock and expiry alerts.
+- Audit log and screen lock after 10 minutes.
+- Patient file actions grouped (Assess, Treat, Tests, Move and discharge, Records) and a section index for long files.
+
 ## 1.5.0 · 27 October 2026
 - WHO EMT Minimum Data Set (MDS) daily report for the site manager, built from the patient files: items by age group, daily summary, needs and risks, team details.
 - MDS coding section in the clinical assessment form.
