@@ -46,10 +46,12 @@ const check = (name, ok, extra) => { results.push((ok ? 'PASS ' : 'FAIL ') + nam
   await btn('Medication or procedure given');
   await p.fill('#md-n', 'Amoxicillin'); await p.fill('#md-d', '500 mg'); await p.selectOption('#md-r', 'By mouth');
   await p.click('.modal button.primary'); m = await msg();
+  check('Identity check on the wristband is required', /wristband/.test(m), m.slice(0, 90));
+  await p.check('#md-id'); await p.click('.modal button.primary'); m = await msg();
   check('Amoxicillin warns for penicillin allergy', /allergic to Penicillin/.test(m), m.slice(0, 120));
   await p.fill('#md-n', 'Paracetamol'); await p.fill('#md-d', '1 g');
   await p.click('.modal button.primary'); await p.waitForTimeout(100);
-  await btn('Medication or procedure given'); await p.click('label[for="mk-p"]'); await p.fill('#md-n', 'Wound irrigation'); await p.click('.modal button.primary'); await p.waitForTimeout(100);
+  await btn('Medication or procedure given'); await p.click('label[for="mk-p"]'); await p.fill('#md-n', 'Wound irrigation'); await p.check('#md-id'); await p.click('.modal button.primary'); await p.waitForTimeout(100);
   check('Medication and procedure recorded with time', await p.evaluate(id => pat(id).mar.length === 2 && pat(id).mar[1].kind === 'proc', pid));
   // reassess worse without raising triage warns, then raise
   const tri0 = await p.evaluate(id => pat(id).triage, pid);

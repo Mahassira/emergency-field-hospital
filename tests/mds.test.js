@@ -7,7 +7,9 @@ const res=[];const check=(n,ok,x)=>res.push((ok?'PASS ':'FAIL ')+n+(x?' — '+x:
 const ctx=await b.newContext({viewport:{width:1280,height:900},acceptDownloads:true});const p=await ctx.newPage();p.on('pageerror',e=>errs.push(e.message));
 await p.goto('http://localhost:8782/');await p.evaluate(()=>localStorage.clear());await p.goto('http://localhost:8782/');
 await p.fill('#u','admin');await p.fill('#pw','demo123');await p.click('form button.primary');await p.waitForTimeout(200);
-check('Data version 7 with team details',await p.evaluate(()=>S.v===7&&!!S.team&&!!S.mdsNotes));
+// Keep the test independent of the time of day: these two patients arrive today.
+await p.evaluate(()=>{['Omar Najjar','Bilal Awad'].forEach(n=>{S.patients.find(x=>x.name===n).createdAt=new Date(Date.now()-60000).toISOString();});save();});
+check('Data version 8 with team details',await p.evaluate(()=>S.v===8&&!!S.team&&!!S.mdsNotes));
 const coded=await p.evaluate(()=>S.patients.filter(x=>x.clinical&&x.clinical.mds&&x.clinical.mds.length).length);check('Seed patients coded',coded>5,coded+' coded');
 check('Age groups',await p.evaluate(()=>mdsAge({age:0})==='<1'&&mdsAge({age:3})==='1-4'&&mdsAge({age:8})==='5-17'&&mdsAge({age:40})==='18-64'&&mdsAge({age:70})==='65+'&&mdsAge({ageGroup:'Infant'})==='<1'));
 check('Outcome mapping',await p.evaluate(()=>mdsOutcome({triage:'black'})===37&&mdsOutcome({location:'WARD',state:'admitted'})===34&&mdsOutcome({state:'discharged',outcome:'Discharged with medication',outcomeDetail:{fuDays:5}})===33&&mdsOutcome({state:'discharged',outcome:'Discharged without medication',outcomeDetail:{}})===32&&mdsOutcome({state:'discharged',outcome:'Transferred to another facility'})===35&&mdsOutcome({state:'in-care'})===null));

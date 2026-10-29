@@ -1,6 +1,6 @@
 {
   "name": "emt-tentcare",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "private": true,
   "description": "Offline-first patient flow for a six-tent emergency field hospital (demo).",
   "author": "Mohammed Abu Hassira <mahassira@outlook.com>",
