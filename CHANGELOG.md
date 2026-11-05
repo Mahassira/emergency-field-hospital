@@ -2,6 +2,9 @@
 
 All notable changes to EMT TentCare. Dates are when the change went live on the demo.
 
+## 2.0.1 · 5 November 2026
+- Glass tab bar on phones: a floating, blurred bar with a glowing line that rises under the active tab and slides when you switch tabs.
+
 ## 2.0.0 · 30 October 2026
 Patient safety and clinical modules, after a review against WHO standards for emergency medical teams.
 
