@@ -737,22 +737,23 @@ html.fluent{
 /* ---------- glass tab bar on phones ---------- */
 .navglow{display:none}
 @media(max-width:720px){
-  :root{--nav-h:84px}
-  .fluent .nav,.nav{left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));padding:0;border-radius:28px;border:1px solid rgba(255,255,255,.14);
-    background:rgba(24,26,30,.86);-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);
-    box-shadow:0 12px 32px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);overflow:hidden}
-  .nav .wrap{position:relative;height:66px;padding:0 6px;align-items:stretch;overflow:visible}
+  :root{--nav-h:72px}
+  .fluent .nav,.nav{left:16px;right:16px;bottom:calc(10px + env(safe-area-inset-bottom));padding:0;border-radius:22px;border:1px solid rgba(15,108,189,.10);
+    background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
+    box-shadow:0 8px 24px rgba(17,58,96,.16),0 1px 3px rgba(17,58,96,.08);overflow:hidden}
+  .nav .wrap{position:relative;height:58px;padding:0 4px;align-items:stretch;overflow:visible}
   .navglow{display:block;position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
-  .navglow .gl{fill:none;stroke:#5ef2c4;stroke-width:2.4;stroke-linecap:round;filter:drop-shadow(0 0 3px rgba(94,242,196,.95)) drop-shadow(0 0 9px rgba(94,242,196,.55))}
+  .navglow .gl{fill:none;stroke:#0f6cbd;stroke-width:2.2;stroke-linecap:round;filter:drop-shadow(0 0 2px rgba(15,108,189,.45)) drop-shadow(0 0 7px rgba(15,108,189,.22))}
   .navglow .gf{fill:url(#glowfill)}
-  .fluent .nav button,.nav button{position:relative;z-index:1;border:0;background:none;color:rgba(255,255,255,.66);font-weight:500;font-size:11px;gap:4px;padding:10px 2px 8px;justify-content:center;transition:color .2s}
-  .fluent .nav button .ic,.nav button .ic{color:rgba(255,255,255,.72);width:22px;height:22px;transition:transform .3s,color .2s}
-  .fluent .nav button.active,.nav button.active{color:#fff;font-weight:600;border:0;background:none;box-shadow:none}
-  .fluent .nav button.active .ic,.nav button.active .ic{color:#fff;transform:translateY(-2px)}
-  .nav button.active::after{content:"";position:absolute;left:50%;top:37px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#5ef2c4;box-shadow:0 0 6px #5ef2c4}
+  .fluent .nav button,.nav button{position:relative;z-index:1;min-width:0;border:0;background:none;color:#616161;font-weight:500;font-size:10.5px;gap:3px;padding:8px 2px 6px;justify-content:center;transition:color .2s}
+  .fluent .nav button .ic,.nav button .ic{color:#616161;width:20px;height:20px;transition:transform .3s,color .2s}
+  .fluent .nav button.active,.nav button.active{color:#0f6cbd;font-weight:600;border:0;background:none;box-shadow:none}
+  .fluent .nav button.active .ic,.nav button.active .ic{color:#0f6cbd;transform:translateY(-2px)}
+  .nav button.active::after{content:"";position:absolute;left:50%;top:30px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#0f6cbd}
   .nav button.active .lbl-short{transform:translateY(3px)}
-  .nav .lbl-short{transition:transform .3s}
-  .fluent .nav .count,.nav .count,.fluent .nav button.active .count,.nav button.active .count{position:absolute;top:6px;right:calc(50% - 21px);min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#ff4d5e;color:#fff;font-size:10px;font-weight:700;line-height:16px;box-shadow:0 0 0 2px rgba(28,30,34,.9)}
+  .nav .lbl-short{transition:transform .3s;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .nav button:focus-visible{outline:2px solid #0f6cbd;outline-offset:-4px;border-radius:12px}
+  .fluent .nav .count,.nav .count,.fluent .nav button.active .count,.nav button.active .count{position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#d13438;color:#fff;font-size:10px;font-weight:700;line-height:16px;box-shadow:0 0 0 2px #fff}
   .nav .count.long{display:none}
   body.no-nav{--nav-h:0px}
 }
@@ -1737,7 +1738,7 @@ function shell(inner) {
     <button class="iconbtn d-only" onclick="lockScreen('Locked by the user')" title="Lock screen" aria-label="Lock screen">${ic('lock')}</button>
     <button class="iconbtn d-only" onclick="logout()" title="Sign out" aria-label="Sign out">${ic('logout')}</button>
   </div></header>
-  <nav class="nav ${hideMobileNav ? 'm-hide' : ''}"><div class="wrap">${tabs}${more}<svg class="navglow m-only" aria-hidden="true"><defs><linearGradient id="glowfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5ef2c4" stop-opacity=".26"/><stop offset="1" stop-color="#5ef2c4" stop-opacity="0"/></linearGradient></defs><path class="gf"/><path class="gl"/></svg></div></nav>
+  <nav class="nav ${hideMobileNav ? 'm-hide' : ''}"><div class="wrap">${tabs}${more}<svg class="navglow m-only" aria-hidden="true"><defs><linearGradient id="glowfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f6cbd" stop-opacity=".10"/><stop offset="1" stop-color="#0f6cbd" stop-opacity="0"/></linearGradient></defs><path class="gf"/><path class="gl"/></svg></div></nav>
   <main><div class="wrap">${mciBar()}${inner}
     <div class="foot"><img src="assets/brand/tent.png" alt=""><span>Demo with fictional data. Changes stay on this device. © 2026 Mahassira. All rights reserved.</span><a href="#" class="d-only" onclick="resetDemo();return false">Reset demo data</a></div>
   </div></main>`;
@@ -4294,8 +4295,8 @@ function auditOpen(id) {
 // The glowing line runs along the bottom of the bar and rises into a hill under the active tab.
 let glowX = null, glowAnim = 0;
 function glowPath(W, H, cx, bw) {
-  const y = H - 1.5, top = 5, x0 = cx - bw / 2, x1 = cx + bw / 2, r = 22;
-  const line = `M 4 ${y - 16} Q 5 ${y} ${r} ${y} L ${x0} ${y} C ${x0 + bw * 0.24} ${y} ${cx - bw * 0.27} ${top} ${cx} ${top} C ${cx + bw * 0.27} ${top} ${x1 - bw * 0.24} ${y} ${x1} ${y} L ${W - r} ${y} Q ${W - 5} ${y} ${W - 4} ${y - 16}`;
+  const y = H - 1.5, top = 4, x0 = cx - bw / 2, x1 = cx + bw / 2, r = 18;
+  const line = `M ${Math.min(14, x0)} ${y} L ${x0} ${y} C ${x0 + bw * 0.24} ${y} ${cx - bw * 0.27} ${top} ${cx} ${top} C ${cx + bw * 0.27} ${top} ${x1 - bw * 0.24} ${y} ${x1} ${y} L ${Math.max(W - 14, x1)} ${y}`;
   const fill = `M ${x0} ${y} C ${x0 + bw * 0.24} ${y} ${cx - bw * 0.27} ${top} ${cx} ${top} C ${cx + bw * 0.27} ${top} ${x1 - bw * 0.24} ${y} ${x1} ${y} Z`;
   return [line, fill];
 }
@@ -4306,7 +4307,7 @@ function placeGlow() {
   const btns = [...wrap.querySelectorAll('button')].filter(b => b.offsetParent && getComputedStyle(b).display !== 'none');
   const act = btns.find(b => b.classList.contains('active')) || null;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
-  const bw = btns.length ? Math.min(92, W / btns.length * 1.1) : 80;
+  const bw = btns.length ? Math.min(84, W / btns.length * 1.05) : 80;
   const target = act ? act.offsetLeft + act.offsetWidth / 2 : null;
   const draw = x => { const [l, f] = x == null ? glowPath(W, H, -200, bw) : glowPath(W, H, x, bw); svg.querySelector('.gl').setAttribute('d', l); svg.querySelector('.gf').setAttribute('d', f); };
   cancelAnimationFrame(glowAnim);

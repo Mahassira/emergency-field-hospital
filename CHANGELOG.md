@@ -2,6 +2,9 @@
 
 All notable changes to EMT TentCare. Dates are when the change went live on the demo.
 
+## 2.0.2 · 6 November 2026
+- Phone tab bar: smaller, white, in the brand blue, with clear contrast for labels and a visible keyboard focus.
+
 ## 2.0.1 · 5 November 2026
 - Glass tab bar on phones: a floating, blurred bar with a glowing line that rises under the active tab and slides when you switch tabs.
 
