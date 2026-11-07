@@ -12,7 +12,7 @@ const check = (name, ok, extra) => { results.push((ok ? 'PASS ' : 'FAIL ') + nam
   const login = async u => { await p.goto('http://localhost:8776/'); await p.evaluate(() => { if (me) logout(); }); await p.fill('#u', u + '@emttentcare.com'); await p.fill('#pw', 'demo123'); await p.click('form button.primary'); await p.waitForTimeout(150); };
   const btn = t => p.click(`.actions .btn:has-text("${t}")`);
   const msg = () => p.textContent('.modal .form-msg');
-  await p.goto('http://localhost:8776/'); await p.evaluate(() => localStorage.clear());
+  await p.goto('http://localhost:8776/'); await p.evaluate(() => (localStorage.clear(),localStorage.setItem('tentcare_lang','en')));
   await login('doctor');
   // seeded example shows in the file
   const lina = await p.evaluate(() => S.patients.find(x => x.name === 'Lina Abed').id);

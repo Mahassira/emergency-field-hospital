@@ -5,11 +5,11 @@ const out=path.join(__dirname,'output');fs.mkdirSync(out,{recursive:true});
 const res=[];const check=(n,ok,x)=>res.push((ok?'PASS ':'FAIL ')+n+(x?' — '+x:''));
 (async()=>{const b=await chromium.launch();const errs=[];
 const ctx=await b.newContext({viewport:{width:1280,height:900},acceptDownloads:true});const p=await ctx.newPage();p.on('pageerror',e=>errs.push(e.message));
-await p.goto('http://localhost:8782/');await p.evaluate(()=>localStorage.clear());await p.goto('http://localhost:8782/');
+await p.goto('http://localhost:8782/');await p.evaluate(()=>(localStorage.clear(),localStorage.setItem('tentcare_lang','en')));await p.goto('http://localhost:8782/');
 await p.fill('#u','admin');await p.fill('#pw','demo123');await p.click('form button.primary');await p.waitForTimeout(200);
 // Keep the test independent of the time of day: these two patients arrive today.
 await p.evaluate(()=>{['Omar Najjar','Bilal Awad'].forEach(n=>{S.patients.find(x=>x.name===n).createdAt=new Date(Date.now()-60000).toISOString();});save();});
-check('Data version 8 with team details',await p.evaluate(()=>S.v===8&&!!S.team&&!!S.mdsNotes));
+check('Data version 9 with team details',await p.evaluate(()=>S.v===9&&!!S.team&&!!S.mdsNotes));
 const coded=await p.evaluate(()=>S.patients.filter(x=>x.clinical&&x.clinical.mds&&x.clinical.mds.length).length);check('Seed patients coded',coded>5,coded+' coded');
 check('Age groups',await p.evaluate(()=>mdsAge({age:0})==='<1'&&mdsAge({age:3})==='1-4'&&mdsAge({age:8})==='5-17'&&mdsAge({age:40})==='18-64'&&mdsAge({age:70})==='65+'&&mdsAge({ageGroup:'Infant'})==='<1'));
 check('Outcome mapping',await p.evaluate(()=>mdsOutcome({triage:'black'})===37&&mdsOutcome({location:'WARD',state:'admitted'})===34&&mdsOutcome({state:'discharged',outcome:'Discharged with medication',outcomeDetail:{fuDays:5}})===33&&mdsOutcome({state:'discharged',outcome:'Discharged without medication',outcomeDetail:{}})===32&&mdsOutcome({state:'discharged',outcome:'Transferred to another facility'})===35&&mdsOutcome({state:'in-care'})===null));
@@ -40,7 +40,7 @@ check('CSV has items and needs',/Major extremity injury/.test(csv)&&/62,Supplies
 await p.click('text=Edit');await p.fill('#tm-team','Test team');await p.click('.modal button.btn.primary');await p.waitForTimeout(100);
 check('Team details editable',(await p.textContent('.printable')).includes('Test team'));
 const m=await (await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true})).newPage();m.on('pageerror',e=>errs.push(e.message));
-await m.goto('http://localhost:8782/');await m.fill('#u','admin');await m.fill('#pw','demo123');await m.click('form button.primary');await m.waitForTimeout(200);
+await m.goto('http://localhost:8782/');await m.evaluate(()=>localStorage.setItem('tentcare_lang','en'));await m.goto('http://localhost:8782/');await m.fill('#u','admin');await m.fill('#pw','demo123');await m.click('form button.primary');await m.waitForTimeout(200);
 await m.evaluate(()=>go('mds'));await m.waitForTimeout(150);
 const ov=await m.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1);check('Phone: no page overflow',ov);
 await m.screenshot({path:out+'/mds-phone.png',fullPage:true});

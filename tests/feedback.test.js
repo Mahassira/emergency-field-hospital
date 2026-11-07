@@ -5,7 +5,7 @@ const res=[];const check=(n,ok,x)=>res.push((ok?'PASS ':'FAIL ')+n+(x?' — '+x:
 (async()=>{const b=await chromium.launch();const errs=[];
 const p=await (await b.newContext({viewport:{width:1280,height:900}})).newPage();p.on('pageerror',e=>errs.push(e.message));
 let mail='';p.on('request',r=>{if(r.url().startsWith('mailto:'))mail=r.url();});
-await p.goto('http://localhost:8781/');await p.evaluate(()=>localStorage.clear());await p.goto('http://localhost:8781/');
+await p.goto('http://localhost:8781/');await p.evaluate(()=>(localStorage.clear(),localStorage.setItem('tentcare_lang','en')));await p.goto('http://localhost:8781/');
 await p.click('text=Send your feedback');check('Feedback opens from the sign-in page',await p.isVisible('text=Feedback on the demo'));
 await p.click('.modal button.primary');const m=await p.textContent('.modal .form-msg');check('Needs a score and a comment',/score/.test(m)&&/comment/.test(m),m.slice(0,90));
 await p.click('label[for="fb-score3"]');await p.click('label[for="fb-ease0"]');await p.fill('#fb-better','Add Arabic language');await p.selectOption('#fb-role','none');
@@ -18,7 +18,7 @@ await p.fill('#u','doctor');await p.fill('#pw','demo123');await p.click('form bu
 await p.click('button[aria-label="Give feedback"]');check('Doctor: header button, role prefilled',await p.evaluate(()=>$('#fb-role').value==='doctor'));
 await p.screenshot({path:path.join(__dirname,'output')+'/fb-desktop.png'});
 const m2=await (await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true})).newPage();m2.on('pageerror',e=>errs.push(e.message));
-await m2.goto('http://localhost:8781/');await m2.fill('#u','nurse');await m2.fill('#pw','demo123');await m2.click('form button.primary');await m2.waitForTimeout(200);
+await m2.goto('http://localhost:8781/');await m2.evaluate(()=>localStorage.setItem('tentcare_lang','en'));await m2.goto('http://localhost:8781/');await m2.fill('#u','nurse');await m2.fill('#pw','demo123');await m2.click('form button.primary');await m2.waitForTimeout(200);
 await m2.click('button.avatar');await m2.click('text=Give feedback on the demo');check('Phone: from account menu',await m2.isVisible('text=Feedback on the demo'));
 await m2.screenshot({path:path.join(__dirname,'output')+'/fb-phone.png',fullPage:true});
 console.log(res.join('\n'));console.log('errors',errs);await b.close();srv.close();})();

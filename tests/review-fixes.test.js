@@ -10,7 +10,7 @@ const check = (name, ok, extra) => { results.push((ok ? 'PASS ' : 'FAIL ') + nam
   const c = await b.newContext({ viewport: { width: 1280, height: 900 } });
   const p = await c.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
   const login = async u => { await p.goto('http://localhost:8771/'); await p.evaluate(() => { if (me) logout(); }); await p.fill('#u', u + '@emttentcare.com'); await p.fill('#pw', 'demo123'); await p.click('form button.primary'); await p.waitForTimeout(150); };
-  await p.goto('http://localhost:8771/'); await p.evaluate(() => localStorage.clear());
+  await p.goto('http://localhost:8771/'); await p.evaluate(() => (localStorage.clear(),localStorage.setItem('tentcare_lang','en')));
   await login('reception');
   const count = () => p.evaluate(() => S.patients.length);
   const n0 = await count();
