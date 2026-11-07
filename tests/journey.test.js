@@ -129,9 +129,11 @@ const srv = http.createServer((q, r) => {
     await page.evaluate(()=>go('dash'));
     if (mobile) {
       const navCount = await page.locator('nav.nav button:visible').count();
-      await page.click('nav button[aria-label="More"]');
-      await shot('10-more');
-      await page.click('.sheetlist button:has-text("Maternity")');
+      const nav = await page.evaluate(() => { const w = document.querySelector('.nav .wrap'); return { more: !!document.querySelector('[aria-label="More"]'), scrolls: w.scrollWidth > w.clientWidth }; });
+      if (nav.more || !nav.scrolls) { console.log('FAIL phone tab bar should scroll with no More menu', JSON.stringify(nav)); process.exitCode = 1; }
+      await page.locator('nav.nav button[aria-label="Maternity & Delivery"]').scrollIntoViewIfNeeded();
+      await shot('10-tabs-swiped');
+      await page.click('nav.nav button[aria-label="Maternity & Delivery"]');
       await shot('11-maternity');
       await page.click('.avatar');
       await shot('12-account');

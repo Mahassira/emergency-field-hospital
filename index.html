@@ -741,11 +741,16 @@ html.fluent{
   .fluent .nav,.nav{left:16px;right:16px;bottom:calc(10px + env(safe-area-inset-bottom));padding:0;border-radius:22px;border:1px solid rgba(15,108,189,.10);
     background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
     box-shadow:0 8px 24px rgba(17,58,96,.16),0 1px 3px rgba(17,58,96,.08);overflow:hidden}
-  .nav .wrap{position:relative;height:58px;padding:0 4px;align-items:stretch;overflow:visible}
+  .nav .wrap{position:relative;height:58px;padding:0 4px;align-items:stretch;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;
+    scroll-snap-type:x proximity;scroll-padding:0 8px;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;
+    -webkit-mask-image:linear-gradient(90deg,var(--fl,#000) 0,#000 22px,#000 calc(100% - 22px),var(--fr,#000) 100%);mask-image:linear-gradient(90deg,var(--fl,#000) 0,#000 22px,#000 calc(100% - 22px),var(--fr,#000) 100%)}
+  .nav .wrap::-webkit-scrollbar{display:none}
+  .nav.fade-l .wrap{--fl:transparent}
+  .nav.fade-r .wrap{--fr:transparent}
   .navglow{display:block;position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
   .navglow .gl{fill:none;stroke:#0f6cbd;stroke-width:2.2;stroke-linecap:round;filter:drop-shadow(0 0 2px rgba(15,108,189,.45)) drop-shadow(0 0 7px rgba(15,108,189,.22))}
   .navglow .gf{fill:url(#glowfill)}
-  .fluent .nav button,.nav button{position:relative;z-index:1;min-width:0;border:0;background:none;color:#616161;font-weight:500;font-size:10.5px;gap:3px;padding:8px 2px 6px;justify-content:center;transition:color .2s}
+  .fluent .nav button,.nav button{position:relative;z-index:1;flex:1 0 66px;min-width:66px;max-width:none;scroll-snap-align:start;white-space:nowrap;border:0;background:none;color:#616161;font-weight:500;font-size:10.5px;gap:3px;padding:8px 2px 6px;justify-content:center;transition:color .2s}
   .fluent .nav button .ic,.nav button .ic{color:#616161;width:20px;height:20px;transition:transform .3s,color .2s}
   .fluent .nav button.active,.nav button.active{color:#0f6cbd;font-weight:600;border:0;background:none;box-shadow:none}
   .fluent .nav button.active .ic,.nav button.active .ic{color:#0f6cbd;transform:translateY(-2px)}
@@ -1605,18 +1610,11 @@ function screenTitle() {
 }
 function navActive(t) { return t.startsWith('tent:') ? (view.name === 'tent' && view.id === t.slice(5)) : view.name === t; }
 function navGo(t) { const [n, id] = t.split(':'); return `go('${n}'${id ? `,'${id}'` : ''})`; }
+// Phones show every tab in one bar that scrolls sideways. The most used tabs come first.
 function mobileNav() {
   const items = navFor(me.role).filter(t => t !== 'search');
-  const primary = MOBILE_PRIMARY[me.role] || (items.length > 5 ? items.slice(0, 4) : items);
-  return { primary, overflow: items.filter(t => !primary.includes(t)) };
-}
-function moreSheet() {
-  const { overflow } = mobileNav();
-  const rows = overflow.map(t => {
-    const L = tabLabel(t);
-    return `<button class="${navActive(t) ? 'on' : ''}" onclick="${navGo(t)}">${ic(L.icon)}${esc(L.long)}${L.count !== null && L.count !== undefined ? `<span class="cnt">${L.count}</span>` : ''}</button>`;
-  }).join('');
-  sheet('More', `<div class="sheetlist">${rows}</div>`);
+  const first = (MOBILE_PRIMARY[me.role] || []).filter(t => items.includes(t));
+  return { primary: first.concat(items.filter(t => !first.includes(t))), overflow: [] };
 }
 /* ---------- Feedback from people trying the demo ---------- */
 const FEEDBACK_TO = 'mahassira@outlook.com';
@@ -1714,7 +1712,7 @@ function shell(inner) {
   const { primary, overflow } = mobileNav();
   const hasSearch = navFor(me.role).includes('search');
   const onPatient = view.name === 'patient';
-  const hideMobileNav = onPatient || primary.length + (overflow.length ? 1 : 0) < 2;
+  const hideMobileNav = onPatient || primary.length < 2;
   document.body.classList.toggle('no-nav', hideMobileNav && !onPatient);
   const tabs = navFor(me.role).map(t => {
     const L = tabLabel(t);
@@ -1722,7 +1720,6 @@ function shell(inner) {
     const cls = [navActive(t) ? 'active' : '', t === 'search' ? 'd-only' : '', mi < 0 && t !== 'search' ? 'd-only' : ''].join(' ');
     return `<button class="${cls}" style="--mo:${mi < 0 ? 99 : mi}" onclick="${navGo(t)}" aria-label="${esc(L.long)}">${ic(L.icon)}<span class="lbl-long">${esc(L.long)}</span><span class="lbl-short">${esc(L.short)}</span>${L.count !== null && L.count !== undefined ? `<span class="count${String(L.count).includes('/') ? ' long' : ''}">${L.count}</span>` : ''}</button>`;
   }).join('');
-  const more = overflow.length ? `<button class="m-only ${overflow.some(navActive) ? 'active' : ''}" style="--mo:50" onclick="moreSheet()" aria-label="More">${ic('menu')}<span class="lbl-short">More</span></button>` : '';
   return `
   <header class="top"><div class="wrap">
     <div class="brand d-only">${logo()}<span class="bname">EMT TentCare<small>Emergency medical tents</small></span></div>
@@ -1738,7 +1735,7 @@ function shell(inner) {
     <button class="iconbtn d-only" onclick="lockScreen('Locked by the user')" title="Lock screen" aria-label="Lock screen">${ic('lock')}</button>
     <button class="iconbtn d-only" onclick="logout()" title="Sign out" aria-label="Sign out">${ic('logout')}</button>
   </div></header>
-  <nav class="nav ${hideMobileNav ? 'm-hide' : ''}"><div class="wrap">${tabs}${more}<svg class="navglow m-only" aria-hidden="true"><defs><linearGradient id="glowfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f6cbd" stop-opacity=".10"/><stop offset="1" stop-color="#0f6cbd" stop-opacity="0"/></linearGradient></defs><path class="gf"/><path class="gl"/></svg></div></nav>
+  <nav class="nav ${hideMobileNav ? 'm-hide' : ''}" aria-label="Main"><div class="wrap" onscroll="navEdges()">${tabs}<svg class="navglow m-only" aria-hidden="true"><defs><linearGradient id="glowfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f6cbd" stop-opacity=".10"/><stop offset="1" stop-color="#0f6cbd" stop-opacity="0"/></linearGradient></defs><path class="gf"/><path class="gl"/></svg></div></nav>
   <main><div class="wrap">${mciBar()}${inner}
     <div class="foot"><img src="assets/brand/tent.png" alt=""><span>Demo with fictional data. Changes stay on this device. © 2026 Mahassira. All rights reserved.</span><a href="#" class="d-only" onclick="resetDemo();return false">Reset demo data</a></div>
   </div></main>`;
@@ -4293,7 +4290,13 @@ function auditOpen(id) {
 
 /* ---------- glass tab bar (phones) ---------- */
 // The glowing line runs along the bottom of the bar and rises into a hill under the active tab.
-let glowX = null, glowAnim = 0;
+let glowX = null, glowAnim = 0, navScroll = 0;
+function navEdges() {
+  const w = document.querySelector('.nav .wrap'); if (!w) return;
+  const nav = w.parentElement, max = w.scrollWidth - w.clientWidth;
+  nav.classList.toggle('fade-l', w.scrollLeft > 2);
+  nav.classList.toggle('fade-r', w.scrollLeft < max - 2);
+}
 function glowPath(W, H, cx, bw) {
   const y = H - 1.5, top = 4, x0 = cx - bw / 2, x1 = cx + bw / 2, r = 18;
   const line = `M ${Math.min(14, x0)} ${y} L ${x0} ${y} C ${x0 + bw * 0.24} ${y} ${cx - bw * 0.27} ${top} ${cx} ${top} C ${cx + bw * 0.27} ${top} ${x1 - bw * 0.24} ${y} ${x1} ${y} L ${Math.max(W - 14, x1)} ${y}`;
@@ -4303,12 +4306,18 @@ function glowPath(W, H, cx, bw) {
 function placeGlow() {
   const nav = document.querySelector('.nav'), svg = nav && nav.querySelector('.navglow');
   if (!svg || !svg.getClientRects().length) return;
-  const wrap = svg.parentElement, W = wrap.clientWidth, H = wrap.clientHeight;
+  const wrap = svg.parentElement, W = wrap.scrollWidth, H = wrap.clientHeight;
   const btns = [...wrap.querySelectorAll('button')].filter(b => b.offsetParent && getComputedStyle(b).display !== 'none');
   const act = btns.find(b => b.classList.contains('active')) || null;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
-  const bw = btns.length ? Math.min(84, W / btns.length * 1.05) : 80;
+  const bw = btns.length ? Math.min(100, btns[0].offsetWidth * 1.35) : 88;
   const target = act ? act.offsetLeft + act.offsetWidth / 2 : null;
+  wrap.scrollLeft = navScroll;
+  if (act) {
+    const l = act.offsetLeft, r = l + act.offsetWidth, vl = wrap.scrollLeft, vr = vl + wrap.clientWidth;
+    if (l < vl + 28 || r > vr - 28) wrap.scrollTo({ left: Math.max(0, l - (wrap.clientWidth - act.offsetWidth) / 2), behavior: glowX == null ? 'auto' : 'smooth' });
+  }
+  navEdges();
   const draw = x => { const [l, f] = x == null ? glowPath(W, H, -200, bw) : glowPath(W, H, x, bw); svg.querySelector('.gl').setAttribute('d', l); svg.querySelector('.gf').setAttribute('d', f); };
   cancelAnimationFrame(glowAnim);
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -4527,6 +4536,7 @@ function render() {
     case 'patient': inner = patientView(view.id); break;
     default: view = homeFor(me.role); return render();
   }
+  const nw = document.querySelector('.nav .wrap'); if (nw) navScroll = nw.scrollLeft;
   app.innerHTML = shell(inner);
   document.body.classList.toggle('has-actionbar', view.name === 'patient');
   placeGlow();
