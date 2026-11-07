@@ -177,7 +177,7 @@ npm test
 - Build the real version in Power Apps and Dataverse, starting with registration, queues and the patient file.
 - Sync between devices, with conflict handling for records changed on two devices while offline. The demo saves on one device only.
 - Official patient messages (calls, SBAR handover) and an emergency alert for all staff.
-- Arabic interface.
+- Arabic interface in the Microsoft 365 version, with the data still stored in English: medical terms (NEWS2, APGAR, drug names) stay in English with an Arabic explanation, a field for the patient's name in Arabic, and a referral form printed in English and Arabic. See the [Arabic interface plan](docs/arabic-interface-plan.md).
 - Move from the modified partograph to the WHO Labour Care Guide (2020), and replace the simplified paediatric score with the organisation's validated PEWS chart.
 - Mental health (MHPSS) and rehabilitation modules.
 - A clinical review of all the forms, scores and doses by the organisation's doctors and pharmacist.

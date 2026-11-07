@@ -2,6 +2,9 @@
 
 All notable changes to EMT TentCare. Dates are when the change went live on the demo.
 
+## 2.0.4 · 7 November 2026
+- Plan for the Arabic interface of the Microsoft 365 version (docs/arabic-interface-plan.md).
+
 ## 2.0.3 · 7 November 2026
 - Phone tab bar: no "More" menu. All tabs stay in the bar and scroll sideways with a swipe; the most used come first, the edges fade to show there is more, and the active tab scrolls into view.
 
