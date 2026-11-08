@@ -1,5 +1,7 @@
 # Arabic interface: plan for the Microsoft 365 version
 
+The demo already has this Arabic interface (version 2.1.0, `i18n/ar.js`). This plan describes how the same approach carries over to the Microsoft 365 version.
+
 Staff can use EMT TentCare in Arabic or English. Each person chooses their language. The data underneath is always stored in English, so reports, exports and indicators are the same whatever language was used to enter them.
 
 ## 1. What is translated and what stays in English
@@ -68,3 +70,13 @@ The printed referral to another facility (SBAR and the 13-point WHO transfer che
 7. Pilot with staff who prefer Arabic, then adjust the wording.
 
 Nothing about storage changes, so data entered in Arabic and in English can be mixed in the same report from day one.
+
+## 6. Wording
+
+Arabic text follows the style Microsoft uses in its Arabic products, so staff see the same words they know from Teams, Outlook and Windows:
+
+- Commands and buttons use the verbal noun: حفظ، تحرير، إرسال، تسجيل الدخول، إلغاء التأمين.
+- Status messages use "تم": تم حفظ التقييم، تم تحديث العلامات الحيوية.
+- Instructions use the imperative: اكتب، اختر، حدد، اضغط.
+- Microsoft terms: لوحة المعلومات (dashboard), تأمين الشاشة (lock screen), إعادة تعيين (reset), قيد الانتظار (pending), إقرار (acknowledge).
+- No diacritics except where a word would be misread.

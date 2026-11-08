@@ -22,6 +22,9 @@ const srv = http.createServer((q, r) => {
     const login = async u => { await page.fill('#u', u + '@emttentcare.com'); await page.fill('#pw', 'demo123'); await page.click('form button.primary'); };
     const logout = async () => { await page.evaluate(() => logout()); };
     await page.goto('http://localhost:8766/');
+    await shot('00-language');
+    if (!(await page.isVisible('.lp-btn'))) { console.log('FAIL language screen not shown first'); process.exitCode = 1; }
+    await page.click('.lp-btn[lang="en"]');
     await shot('01-login');
 
     await login('reception');

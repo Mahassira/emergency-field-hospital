@@ -97,6 +97,12 @@ All patients and staff are fictional. The demo saves everything on your own devi
 
 Scores, doses and checklists come from published sources (listed below). The early warning scores and child doses help staff; they do not replace clinical judgement. The referral, transfer and trauma forms follow the [WHO Emergency Care Toolkit](https://www.who.int/teams/integrated-health-services/clinical-services-and-systems/emergency-and-critical-care/emergency-care-toolkit). EMT TentCare is not an official WHO tool and is not endorsed by WHO or IMC. The triage rules and forms should be reviewed by an organisation's clinical leads before any real use.
 
+## Arabic or English
+
+The demo opens with the logo and a language choice, then the sign-in page. Each person can switch language later from their account. In Arabic the whole interface reads right to left, in the wording Microsoft uses in its Arabic products: commands as verbal nouns (حفظ، تحرير، تسجيل الدخول) and status messages with "تم" (تم حفظ التقييم).
+
+Only the interface is translated. Data is stored, searched and exported in English, so the Excel export, WHO MDS report and DHIS2 file are the same in either language. Medical terms (NEWS2, APGAR, GCS, ICD-10) and drug names, doses and routes stay in English. Each patient can also have their name written in Arabic, and the referral form prints in English and Arabic. See the [Arabic interface plan](docs/arabic-interface-plan.md) for how this carries over to Microsoft 365.
+
 ## Works offline
 
 The first time the link is opened, a service worker saves the app on the device. After that it opens and works with no connection, and it can be installed like an app (Add to Home Screen). In the demo, data stays in the browser on that device.
@@ -143,6 +149,7 @@ Chapter 22 of the [user guide](docs/EMT-TentCare-User-Guide.pdf) covers the buil
 
 ```
 index.html              the whole app: screens, styles and logic in one file
+i18n/ar.js              Arabic interface text (English → Arabic)
 sw.js                   service worker for offline use
 manifest.webmanifest    install as an app
 assets/brand/           logo and tent mark
@@ -177,7 +184,7 @@ npm test
 - Build the real version in Power Apps and Dataverse, starting with registration, queues and the patient file.
 - Sync between devices, with conflict handling for records changed on two devices while offline. The demo saves on one device only.
 - Official patient messages (calls, SBAR handover) and an emergency alert for all staff.
-- Arabic interface in the Microsoft 365 version, with the data still stored in English: medical terms (NEWS2, APGAR, drug names) stay in English with an Arabic explanation, a field for the patient's name in Arabic, and a referral form printed in English and Arabic. See the [Arabic interface plan](docs/arabic-interface-plan.md).
+- Carry the Arabic interface into the Microsoft 365 version, using the same English data underneath. See the [Arabic interface plan](docs/arabic-interface-plan.md).
 - Move from the modified partograph to the WHO Labour Care Guide (2020), and replace the simplified paediatric score with the organisation's validated PEWS chart.
 - Mental health (MHPSS) and rehabilitation modules.
 - A clinical review of all the forms, scores and doses by the organisation's doctors and pharmacist.

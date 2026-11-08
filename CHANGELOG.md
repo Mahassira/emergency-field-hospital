@@ -2,6 +2,16 @@
 
 All notable changes to EMT TentCare. Dates are when the change went live on the demo.
 
+## 2.1.0 · 8 November 2026
+- Arabic interface. The demo opens with the logo and a language choice (English or العربية), then the sign-in page. The language can be changed later from the account menu or the header.
+- Arabic wording follows Microsoft's Arabic style: commands as verbal nouns (حفظ، تحرير، إرسال)، status messages with "تم"، Microsoft terms (لوحة المعلومات، تأمين الشاشة) and no extra diacritics.
+- Right-to-left layout on phone and desktop, including the tab bar, tables, vital signs and the patient file.
+- Data stays in English: values chosen from lists, exports, the WHO MDS report and the DHIS2 file. Medical terms and drug names stay in English.
+- Optional patient name in Arabic, shown under the English name and used in search.
+- Referral form printed in English and Arabic.
+- Fixed: a newborn rooming in with the mother showed "Bed null"; a date was shown twice next to "Recorded by".
+- New test for the Arabic interface (tests/arabic.test.js).
+
 ## 2.0.4 · 7 November 2026
 - Plan for the Arabic interface of the Microsoft 365 version (docs/arabic-interface-plan.md).
 

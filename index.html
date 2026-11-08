@@ -734,6 +734,33 @@ html.fluent{
 .fluent .actpanel .btn.primary{background:#0f6cbd;border-color:#0f6cbd;color:#fff}
 .fluent .actpanel .btn.danger{color:#c50f1f}
 @media(max-width:720px){.actpanel .btn{flex:0 1 auto}}
+/* ---------- language ---------- */
+.langpick .box{text-align:center}
+.lp-h{font-size:20px;margin:6px 0 16px;display:flex;flex-direction:column;gap:2px}
+.lp-h span:last-child{font-size:22px}
+.lp-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lp-btn{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;min-height:96px;padding:14px 10px;border-radius:12px;border:2px solid #d1d1d1;background:#fff;font:inherit;color:#242424;cursor:pointer}
+.lp-btn b{font-size:20px}
+.lp-btn span{font-size:12.5px;color:#616161;line-height:1.35}
+.lp-btn:hover,.lp-btn:focus-visible{border-color:#0f6cbd;background:#ebf3fc;outline:none}
+.lp-note{margin:14px 0 0;line-height:1.6}
+.langsw{display:inline-flex;border:1px solid #d1d1d1;border-radius:999px;overflow:hidden;margin:0 auto 12px}
+.langsw button{border:0;background:#fff;font:inherit;font-size:13px;padding:6px 14px;color:#424242;cursor:pointer;min-height:32px}
+.langsw button.on{background:#0f6cbd;color:#fff;font-weight:600}
+.langbtn{font-weight:700;font-size:15px}
+.namear{font-size:16px;color:#424242;margin-top:2px}
+.namear-s{font-weight:400;color:#616161;font-size:.92em}
+.refprint.bilingual td:first-child span,.refprint.bilingual h3 span,.refprint.bilingual h2 span{display:block}
+.refprint.bilingual .ar{color:#424242;font-weight:400;font-size:.92em}
+.refprint.bilingual h3{display:flex;justify-content:space-between;gap:12px}
+.refprint.bilingual h3 span{display:inline}
+
+/* right to left: measurements and English data keep their own direction */
+html[dir=rtl] .vitals b,html[dir=rtl] table.obs td,html[dir=rtl] .meta,html[dir=rtl] .mdstbl td,html[dir=rtl] .ind .v{direction:ltr;unicode-bidi:isolate}
+html[dir=rtl] .vitals b{text-align:right}
+html[dir=rtl] :is(p,li,.cc,.kv>div,.tl .txt,.tl .meta,.mar div,.rx>div>div,.altext>div,.note,.feed div,.dupe div,.hist div){unicode-bidi:plaintext}
+html[dir=rtl] .backbtn svg,html[dir=rtl] .ic-flip{transform:scaleX(-1)}
+
 /* ---------- glass tab bar on phones ---------- */
 .navglow{display:none}
 @media(max-width:720px){
@@ -748,6 +775,7 @@ html.fluent{
   .nav.fade-l .wrap{--fl:transparent}
   .nav.fade-r .wrap{--fr:transparent}
   .navglow{display:block;position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+  html[dir=rtl] .navglow{left:auto;right:0}
   .navglow .gl{fill:none;stroke:#0f6cbd;stroke-width:2.2;stroke-linecap:round;filter:drop-shadow(0 0 2px rgba(15,108,189,.45)) drop-shadow(0 0 7px rgba(15,108,189,.22))}
   .navglow .gf{fill:url(#glowfill)}
   .fluent .nav button,.nav button{position:relative;z-index:1;flex:1 0 66px;min-width:66px;max-width:none;scroll-snap-align:start;white-space:nowrap;border:0;background:none;color:#616161;font-weight:500;font-size:10.5px;gap:3px;padding:8px 2px 6px;justify-content:center;transition:color .2s}
@@ -768,6 +796,7 @@ html.fluent{
 <div id="app"></div>
 <div id="modal-root"></div>
 
+<script src="i18n/ar.js"></script>
 <script>
 /* ---------- config ---------- */
 const KEY = 'fieldcare_v1';
@@ -823,7 +852,8 @@ const ICONS = {
   history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/><path d="M12 8v4l3 2"/>',
   shield: '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/>',
   chart: '<path d="M4 20V4M4 20h16"/><path d="m7 15 4-4 3 3 5-6"/>',
-  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>'
 };
 const TENT_IC = { REG: 'userplus', ER: 'pulse', OPD: 'steth', MAT: 'heart', OT: 'scissors', WARD: 'bed', DIAG: 'flask' };
 const ic = (n, cls) => `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
@@ -924,11 +954,146 @@ function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
 function drop(k) { try { localStorage.removeItem(k); } catch (e) {} }
 
+/* ==========================================================================
+   LANGUAGE
+   The interface can be shown in Arabic. Only what is on screen is translated:
+   data is stored, searched and exported in English. Drug names, doses, units
+   and international medical terms stay in English.
+   ========================================================================== */
+const LANG_KEY = 'tentcare_lang';
+let LANG = read(LANG_KEY) || '';
+const LOCALE = () => LANG === 'ar' ? 'ar-u-nu-latn' : [];
+const RE_N = '(?<![A-Za-z\\d.\\-])\\d+(?:\\.\\d+)?(?![A-Za-z\\d])';
+const RE_TIME = '\\d{1,2}:\\d{2}(?:\\s?(?:AM|PM|am|pm|ص|م))?';
+const MON_EN = 'Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec';
+const MON_AR = 'يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر';
+const RE_DATE = `(?:(?:${MON_EN}) \\d{1,2}(?:, \\d{4})?|\\d{1,2} (?:${MON_EN}|${MON_AR})(?: \\d{4})?|اليوم|أمس)`;
+const RE_ID = '(?:FH|MCI|RX|OP|AL|OR|SK|ST)-[0-9A-Z]+(?:-V\\d+)?';
+const PH = { n: RE_N, time: RE_TIME, date: RE_DATE, id: RE_ID, '*': '.+?' };
+let I18N = null;
+function buildI18n() {
+  const dict = window.TC_AR || {}, exact = new Map(), tmpl = [];
+  Object.entries(dict).forEach(([k, v]) => {
+    if (!/\{(n|time|date|id|\*)\}/.test(k)) { exact.set(k, v); return; }
+    const types = [];
+    const parts = k.split(/(\{(?:n|time|date|id|\*)\})/);
+    const re = parts.map((part, i) => {
+      const m = /^\{(n|time|date|id|\*)\}$/.exec(part);
+      // A name such as "Dr. Khaled Nasser" holds a full stop, so a wildcard followed by "." takes the longest match.
+      if (m) { types.push(m[1]); return '(' + (m[1] === '*' && /^\./.test(parts[i + 1] || '') ? '.+' : PH[m[1]]) + ')'; }
+      return part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }).join('');
+    const prefix = k.split('{')[0];
+    tmpl.push({ re: new RegExp('^' + re + '$'), types, ar: v, prefix, weak: k.startsWith('{*}') });
+  });
+  tmpl.sort((a, b) => b.prefix.length - a.prefix.length);
+  I18N = { exact, tmpl, cache: new Map() };
+}
+function fillAr(ar, types, vals) {
+  const q = {};
+  types.forEach((t, i) => { (q[t] = q[t] || []).push(vals[i]); });
+  return ar.replace(/\{(n|time|date|id|\*)\}/g, (m, t) => {
+    const v = (q[t] || []).shift();
+    if (v == null) return m;
+    if (t !== '*') return v;
+    // a list such as unticked checklist items is translated item by item
+    return tr(v) || (v.includes('; ') ? v.split('; ').map(x => tr(x) || x).join('؛ ') : v);
+  });
+}
+// Translates one piece of interface text, or returns null if it is not interface text.
+function tr(s) {
+  if (!I18N) buildI18n();
+  if (I18N.cache.has(s)) return I18N.cache.get(s);
+  let out = I18N.exact.get(s) || null;
+  if (!out) for (const t of I18N.tmpl) {
+    if (!s.startsWith(t.prefix) || (t.weak && s.includes(' · '))) continue;
+    const m = t.re.exec(s);
+    if (m) { out = fillAr(t.ar, t.types, m.slice(1)); break; }
+  }
+  if (!out && /^· ./.test(s)) { const x = tr(s.slice(2)); if (x) out = '· ' + x; }
+  if (!out && / ·$/.test(s)) { const x = tr(s.slice(0, -2)); if (x) out = x + ' ·'; }
+  if (!out && s.includes(' · ')) {
+    const parts = s.split(' · '); let any = false;
+    const done = parts.map(p => { const x = p ? tr(p) : null; if (x) any = true; return x || p; });
+    if (any) out = done.join(' · ');
+  }
+  if (I18N.cache.size > 5000) I18N.cache.clear();
+  I18N.cache.set(s, out);
+  return out;
+}
+const t = s => (LANG === 'ar' && tr(s)) || s;
+const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'DATALIST', 'CODE']);
+const doneNodes = new WeakSet();
+function localize(root) {
+  if (LANG !== 'ar' || !root) return;
+  const skip = el => !el || SKIP_TAGS.has(el.tagName) || el.closest('[data-notr]');
+  if (root.nodeType === 3) { localizeText(root); return; }
+  if (root.nodeType !== 1 || skip(root)) return;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = []; let n; while ((n = w.nextNode())) nodes.push(n);
+  nodes.forEach(localizeText);
+  const els = root.querySelectorAll ? [root, ...root.querySelectorAll('[placeholder],[aria-label],[title],option')] : [];
+  els.forEach(el => {
+    if (!el.getAttribute || skip(el)) return;
+    if (el.tagName === 'OPTION' && !el.hasAttribute('value')) el.setAttribute('value', el.textContent);
+    ['placeholder', 'aria-label', 'title'].forEach(a => { const v = el.getAttribute(a); if (v) { const x = tr(v.trim()); if (x) el.setAttribute(a, x); } });
+  });
+}
+const setVals = new WeakMap();
+function localizeText(node) {
+  if (doneNodes.has(node) || setVals.get(node) === node.nodeValue) return;
+  const p = node.parentElement;
+  if (!p || SKIP_TAGS.has(p.tagName) || p.closest('[data-notr]')) return;
+  const v = node.nodeValue, s = v.replace(/\s+/g, ' ').trim();
+  if (!s || !/[A-Za-z]/.test(s)) return;
+  if (p.tagName === 'OPTION' && !p.hasAttribute('value')) p.setAttribute('value', p.textContent);
+  const x = tr(s);
+  doneNodes.add(node);
+  if (x && x !== s) { const nv = v.match(/^\s*/)[0] + x + v.match(/\s*$/)[0]; setVals.set(node, nv); node.nodeValue = nv; }
+}
+let i18nObs = null;
+function applyLang() {
+  const ar = LANG === 'ar';
+  document.documentElement.lang = ar ? 'ar' : 'en';
+  document.documentElement.dir = ar ? 'rtl' : 'ltr';
+  document.title = ar ? 'EMT TentCare · خيام الطوارئ الطبية' : 'EMT TentCare';
+  if (ar && !i18nObs) {
+    i18nObs = new MutationObserver(list => {
+      if (LANG !== 'ar') return;
+      list.forEach(m => {
+        if (m.type === 'characterData') { if (setVals.get(m.target) !== m.target.nodeValue) { doneNodes.delete(m.target); localizeText(m.target); } }
+        else m.addedNodes.forEach(nd => localize(nd));
+      });
+    });
+    i18nObs.observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+}
+function setLang(l) {
+  LANG = l; store(LANG_KEY, l); I18N && I18N.cache.clear();
+  closeModal(); applyLang(); glowX = null; render();
+  if (me) audit('Changed language', l === 'ar' ? 'Arabic' : 'English');
+}
+function langView() {
+  return `<div class="login langpick"><div class="box">
+    <img class="logo" src="assets/brand/logo.png" alt="TentCare, Emergency Medical Team. Know every patient's status.">
+    <h1 class="lp-h"><span>Choose your language</span><span dir="rtl" lang="ar">اختر اللغة</span></h1>
+    <div class="lp-btns">
+      <button class="lp-btn" onclick="setLang('en')" lang="en"><b>English</b><span>Interface in English</span></button>
+      <button class="lp-btn" onclick="setLang('ar')" lang="ar" dir="rtl"><b>العربية</b><span>الواجهة بالعربية، والبيانات بالإنجليزية</span></button>
+    </div>
+    <p class="small muted lp-note">You can change it later from your account. <span dir="rtl" lang="ar">يمكنك تغييرها لاحقاً من حسابك.</span></p>
+  </div></div>`;
+}
+function langSwitch() {
+  return `<div class="langsw" role="group" aria-label="Language" data-notr><button class="${LANG !== 'ar' ? 'on' : ''}" onclick="setLang('en')" lang="en">English</button><button class="${LANG === 'ar' ? 'on' : ''}" onclick="setLang('ar')" lang="ar">العربية</button></div>`;
+}
+
+
 function save() { store(KEY, JSON.stringify(S)); }
 function load() {
   try {
     const d = JSON.parse(read(KEY));
-    if (d && d.v === 8) { S = d; ensureAttendance(); return d; }
+    if (d && d.v === 9) { S = d; ensureAttendance(); return d; }
   } catch (e) {}
   return seed();
 }
@@ -949,15 +1114,16 @@ const normName = n => String(n || '').trim().toLowerCase().replace(/\s+/g, ' ');
 const isToday = iso => new Date(iso).toDateString() === new Date().toDateString();
 const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 const addDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return dayKey(d); };
-const fmtDay = k => { const [y, m, d] = k.split('-').map(Number); const dt = new Date(y, m - 1, d); return k === dayKey() ? 'Today' : dt.toLocaleDateString([], { day: 'numeric', month: 'short' }); };
+const fmtDay = k => { const [y, m, d] = k.split('-').map(Number); const dt = new Date(y, m - 1, d); return k === dayKey() ? t('Today') : dt.toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' }); };
 const lastUpdated = pid => { const l = S.log.find(x => x.pid === pid); return l ? l.t : null; };
 const dash = v => v === undefined || v === null || v === '' ? '<span class="none">—</span>' : esc(v);
 
 function fmtTime(iso) {
   const d = new Date(iso);
-  const t = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  return isToday(iso) ? t : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ', ' + t;
+  const tm = d.toLocaleTimeString(LOCALE(), { hour: '2-digit', minute: '2-digit' });
+  return isToday(iso) ? tm : d.toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' }) + ', ' + tm;
 }
+const whenTxt = iso => (isToday(iso) ? t('Today') + ' ' : '') + fmtTime(iso);
 function since(iso) {
   const m = Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000));
   if (m < 60) return m + ' min';
@@ -1004,7 +1170,7 @@ function toast(msg) {
 
 /* ---------- seed data (fictional) ---------- */
 function seed() {
-  S = { v: 8, alerts: [], audit: [], stock: [], stockLog: [], mdsNotes: {}, team: Object.assign({}, MDS_TEAM), mci: null, mcis: [], seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), bedClean: Array(BEDS).fill(false), referrals: [], staff: [], att: null, followups: [] };
+  S = { v: 9, alerts: [], audit: [], stock: [], stockLog: [], mdsNotes: {}, team: Object.assign({}, MDS_TEAM), mci: null, mcis: [], seq: 0, patients: [], orders: [], log: [], beds: Array(BEDS).fill(null), bedClean: Array(BEDS).fill(false), referrals: [], staff: [], att: null, followups: [] };
   const V = (bp, hr, t, s, rr, height, weight, muac) => ({ bp, hr, temp: t, spo2: s, rr, height: height || '', weight: weight || '', muac: muac || '', avpu: bp || hr ? 'Alert' : '', o2: false });
 
   function add(p) {
@@ -1332,6 +1498,8 @@ function seed() {
     const a = raiseAlert({ type: 'protection', pid: kz.id, level: 'medium', title: 'Protection follow-up needed', text: 'A confidential protection record was created. The protection focal point should follow up.', roles: ['admin'] });
     a.at = minsAgo(8); a.by = 'Dr. Khaled Nasser';
   }
+  const AR_NAMES = {"Ahmad Saleh": "أحمد صالح", "Mariam Odeh": "مريم عودة", "Yousef Hamdan": "يوسف حمدان", "Lina Abed": "لينا عابد", "Omar Najjar": "عمر النجار", "Huda Shaheen": "هدى شاهين", "Amal Darwish": "أمل درويش", "Salma Issa": "سلمى عيسى", "Karim Zaqout": "كريم زقوت", "Sami Barakat": "سامي بركات", "Noor Jaber": "نور جابر", "Khalil Mansour": "خليل منصور", "Rana Haddad": "رنا حداد", "Fadi Qassem": "فادي قاسم", "Hana Kurd": "هناء الكرد", "Mahmoud Abu Taha": "محمود أبو طه", "Dina Sharif": "دينا شريف", "Ziad Hijazi": "زياد حجازي", "Layla Mansour": "ليلى منصور", "Bilal Awad": "بلال عوض", "Rami Khalil": "رامي خليل", "Nadia Farouk": "نادية فاروق", "Yahya Saeed": "يحيى سعيد", "Samira Ali": "سميرة علي", "Sara Khalil": "سارة خليل", "Adam Shaheen": "آدم شاهين", "Baby girl of Noor Jaber": "طفلة نور جابر"};
+  S.patients.forEach(p => { if (AR_NAMES[p.name]) p.nameAr = AR_NAMES[p.name]; });
   S.patients.forEach(p => { if (p.state !== 'waiting' && !p.seenAt && !p.motherId && p.triage !== 'black') { const w = { red: 3, yellow: 17, green: 38 }[p.triage] || 20; p.seenAt = new Date(new Date(p.createdAt).getTime() + w * 60000).toISOString(); } });
   seedAttendance();
 
@@ -1511,6 +1679,7 @@ function loginView() {
   return `
   <div class="login">
     <img class="logo" src="assets/brand/logo.png" alt="TentCare, Emergency Medical Team. Know every patient's status.">
+      ${langSwitch()}
     <div class="box">
       <p class="lead">Patient flow for a six-tent emergency field hospital.</p>
       <h2 class="pick-h">Choose who you want to try</h2>
@@ -1702,6 +1871,7 @@ function accountSheet() {
       ${myStaff() ? (['present', 'late'].includes(attStatus(me.sid)) ? `<button onclick="setAtt('${me.sid}','out')">${ic('exit')}Check out of my shift</button>` : `<button onclick="setAtt('${me.sid}','present')">${ic('enter')}Check in for my shift</button>`) : ''}
       <button onclick="closeModal();attTab='staff';go('attend')">${ic('usercheck')}Attendance</button>
       <button onclick="closeModal();feedbackForm()">${ic('feedback')}Give feedback on the demo</button>
+      <button onclick="setLang(LANG === 'ar' ? 'en' : 'ar')">${ic('globe')}<span data-notr>${LANG === 'ar' ? 'English' : 'العربية'}</span></button>
       <button onclick="closeModal();lockScreen('Locked by the user')">${ic('lock')}Lock screen</button>
       <button onclick="closeModal();resetDemo()">${ic('reset')}Reset demo data</button>
       <button class="danger" onclick="logout()">${ic('logout')}Sign out</button>
@@ -1731,6 +1901,7 @@ function shell(inner) {
     ${alertBell()}
     ${hasSearch && view.name !== 'search' ? `<button class="iconbtn m-only" onclick="go('search')" aria-label="Search">${ic('search')}</button>` : ''}
     <button class="avatar m-only" onclick="accountSheet()" aria-label="Account">${initials(me.name)}</button>
+    <button class="iconbtn d-only langbtn" onclick="setLang(LANG === 'ar' ? 'en' : 'ar')" title="Language" aria-label="Language" data-notr>${LANG === 'ar' ? 'EN' : 'ع'}</button>
     <button class="iconbtn d-only" onclick="feedbackForm()" title="Give feedback" aria-label="Give feedback">${ic('feedback')}</button>
     <button class="iconbtn d-only" onclick="lockScreen('Locked by the user')" title="Lock screen" aria-label="Lock screen">${ic('lock')}</button>
     <button class="iconbtn d-only" onclick="logout()" title="Sign out" aria-label="Sign out">${ic('logout')}</button>
@@ -1747,7 +1918,7 @@ function patientCard(p, opts = {}) {
   const badges = [
     p.state === 'in-care' ? '<span class="badge info">In care</span>' : '',
     p.state === 'waiting' ? '<span class="badge">Waiting</span>' : '',
-    p.state === 'admitted' ? `<span class="badge info">Bed ${p.bed}</span>` : '',
+    p.state === 'admitted' && p.bed ? `<span class="badge info">Bed ${p.bed}</span>` : p.state === 'admitted' && p.roomingIn ? '<span class="badge info">With mother</span>' : '',
     p.state === 'discharged' ? `<span class="badge">${esc(p.outcome || 'Discharged')}</span>` : '',
     pend ? `<span class="badge warn">${pend} result${pend > 1 ? 's' : ''} pending</span>` : '',
     !pend && done ? '<span class="badge ok">Results ready</span>' : '',
@@ -1763,7 +1934,7 @@ function patientCard(p, opts = {}) {
   return `<button class="pcard" onclick="go('patient','${p.id}')">
     <span class="bar ${p.triage || 'none'}"></span>
     <span class="main">
-      <span class="name">${esc(p.name)}</span>
+      <span class="name">${esc(p.name)}${p.nameAr ? ` <span class="namear-s" dir="rtl" lang="ar" data-notr>${esc(p.nameAr)}</span>` : ''}</span>
       <div class="meta">${p.id}${p.tempId ? ' · ' + p.tempId : ''} · ${ageTxt(p)} · ${sexTxt(p)}${opts.showTent ? ' · ' + (p.state === 'discharged' ? 'Discharged · last in ' + esc(tentLabel(p.location)) : esc(tentLabel(p.location))) : ''}</div>
       <div class="cc">${esc(p.complaint)}</div>
       <div class="row" style="gap:6px;margin-top:6px">${badges}</div>
@@ -1903,6 +2074,7 @@ function identifyForm(id) {
   modal('Identify patient', `<form onsubmit="saveIdentify(event,'${id}')" novalidate>
     <p class="small muted">${p.tempId} keeps the same file (${p.id}). The temporary ID stays on record so nothing is lost.</p>
     <div class="field"><label for="id-name">Full name</label><input id="id-name" type="text"></div>
+    <div class="field"><label for="id-name-ar">Name in Arabic (optional)</label><input id="id-name-ar" type="text" dir="rtl" lang="ar" autocomplete="off"></div>
     <div class="fgrid">
       <div class="field"><label for="id-age">Age (years)</label><input id="id-age" type="number" min="0" max="120"></div>
       <div class="field" style="grid-column:span 2"><label>Gender</label><div class="choice"><input type="radio" name="isex" id="is-f" value="F" ${p.sex === 'F' ? 'checked' : ''}><label for="is-f">Female</label><input type="radio" name="isex" id="is-m" value="M" ${p.sex === 'M' ? 'checked' : ''}><label for="is-m">Male</label></div></div>
@@ -1922,7 +2094,7 @@ function saveIdentify(e, id) {
   const others = S.patients.filter(q => q.id !== id && normName(q.name) === normName(name) && q.sex === f.isex.value && Math.abs(q.age - Number(age)) <= 1);
   const warns = others.length ? [`${others.map(q => q.name + ' (' + q.id + ')').join(', ')} already has a file with the same name, sex and similar age. If it is the same person, tell the records officer so the files can be linked.`] : [];
   if (!formGate(f, errs, warns)) return;
-  p.name = name; p.age = Number(age); p.ageGroup = ''; p.sex = f.isex.value; p.unidentified = false;
+  p.name = name; p.nameAr = $('#id-name-ar').value.trim(); p.age = Number(age); p.ageGroup = ''; p.sex = f.isex.value; p.unidentified = false;
   p.phone = $('#id-phone').value.trim() || p.phone; p.shelter = $('#id-shelter').value.trim() || p.shelter;
   log(id, `Identified as ${name} (was ${p.tempId}). Recorded by ${me.name}.`);
   done('Patient identified');
@@ -1940,6 +2112,7 @@ function registerView() {
     <form class="card" onsubmit="doRegister(event)" oninput="this.dataset.warned='';triageHint()" novalidate>
       <div class="formsec">${ic('user')}<h2>Patient</h2></div>
       <div class="field"><label for="r-name">Full name</label><input id="r-name" type="text" required></div>
+      <div class="field"><label for="r-name-ar">Name in Arabic (optional)</label><input id="r-name-ar" type="text" dir="rtl" lang="ar" autocomplete="off"></div>
       <div class="fgrid">
         <div class="field"><label for="r-age">Age (years)</label><input id="r-age" type="number" min="0" max="120" required></div>
         <div class="field" style="grid-column:span 2"><label>Gender</label><div class="choice"><input type="radio" name="sex" id="s-f" value="F" checked><label for="s-f">Female</label><input type="radio" name="sex" id="s-fp" value="FP"><label for="s-fp">Female · pregnant</label><input type="radio" name="sex" id="s-m" value="M"><label for="s-m">Male</label></div></div>
@@ -2106,7 +2279,7 @@ function doRegister(e) {
   const warns = cv.Wn.concat(under ? [`You chose ${TRI_NAME[tri]}, but the ticked criteria suggest ${crit.suggested === 'red' ? 'Red' : 'at least Yellow'}. Check the triage. If you keep it, the reason is your clinical judgement and it is recorded.`] : []);
   if (!formGate(f, errs.concat(cv.E), warns)) return;
   pendingReg = {
-    name, age: Number(age), sex: f.sex.value === 'M' ? 'M' : 'F', pregnant: f.sex.value === 'FP',
+    name, nameAr: $('#r-name-ar').value.trim(), age: Number(age), sex: f.sex.value === 'M' ? 'M' : 'F', pregnant: f.sex.value === 'FP',
     allergy: al, phone: $('#r-phone').value.trim(), shelter: $('#r-shelter').value.trim(),
     complaint: cc, triage: tri, vitals: v, location: f.dest.value, unaccompanied: $('#r-unacc').checked, carer: $('#r-unacc').checked ? '' : $('#r-carer').value.trim(),
     criteria: Object.assign(crit, { chosen: tri, override: !!under, by: me.name, at: nowISO() })
@@ -2129,7 +2302,7 @@ function dupeSheet(matches) {
 }
 function createPatient(r) {
   const p = {
-    id: nextId(), name: r.name, age: r.age, sex: r.sex, pregnant: r.pregnant,
+    id: nextId(), name: r.name, nameAr: r.nameAr || '', age: r.age, sex: r.sex, pregnant: r.pregnant,
     allergyStatus: r.allergy.st, allergies: r.allergy.st === 'known' ? r.allergy.txt : '',
     allergyBy: r.allergy.st === 'unknown' ? '' : me.name, allergyAt: r.allergy.st === 'unknown' ? '' : nowISO(),
     clinical: {}, outcomeDetail: {}, doctor: '', visitNo: 1, visits: [], dischargeApproved: null,
@@ -2310,7 +2483,7 @@ function searchView() {
 }
 function doSearch() {
   const q = $('#q').value.trim().toLowerCase();
-  const list = S.patients.filter(p => !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q) || (p.tempId || '').toLowerCase().includes(q) || ((p.clinical && p.clinical.dx) || '').toLowerCase().includes(q))
+  const list = S.patients.filter(p => !q || p.name.toLowerCase().includes(q) || (p.nameAr || '').includes(q) || p.id.toLowerCase().includes(q) || (p.tempId || '').toLowerCase().includes(q) || ((p.clinical && p.clinical.dx) || '').toLowerCase().includes(q))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 30);
   $('#results').innerHTML = list.map(p => patientCard(p, { showTent: true })).join('') || empty('No patient found.');
 }
@@ -2392,7 +2565,7 @@ function patientView(id) {
           <div class="mrnline">${p.id}</div>
           <div class="visitline">Visit ${p.visitNo || 1} · ${encId(p)}${p.dischargeApproved && p.state !== 'discharged' ? ' · <b>Discharge approved</b>' : ''}</div>
           ${h ? `<div class="infobar" style="margin-top:8px">${ic('refer', 'sm')}${h.to === 'WARD' ? `Bed ${p.bed} reserved. The ward has not yet confirmed the patient arrived.` : `Sent from ${esc(tentLabel(h.from))} by ${esc(h.by)}. ${esc(tentLabel(h.to))} has not yet accepted.`}</div>` : ''}
-          <h1>${esc(p.name)}</h1>
+          <h1>${esc(p.name)}</h1>${p.nameAr ? `<div class="namear" dir="rtl" lang="ar" data-notr>${esc(p.nameAr)}</div>` : ''}
           <div class="muted">${p.ageGroup ? p.ageGroup + ' (age not known)' : p.age + ' years'} · ${sexTxt(p)}${p.shelter ? ' · ' + esc(p.shelter) : ''}${p.phone ? ' · ' + esc(p.phone) : ''}</div>
           ${p.pregnant ? '<div class="mt" style="margin-top:8px"><span class="badge preg">Pregnant</span></div>' : ''}
         </div>
@@ -2421,7 +2594,7 @@ function patientView(id) {
         ${deathCard(p)}
         ${obsCard(p)}
         <div class="card" id="sec-ass"><div class="secthead">${ic('steth')}<h2>Clinical assessment</h2>${(p.clinicalHist || []).length ? `<button class="cardlink" style="margin-left:auto" onclick="historyModal('${id}')">${ic('history', 'sm')} Amended ${p.clinicalHist.length} time${p.clinicalHist.length > 1 ? 's' : ''} · history</button>` : ''}</div>
-          ${cl.at ? `<p class="small muted" style="margin:-4px 0 8px">Last saved by ${esc(cl.by)} · ${fmtDay(dayKey(new Date(cl.at)))} ${fmtTime(cl.at)}</p>` : ''}
+          ${cl.at ? `<p class="small muted" style="margin:-4px 0 8px">Last saved by ${esc(cl.by)} · ${whenTxt(cl.at)}</p>` : ''}
           <div class="kv">
             <div>History</div><div>${dash(cl.history)}</div>
             <div>System examined</div><div>${dash(cl.system)}</div>
@@ -2459,10 +2632,10 @@ function patientView(id) {
       <div>
         <div class="card"><div class="secthead">${ic('users')}<h2>Care team</h2></div>
           <div class="kv">
-            <div>Admission date</div><div>${new Date(p.createdAt).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+            <div>Admission date</div><div>${new Date(p.createdAt).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short', year: 'numeric' })}</div>
             <div>Assigned doctor</div><div>${dash(p.doctor)}</div>
             <div>Assigned tent</div><div>${p.state === 'discharged' ? '<span class="none">Discharged</span>' : esc(tentLabel(p.location)) + (p.bed ? ' · bed ' + p.bed : '')}</div>
-            <div>Allergies</div><div>${esc(allergyText(p))}${p.allergyBy ? `<div class="small muted">Recorded by ${esc(p.allergyBy)} · ${fmtDay(dayKey(new Date(p.allergyAt)))} ${fmtTime(p.allergyAt)}</div>` : ''}</div>
+            <div>Allergies</div><div>${esc(allergyText(p))}${p.allergyBy ? `<div class="small muted">Recorded by ${esc(p.allergyBy)} · ${whenTxt(p.allergyAt)}</div>` : ''}</div>
             <div>Last updated</div><div>${lastUpdated(p.id) ? fmtTime(lastUpdated(p.id)) : dash('')}</div>
           </div>
         </div>
@@ -3003,19 +3176,28 @@ function saveCounter(e, id) {
 }
 function referralPrint(id) {
   const p = pat(id), r = refOf(p);
-  const row = (k, v) => `<tr><td>${esc(k)}</td><td>${esc(v || '')}</td></tr>`;
+  const AR = { 'Name': 'الاسم', 'File / visit': 'رقم الملف / الزيارة', 'Age · sex': 'العمر · الجنس', 'Allergies': 'الحساسية', 'Contact': 'التواصل',
+    'Initiating facility': 'المنشأة المحيلة', 'Receiving facility': 'المنشأة المستقبلة', 'Reason': 'سبب الإحالة', 'Decision time': 'وقت القرار', 'Mode of transfer': 'وسيلة النقل',
+    'Chief complaint': 'الشكوى الرئيسية', 'Primary diagnosis': 'التشخيص الرئيسي', 'Other acute diagnoses': 'تشخيصات حادة أخرى', 'Pregnant': 'حامل', 'Treatments initiated': 'العلاجات التي بدأت',
+    'History of present illness': 'تاريخ الحالة الحالية', 'Past medical and surgical history': 'التاريخ الطبي والجراحي', 'A · Airway': 'A · مجرى الهواء', 'B · Breathing': 'B · التنفس',
+    'C · Circulation': 'C · الدورة الدموية', 'D · Disability': 'D · الوعي', 'E · Exposure': 'E · الكشف الكامل', 'Other treatments or procedures': 'علاجات أو إجراءات أخرى',
+    'Assessment': 'التقييم', 'Next steps and therapies during transport': 'الخطوات التالية والعلاج أثناء النقل', 'Potential worsening': 'احتمال التدهور', 'Cautions': 'تحذيرات',
+    'Precautions': 'احتياطات', 'Date and time of arrival': 'تاريخ ووقت الوصول', 'Provider name and signature': 'اسم مقدم الرعاية وتوقيعه', 'Feedback sent to initiating facility': 'تم إرسال الرد إلى المنشأة المحيلة',
+    Patient: 'المريض', Facilities: 'المنشآت', Situation: 'الوضع (S)', Background: 'الخلفية (B)', Recommendations: 'التوصيات (R)', 'For the receiving facility': 'للمنشأة المستقبلة' };
+  const row = (k, v) => `<tr><td><span class="en">${esc(k)}</span><span class="ar" dir="rtl" lang="ar">${AR[k] || ''}</span></td><td>${esc(v || '')}</td></tr>`;
+  const H = k => `<h3><span>${esc(k)}</span><span class="ar" dir="rtl" lang="ar">${AR[k] || ''}</span></h3>`;
   const ab = ['A', 'B', 'C', 'D', 'E'].map(k => row(k + ' · ' + { A: 'Airway', B: 'Breathing', C: 'Circulation', D: 'Disability', E: 'Exposure' }[k], (r.abcde[k].normal ? 'Normal. ' : '') + [r.abcde[k].finding, r.abcde[k].intervention && 'Intervention: ' + r.abcde[k].intervention].filter(Boolean).join(' · '))).join('');
-  modal('Referral form', `<div class="refprint printable">
-    <h2 style="margin:0">Acute Referral · ${r.id}</h2>
-    <p class="small">EMT TentCare · based on the WHO Emergency Care Toolkit. A copy goes with the patient.</p>
-    <h3>Patient</h3><table>${row('Name', p.name)}${row('File / visit', p.id + ' · ' + r.enc)}${row('Age · sex', ageTxt(p) + ' · ' + (sexTxt(p)))}${row('Allergies', allergyText(p))}${row('Contact', p.phone)}</table>
-    <h3>Facilities</h3><table>${row('Initiating facility', 'EMT field hospital · ' + r.decidedBy)}${row('Receiving facility', [r.facility, r.focal, r.phone].filter(Boolean).join(' · '))}${row('Reason', r.reason)}${row('Decision time', fmtDay(dayKey(new Date(r.decidedAt))) + ' ' + fmtTime(r.decidedAt))}${row('Mode of transfer', r.mode + (r.transport ? ' · ' + r.transport : ''))}</table>
-    <h3>Situation</h3><table>${row('Chief complaint', r.complaint)}${row('Primary diagnosis', r.dx)}${row('Other acute diagnoses', r.otherDx)}${row('Pregnant', r.pregnant)}${row('Treatments initiated', r.treatments)}</table>
-    <h3>Background</h3><table>${row('History of present illness', r.hpi)}${row('Past medical and surgical history', r.pmh)}${ab}${row('Other treatments or procedures', r.other)}</table>
-    <h3>Assessment</h3><table>${row('Assessment', r.assessment)}</table>
-    <h3>Recommendations</h3><table>${row('Next steps and therapies during transport', r.plan)}${row('Potential worsening', r.worse)}${row('Cautions', r.cautions)}${row('Precautions', r.precautions.join(', '))}</table>
-    <h3>For the receiving facility</h3><table>${row('Date and time of arrival', r.arrivedAt ? fmtTime(r.arrivedAt) : '')}${row('Provider name and signature', r.receivedBy)}${row('Feedback sent to initiating facility', r.counter ? 'Yes' : '')}</table>
-    <p class="small">Attach the medication chart or list of current medications, with dose and time of last dose.</p>
+  modal('Referral form', `<div class="refprint printable bilingual" data-notr>
+    <h2 style="margin:0"><span>Acute Referral · ${r.id}</span><span class="ar" dir="rtl" lang="ar">إحالة حادة · ${r.id}</span></h2>
+    <p class="small">EMT TentCare · based on the WHO Emergency Care Toolkit. A copy goes with the patient.<br><span dir="rtl" lang="ar">مبني على أدوات WHO للرعاية الطارئة. نسخة ترافق المريض.</span></p>
+    ${H('Patient')}<table>${row('Name', p.name + (p.nameAr ? ' / ' + p.nameAr : ''))}${row('File / visit', p.id + ' · ' + r.enc)}${row('Age · sex', ageTxt(p) + ' · ' + (sexTxt(p)))}${row('Allergies', allergyText(p))}${row('Contact', p.phone)}</table>
+    ${H('Facilities')}<table>${row('Initiating facility', 'EMT field hospital · ' + r.decidedBy)}${row('Receiving facility', [r.facility, r.focal, r.phone].filter(Boolean).join(' · '))}${row('Reason', r.reason)}${row('Decision time', whenTxt(r.decidedAt))}${row('Mode of transfer', r.mode + (r.transport ? ' · ' + r.transport : ''))}</table>
+    ${H('Situation')}<table>${row('Chief complaint', r.complaint)}${row('Primary diagnosis', r.dx)}${row('Other acute diagnoses', r.otherDx)}${row('Pregnant', r.pregnant)}${row('Treatments initiated', r.treatments)}</table>
+    ${H('Background')}<table>${row('History of present illness', r.hpi)}${row('Past medical and surgical history', r.pmh)}${ab}${row('Other treatments or procedures', r.other)}</table>
+    ${H('Assessment')}<table>${row('Assessment', r.assessment)}</table>
+    ${H('Recommendations')}<table>${row('Next steps and therapies during transport', r.plan)}${row('Potential worsening', r.worse)}${row('Cautions', r.cautions)}${row('Precautions', r.precautions.join(', '))}</table>
+    ${H('For the receiving facility')}<table>${row('Date and time of arrival', r.arrivedAt ? fmtTime(r.arrivedAt) : '')}${row('Provider name and signature', r.receivedBy)}${row('Feedback sent to initiating facility', r.counter ? 'Yes' : '')}</table>
+    <p class="small">Attach the medication chart or list of current medications, with dose and time of last dose.<br><span dir="rtl" lang="ar">أرفق جدول الأدوية أو قائمة الأدوية الحالية مع الجرعة ووقت آخر جرعة.</span></p>
   </div><div class="row mt"><button class="btn primary" onclick="window.print()">Print</button><button class="btn" onclick="closeModal()">Close</button></div>`);
 }
 
@@ -3289,7 +3471,7 @@ function historyModal(id) {
   modal('Assessment history', `<p class="small muted">Every saved version is kept. Nothing is deleted. The newest is first.</p>
     ${versions.map((c, i) => {
       const older = versions[i + 1], ch = older ? changedFields(older, c) : [];
-      return `<div class="hist"><div class="small"><b>${i === 0 ? 'Current version' : 'Version ' + (versions.length - i)}</b> · ${c.at ? fmtDay(dayKey(new Date(c.at))) + ' ' + fmtTime(c.at) : 'first entry'} · ${esc(c.by || p.doctor || '')}</div>
+      return `<div class="hist"><div class="small"><b>${i === 0 ? 'Current version' : 'Version ' + (versions.length - i)}</b> · ${c.at ? whenTxt(c.at) : 'first entry'} · ${esc(c.by || p.doctor || '')}</div>
         ${c.amendReason ? `<div class="small">Reason for change: <b>${esc(c.amendReason)}</b></div>` : ''}
         ${older ? `<div class="small muted">Changed: ${ch.map(x => x[1]).join(', ') || 'nothing'}</div>` : ''}
         <div class="kv small">${CLIN_FIELDS.map(([k, l]) => clinVal(c, k) ? `<div>${l}</div><div class="${ch.some(x => x[0] === k) ? 'chg' : ''}">${esc(clinVal(c, k))}</div>` : '').join('')}</div></div>`;
@@ -3498,7 +3680,7 @@ function pharmacyView() {
     <p class="small muted">In the full version this list is a Dataverse table shared by all devices, and low stock creates a supply request in Power Automate.</p></div>
     ${(S.stockLog || []).length ? `<div class="card mt"><div class="secthead">${ic('clock')}<h2>Stock movements</h2></div>${S.stockLog.slice(0, 12).map(l => { const it = S.stock.find(s => s.id === l.item) || {}; return `<div class="mar"><span class="t">${fmtTime(l.at)}</span><div>${l.change > 0 ? '+' : ''}${l.change} · <b>${esc(it.name)}</b> ${esc(it.form)} · ${esc(l.reason)}<div class="small muted">${esc(l.by)}</div></div></div>`; }).join('')}</div>` : ''}`;
 }
-const fmtDate = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' }); };
+const fmtDate = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short', year: 'numeric' }); };
 function receiveForm() {
   modal('Receive stock', `<form onsubmit="saveReceive(event)" novalidate>
     <div class="field"><label for="rc-it">Medicine</label><select id="rc-it">${S.stock.map(s => `<option value="${s.id}">${esc(s.name)} · ${esc(s.form)}</option>`).join('')}</select></div>
@@ -3945,7 +4127,7 @@ function deliveryCard(p) {
   if (D) {
     const baby = D.baby ? pat(D.baby) : null;
     return `<div class="card" id="sec-lab"><div class="secthead">${ic('heart')}<h2>Delivery</h2>${D.pph ? '<span class="badge allergy" style="margin-left:auto">Postpartum haemorrhage</span>' : ''}</div><div class="kv">
-      <div>Birth</div><div>${fmtDay(dayKey(new Date(D.at)))} ${fmtTime(D.at)} · ${esc(D.mode)} · <b>${esc(D.outcome)}</b></div>
+      <div>Birth</div><div>${whenTxt(D.at)} · ${esc(D.mode)} · <b>${esc(D.outcome)}</b></div>
       <div>Mother</div><div>Blood loss ${esc(D.ebl)} mL · ${esc(D.perineum)} · oxytocin ${D.oxytocin ? 'given' : '<b>not given</b>'} · placenta ${D.placenta ? 'complete' : '<b>incomplete</b>'}</div>
       ${baby ? `<div>Baby</div><div><a href="#" onclick="go('patient','${baby.id}');return false">${esc(baby.name)} · ${baby.id}</a>${baby.newborn ? ` · ${baby.newborn.weight} g · APGAR ${baby.newborn.apgar1}/${baby.newborn.apgar5}` : ''}</div>` : ''}
       <div>Recorded by</div><div>${esc(D.by)}</div></div></div>`;
@@ -3988,7 +4170,7 @@ function deathCard(p) {
   const d = p.death;
   if (!d && !['Died', 'Dead on arrival'].includes(p.outcome)) return '';
   return `<div class="card"><div class="secthead">${ic('note')}<h2>Death record</h2></div>${d ? `<div class="kv">
-    <div>Time of death</div><div>${fmtDay(dayKey(new Date(d.at)))} ${fmtTime(d.at)}</div>
+    <div>Time of death</div><div>${whenTxt(d.at)}</div>
     <div>Immediate cause</div><div>${esc(d.immediate)}</div><div>Underlying cause</div><div><b>${esc(d.underlying)}</b>${d.icd ? ` <span class="badge info">ICD-10 ${esc(d.icd)}</span>` : ''}</div>
     <div>Manner</div><div>${esc(d.manner)}</div><div>Family informed</div><div>${d.family ? 'Yes' : '<span class="late">Not yet</span>'}</div>
     <div>Body released to</div><div>${dash(d.releasedTo)}${d.relation ? ' · ' + esc(d.relation) : ''}</div><div>Certified by</div><div>${esc(d.by)}</div></div>` : '<p class="late small">No death record yet. A doctor must complete it.</p>'}</div>`;
@@ -4293,9 +4475,10 @@ function auditOpen(id) {
 let glowX = null, glowAnim = 0, navScroll = 0;
 function navEdges() {
   const w = document.querySelector('.nav .wrap'); if (!w) return;
-  const nav = w.parentElement, max = w.scrollWidth - w.clientWidth;
-  nav.classList.toggle('fade-l', w.scrollLeft > 2);
-  nav.classList.toggle('fade-r', w.scrollLeft < max - 2);
+  const nav = w.parentElement, max = w.scrollWidth - w.clientWidth, pos = Math.abs(w.scrollLeft), rtl = getComputedStyle(w).direction === 'rtl';
+  const hiddenLeft = rtl ? max - pos : pos, hiddenRight = rtl ? pos : max - pos;
+  nav.classList.toggle('fade-l', hiddenLeft > 2);
+  nav.classList.toggle('fade-r', hiddenRight > 2);
 }
 function glowPath(W, H, cx, bw) {
   const y = H - 1.5, top = 4, x0 = cx - bw / 2, x1 = cx + bw / 2, r = 18;
@@ -4311,11 +4494,12 @@ function placeGlow() {
   const act = btns.find(b => b.classList.contains('active')) || null;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
   const bw = btns.length ? Math.min(100, btns[0].offsetWidth * 1.35) : 88;
-  const target = act ? act.offsetLeft + act.offsetWidth / 2 : null;
   wrap.scrollLeft = navScroll;
+  const sr = svg.getBoundingClientRect();
+  const target = act ? act.getBoundingClientRect().left - sr.left + act.offsetWidth / 2 : null;
   if (act) {
-    const l = act.offsetLeft, r = l + act.offsetWidth, vl = wrap.scrollLeft, vr = vl + wrap.clientWidth;
-    if (l < vl + 28 || r > vr - 28) wrap.scrollTo({ left: Math.max(0, l - (wrap.clientWidth - act.offsetWidth) / 2), behavior: glowX == null ? 'auto' : 'smooth' });
+    const ar = act.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+    if (ar.left < wr.left + 28 || ar.right > wr.right - 28) act.scrollIntoView({ inline: 'center', block: 'nearest', behavior: glowX == null ? 'auto' : 'smooth' });
   }
   navEdges();
   const draw = x => { const [l, f] = x == null ? glowPath(W, H, -200, bw) : glowPath(W, H, x, bw); svg.querySelector('.gl').setAttribute('d', l); svg.querySelector('.gf').setAttribute('d', f); };
@@ -4518,7 +4702,7 @@ function exportData() {
 /* ---------- render ---------- */
 function render() {
   const app = $('#app');
-  if (!me) { document.body.classList.remove('has-actionbar', 'no-nav'); app.innerHTML = loginView(); return; }
+  if (!me) { document.body.classList.remove('has-actionbar', 'no-nav'); app.innerHTML = LANG ? loginView() : langView(); localize(app); return; }
   let inner = '';
   switch (view.name) {
     case 'dash': inner = dashView(); break;
@@ -4538,6 +4722,7 @@ function render() {
   }
   const nw = document.querySelector('.nav .wrap'); if (nw) navScroll = nw.scrollLeft;
   app.innerHTML = shell(inner);
+  localize(app);
   document.body.classList.toggle('has-actionbar', view.name === 'patient');
   placeGlow();
   if (view.name === 'search') doSearch();
@@ -4555,6 +4740,7 @@ window.addEventListener('offline', updateNet);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 /* ---------- boot ---------- */
+applyLang();
 S = load();
 ensureAttendance();
 const savedUser = read(USER_KEY);

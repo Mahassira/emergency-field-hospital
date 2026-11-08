@@ -12,7 +12,7 @@ const check = (name, ok, extra) => { results.push((ok ? 'PASS ' : 'FAIL ') + nam
   const login = async u => { await p.goto('http://localhost:8772/'); await p.evaluate(() => { if (me) logout(); }); await p.fill('#u', u + '@emttentcare.com'); await p.fill('#pw', 'demo123'); await p.click('form button.primary'); await p.waitForTimeout(150); };
   const btn = t => p.click(`.actions .btn:has-text("${t}")`);
   const btns = () => p.$$eval('.actions .btn', bs => bs.map(x => x.textContent.trim()));
-  await p.goto('http://localhost:8772/'); await p.evaluate(() => localStorage.clear());
+  await p.goto('http://localhost:8772/'); await p.evaluate(() => (localStorage.clear(),localStorage.setItem('tentcare_lang','en')));
   await login('doctor');
   // pick an ER patient not discharged and not in ward
   const pid = await p.evaluate(() => S.patients.find(x => x.location === 'ER' && x.state !== 'discharged' && !x.dischargeApproved).id);

@@ -9,7 +9,7 @@ const res = []; const check = (n, ok, x) => res.push((ok ? 'PASS ' : 'FAIL ') + 
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const p = await (await b.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true })).newPage(); p.on('pageerror', e => errs.push(e.message));
-  await p.goto('http://localhost:8783/'); await p.evaluate(() => localStorage.clear()); await p.goto('http://localhost:8783/');
+  await p.goto('http://localhost:8783/'); await p.evaluate(() => (localStorage.clear(),localStorage.setItem('tentcare_lang','en'))); await p.goto('http://localhost:8783/');
   const as = async r => { await p.evaluate(r => { me = Object.assign({ username: r }, USERS[r]); render(); }, r); };
   const id = n => p.evaluate(n => S.patients.find(x => x.name === n).id, n);
   const open = async n => { const i = await id(n); await p.evaluate(i => go('patient', i), i); return i; };
@@ -181,7 +181,7 @@ const res = []; const check = (n, ok, x) => res.push((ok ? 'PASS ' : 'FAIL ') + 
 
   // 17. phone
   const m = await (await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage(); m.on('pageerror', e => errs.push(e.message));
-  await m.goto('http://localhost:8783/'); await m.fill('#u', 'doctor'); await m.fill('#pw', 'demo123'); await m.click('form button.primary'); await m.waitForTimeout(150);
+  await m.goto('http://localhost:8783/');await m.evaluate(()=>localStorage.setItem('tentcare_lang','en'));await m.goto('http://localhost:8783/'); await m.fill('#u', 'doctor'); await m.fill('#pw', 'demo123'); await m.click('form button.primary'); await m.waitForTimeout(150);
   await m.evaluate(() => go('patient', S.patients.find(x => x.name === 'Khalil Mansour').id)); await m.waitForTimeout(100);
   check('Phone: patient file fits the screen', await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
   await m.click('.actionbar button:has-text("Actions")');
