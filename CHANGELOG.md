@@ -2,6 +2,11 @@
 
 All notable changes to EMT TentCare. Dates are when the change went live on the demo.
 
+## 2.1.1 · 8 November 2026
+- The language is chosen only before signing in: on the first screen or the sign-in page. To change it, sign out.
+- New Arabic font, IBM Plex Sans Arabic (SIL Open Font License), stored with the app so it works offline.
+- In Arabic, all text runs right to left and is aligned right, including English data such as notes and the activity log.
+
 ## 2.1.0 · 8 November 2026
 - Arabic interface. The demo opens with the logo and a language choice (English or العربية), then the sign-in page. The language can be changed later from the account menu or the header.
 - Arabic wording follows Microsoft's Arabic style: commands as verbal nouns (حفظ، تحرير، إرسال)، status messages with "تم"، Microsoft terms (لوحة المعلومات، تأمين الشاشة) and no extra diacritics.

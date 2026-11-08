@@ -99,7 +99,7 @@ Scores, doses and checklists come from published sources (listed below). The ear
 
 ## Arabic or English
 
-The demo opens with the logo and a language choice, then the sign-in page. Each person can switch language later from their account. In Arabic the whole interface reads right to left, in the wording Microsoft uses in its Arabic products: commands as verbal nouns (حفظ، تحرير، تسجيل الدخول) and status messages with "تم" (تم حفظ التقييم).
+The demo opens with the logo and a language choice, then the sign-in page. To change the language, sign out and choose again on the sign-in page. In Arabic the whole interface reads right to left, in the wording Microsoft uses in its Arabic products: commands as verbal nouns (حفظ، تحرير، تسجيل الدخول) and status messages with "تم" (تم حفظ التقييم).
 
 Only the interface is translated. Data is stored, searched and exported in English, so the Excel export, WHO MDS report and DHIS2 file are the same in either language. Medical terms (NEWS2, APGAR, GCS, ICD-10) and drug names, doses and routes stay in English. Each patient can also have their name written in Arabic, and the referral form prints in English and Arabic. See the [Arabic interface plan](docs/arabic-interface-plan.md) for how this carries over to Microsoft 365.
 
@@ -154,6 +154,7 @@ sw.js                   service worker for offline use
 manifest.webmanifest    install as an app
 assets/brand/           logo and tent mark
 assets/icons/           app and browser icons
+assets/fonts/           IBM Plex Sans Arabic (SIL Open Font License)
 docs/                   user guide (PDF) and screenshots
 tests/                  end-to-end tests (Playwright)
 fluent/                 redirect kept for an older link

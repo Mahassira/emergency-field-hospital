@@ -38,7 +38,7 @@ a{color:var(--primary);text-underline-offset:2px}
 .brand .bname{display:flex;flex-direction:column;line-height:1.1}
 .brand .bname small{font-weight:600;font-size:10.5px;letter-spacing:1.6px;opacity:.75;text-transform:uppercase}
 .top .spacer{flex:1}
-.who{font-size:13px;text-align:right;line-height:1.2}
+.who{font-size:13px;text-align:end;line-height:1.2}
 .who .role{opacity:.75}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:999px;font-weight:600;white-space:nowrap}
 .pill.on{background:rgba(255,255,255,.12)}
@@ -114,7 +114,7 @@ h3{font-size:14px;margin:0 0 8px;color:var(--primary)}
 
 /* patient list */
 .plist{display:grid;gap:10px}
-.pcard{display:flex;gap:12px;align-items:stretch;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px 12px 0;cursor:pointer;text-align:left;width:100%;box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
+.pcard{display:flex;gap:12px;align-items:stretch;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px 12px 0;cursor:pointer;text-align:start;width:100%;box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
 .pcard:hover{border-color:#c9b99f;transform:translateY(-1px)}
 .pcard .bar{width:5px;border-radius:0 4px 4px 0;flex:none}
 .pcard .bar.red{background:var(--red)} .pcard .bar.yellow{background:var(--amber)} .pcard .bar.green{background:var(--green)} .pcard .bar.none{background:var(--line)}
@@ -122,7 +122,7 @@ h3{font-size:14px;margin:0 0 8px;color:var(--primary)}
 .pcard .name{font-weight:700;color:var(--primary)}
 .pcard .meta{color:var(--muted);font-size:13px}
 .pcard .cc{margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pcard .side{text-align:right;font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.pcard .side{text-align:end;font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 .pcard .side .wait{display:inline-flex;align-items:center;gap:4px}
 .pcard .side .wait .ic{color:var(--accent)}
 
@@ -138,12 +138,12 @@ h3{font-size:14px;margin:0 0 8px;color:var(--primary)}
 
 /* ward */
 .beds{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
-.bed{min-width:0;border:1px solid var(--line);border-radius:11px;padding:8px;min-height:66px;background:var(--surface);text-align:left;cursor:default;font-size:12px}
+.bed{min-width:0;border:1px solid var(--line);border-radius:11px;padding:8px;min-height:66px;background:var(--surface);text-align:start;cursor:default;font-size:12px}
 .bed .num{font-weight:700;font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
 .bed.occ{cursor:pointer;background:var(--primary);border-color:var(--primary);color:#fff}
 .bed.occ .num{color:rgba(255,255,255,.7)}
-.bed.occ .who{color:#fff;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-size:12px}
-.bed .who{text-align:left}
+.bed.occ .who{color:#fff;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:start;font-size:12px}
+.bed .who{text-align:start}
 .bed.free .who{color:var(--accent-ink);font-weight:600;margin-top:4px}
 .bed .tdot{width:9px;height:9px;border-radius:50%;display:inline-block;box-shadow:0 0 0 2px rgba(255,255,255,.6)}
 .tdot.red{background:#ff6b5e} .tdot.yellow{background:#ffc04d} .tdot.green{background:#5fd18a}
@@ -207,7 +207,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid var(--accent-soft);bor
 @media(hover:hover) and (pointer:fine){.only-mouse{display:inline}.only-touch{display:none}}
 .accounts{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .accounts button:last-child:nth-child(odd){grid-column:1/-1}
-.accounts button{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;width:100%;min-height:44px;text-align:left;background:var(--surface-2);border:2px solid transparent;border-radius:12px;padding:12px;cursor:pointer;font:inherit;color:inherit}
+.accounts button{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;width:100%;min-height:44px;text-align:start;background:var(--surface-2);border:2px solid transparent;border-radius:12px;padding:12px;cursor:pointer;font:inherit;color:inherit}
 .accounts .atext{display:flex;flex-direction:column;gap:2px}
 .accounts .try{font-size:12px;color:var(--muted);line-height:1.35;margin-top:2px}
 .accounts .tick{position:absolute;top:8px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:none;place-items:center}
@@ -263,10 +263,10 @@ details.crit[open] summary::before{transform:rotate(90deg)}
 details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
 .critcols{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;padding-bottom:10px}
 .mdstbl{width:100%;border-collapse:collapse;font-size:13px}
-.mdstbl th,.mdstbl td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:right}
-.mdstbl th:first-child,.mdstbl td:first-child,.mdstbl th:nth-child(2),.mdstbl td:nth-child(2){text-align:left}
+.mdstbl th,.mdstbl td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:end}
+.mdstbl th:first-child,.mdstbl td:first-child,.mdstbl th:nth-child(2),.mdstbl td:nth-child(2){text-align:start}
 .mdstbl td:first-child{color:var(--muted);width:34px}
-.mdstbl tr.grp td{background:var(--surface);font-weight:600;text-align:left;color:var(--text);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+.mdstbl tr.grp td{background:var(--surface);font-weight:600;text-align:start;color:var(--text);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
 .mdstbl td.z{color:var(--muted)}
 .mdstbl .tot{font-weight:600}
 .mdswrap{overflow-x:auto}
@@ -345,7 +345,7 @@ details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:
   main{padding-bottom:calc(var(--nav-h) + 40px + env(safe-area-inset-bottom))}
   .brand .bname small{display:none}
   .top .who{display:none}
-  .phead>div:last-child{text-align:left!important}
+  .phead>div:last-child{text-align:start!important}
   .actions .btn{flex:1 1 calc(50% - 4px)}
   .vitals{grid-template-columns:repeat(3,1fr)}
   .tentrow{grid-template-columns:32px 1fr 44px}
@@ -364,7 +364,7 @@ details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:
 .seg button{flex:1;border:0;background:none;padding:9px 8px;border-radius:9px;font-weight:700;color:var(--muted);cursor:pointer;font-size:14px}
 .seg button.on{background:var(--surface);color:var(--primary);box-shadow:var(--shadow)}
 .sheetlist{display:grid;gap:6px}
-.sheetlist button{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:0;background:var(--surface-2);border-radius:13px;padding:13px 14px;font-weight:600;color:var(--primary);cursor:pointer;font-size:15px}
+.sheetlist button{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:0;background:var(--surface-2);border-radius:13px;padding:13px 14px;font-weight:600;color:var(--primary);cursor:pointer;font-size:15px}
 .sheetlist button:active{background:#ece2d2}
 .sheetlist button .ic{color:var(--accent)}
 .sheetlist button.danger{color:var(--red)} .sheetlist button.danger .ic{color:var(--red)}
@@ -466,7 +466,7 @@ details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:
 .chips::-webkit-scrollbar{display:none}
 .chips button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-weight:600;font-size:13px;color:var(--muted);cursor:pointer}
 .chips button.on{background:var(--primary);border-color:var(--primary);color:#fff}
-.srow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 13px;cursor:pointer;box-shadow:var(--shadow)}
+.srow{display:flex;align-items:center;gap:12px;width:100%;text-align:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 13px;cursor:pointer;box-shadow:var(--shadow)}
 .srow:hover{border-color:#c9b99f}
 .srow .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;flex:none;background:var(--surface-2);color:var(--muted)}
 .srow .av.present{background:var(--green-soft);color:var(--green)}
@@ -477,7 +477,7 @@ details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:
 .srow .sm{flex:1;min-width:0}
 .srow .sm b{color:var(--primary)}
 .srow .sm .meta{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.srow .st{text-align:right;font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:none}
+.srow .st{text-align:end;font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:none}
 .badge.present{background:var(--green-soft);color:var(--green)}
 .badge.late{background:var(--amber-soft);color:var(--amber)}
 .badge.absent{background:var(--red-soft);color:var(--red)}
@@ -537,7 +537,7 @@ details.crit summary .cnt{margin-left:auto;font-size:12px;font-weight:600;color:
 table.obs{width:100%;min-width:560px;border-collapse:collapse;font-size:12.5px}
 table.obs th{font-weight:600;color:#616161;text-align:center;padding:4px;border-bottom:1px solid #e0e0e0}
 table.obs td{text-align:center;padding:5px 4px;border-bottom:1px solid #f0f0f0;font-variant-numeric:tabular-nums}
-table.obs td.t,table.obs th:first-child{text-align:left}
+table.obs td.t,table.obs th:first-child{text-align:start}
 table.obs td.s1{background:#fff4ce}
 table.obs td.s2{background:#fde7d4}
 table.obs td.s3{background:#f4c7c3;font-weight:700}
@@ -564,7 +564,7 @@ table.obs td.s3{background:#f4c7c3;font-weight:700}
 .bed .ewsb{display:block;margin-top:4px}
 .bed.occ .ews.sm{background:rgba(255,255,255,.92)}
 .bed.occ .ews.high{background:#d13438;color:#fff}
-.stocktbl td,.stocktbl th{text-align:left !important}
+.stocktbl td,.stocktbl th{text-align:start !important}
 .cardlink{background:none;border:0;padding:0;color:#0f6cbd;font:inherit;font-size:12.5px;cursor:pointer;text-decoration:underline}
 
 .parto{width:100%;min-width:420px;height:auto;display:block;margin:4px 0 8px}
@@ -601,7 +601,7 @@ table.obs td.s3{background:#f4c7c3;font-weight:700}
 [id^="sec-"]{scroll-margin-top:100px}
 #lock{position:fixed;inset:0;z-index:100;background:#f5f5f5;display:grid;place-items:center;padding:16px}
 .lockbox{background:#fff;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.18);padding:24px;width:100%;max-width:360px;text-align:center}
-.lockbox form{text-align:left}
+.lockbox form{text-align:start}
 .lockic{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#ebf3fc;color:#0f6cbd;margin-bottom:6px}
 @media(max-width:720px){.fileidx{top:56px}.ag{grid-template-columns:1fr}.alrow{grid-template-columns:34px 1fr}.alrow .btn{grid-column:2;justify-self:start}}
 
@@ -747,7 +747,6 @@ html.fluent{
 .langsw{display:inline-flex;border:1px solid #d1d1d1;border-radius:999px;overflow:hidden;margin:0 auto 12px}
 .langsw button{border:0;background:#fff;font:inherit;font-size:13px;padding:6px 14px;color:#424242;cursor:pointer;min-height:32px}
 .langsw button.on{background:#0f6cbd;color:#fff;font-weight:600}
-.langbtn{font-weight:700;font-size:15px}
 .namear{font-size:16px;color:#424242;margin-top:2px}
 .namear-s{font-weight:400;color:#616161;font-size:.92em}
 .refprint.bilingual td:first-child span,.refprint.bilingual h3 span,.refprint.bilingual h2 span{display:block}
@@ -757,8 +756,16 @@ html.fluent{
 
 /* right to left: measurements and English data keep their own direction */
 html[dir=rtl] .vitals b,html[dir=rtl] table.obs td,html[dir=rtl] .meta,html[dir=rtl] .mdstbl td,html[dir=rtl] .ind .v{direction:ltr;unicode-bidi:isolate}
+@font-face{font-family:"IBM Plex Sans Arabic";font-weight:400;font-display:swap;src:url(assets/fonts/IBMPlexSansArabic-Regular.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans Arabic";font-weight:500;font-display:swap;src:url(assets/fonts/IBMPlexSansArabic-Medium.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans Arabic";font-weight:600;font-display:swap;src:url(assets/fonts/IBMPlexSansArabic-SemiBold.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans Arabic";font-weight:700 800;font-display:swap;src:url(assets/fonts/IBMPlexSansArabic-Bold.woff2) format("woff2")}
+html[lang=ar] body,html[lang=ar].fluent body,[lang=ar]{font-family:"IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif}
+html[lang=ar] :is(button,input,select,textarea){font-family:inherit}
+html[lang=ar] body{line-height:1.6}
 html[dir=rtl] .vitals b{text-align:right}
-html[dir=rtl] :is(p,li,.cc,.kv>div,.tl .txt,.tl .meta,.mar div,.rx>div>div,.altext>div,.note,.feed div,.dupe div,.hist div){unicode-bidi:plaintext}
+/* English data inside Arabic screens: right-aligned, but punctuation stays in the right place */
+html[dir=rtl] :is(p,li,.cc,.kv>div,.tl .txt,.tl .meta,.mar div,.rx>div>div,.altext>div,.note,.feed div,.dupe div,.hist div){unicode-bidi:plaintext;text-align:right}
 html[dir=rtl] .backbtn svg,html[dir=rtl] .ic-flip{transform:scaleX(-1)}
 
 /* ---------- glass tab bar on phones ---------- */
@@ -1871,7 +1878,6 @@ function accountSheet() {
       ${myStaff() ? (['present', 'late'].includes(attStatus(me.sid)) ? `<button onclick="setAtt('${me.sid}','out')">${ic('exit')}Check out of my shift</button>` : `<button onclick="setAtt('${me.sid}','present')">${ic('enter')}Check in for my shift</button>`) : ''}
       <button onclick="closeModal();attTab='staff';go('attend')">${ic('usercheck')}Attendance</button>
       <button onclick="closeModal();feedbackForm()">${ic('feedback')}Give feedback on the demo</button>
-      <button onclick="setLang(LANG === 'ar' ? 'en' : 'ar')">${ic('globe')}<span data-notr>${LANG === 'ar' ? 'English' : 'العربية'}</span></button>
       <button onclick="closeModal();lockScreen('Locked by the user')">${ic('lock')}Lock screen</button>
       <button onclick="closeModal();resetDemo()">${ic('reset')}Reset demo data</button>
       <button class="danger" onclick="logout()">${ic('logout')}Sign out</button>
@@ -1901,7 +1907,6 @@ function shell(inner) {
     ${alertBell()}
     ${hasSearch && view.name !== 'search' ? `<button class="iconbtn m-only" onclick="go('search')" aria-label="Search">${ic('search')}</button>` : ''}
     <button class="avatar m-only" onclick="accountSheet()" aria-label="Account">${initials(me.name)}</button>
-    <button class="iconbtn d-only langbtn" onclick="setLang(LANG === 'ar' ? 'en' : 'ar')" title="Language" aria-label="Language" data-notr>${LANG === 'ar' ? 'EN' : 'ع'}</button>
     <button class="iconbtn d-only" onclick="feedbackForm()" title="Give feedback" aria-label="Give feedback">${ic('feedback')}</button>
     <button class="iconbtn d-only" onclick="lockScreen('Locked by the user')" title="Lock screen" aria-label="Lock screen">${ic('lock')}</button>
     <button class="iconbtn d-only" onclick="logout()" title="Sign out" aria-label="Sign out">${ic('logout')}</button>
@@ -1965,7 +1970,7 @@ function dashView() {
       <span class="num">${t.no}</span>
       <div class="tname"><b>${t.name}</b><div class="small muted">Tent ${t.no}</div></div>
       <div class="track" title="${t.name}"><span class="c" style="width:${c / max * 100}%"></span><span class="w" style="width:${w / max * 100}%"></span></div>
-      <div style="text-align:right"><b>${here.length}</b>${t.id === 'WARD' ? `<span class="small muted">/${BEDS}</span>` : ''}</div>
+      <div style="text-align:end"><b>${here.length}</b>${t.id === 'WARD' ? `<span class="small muted">/${BEDS}</span>` : ''}</div>
     </div>`;
   }).join('');
   const feed = S.log.slice(0, 12).map(l => {
@@ -2569,7 +2574,7 @@ function patientView(id) {
           <div class="muted">${p.ageGroup ? p.ageGroup + ' (age not known)' : p.age + ' years'} · ${sexTxt(p)}${p.shelter ? ' · ' + esc(p.shelter) : ''}${p.phone ? ' · ' + esc(p.phone) : ''}</div>
           ${p.pregnant ? '<div class="mt" style="margin-top:8px"><span class="badge preg">Pregnant</span></div>' : ''}
         </div>
-        <div class="pmeta" style="text-align:right"><span class="tri ${p.triage}">${p.triage === 'black' ? 'dead on arrival' : p.triage}</span><div class="mt"><span class="where">${ic(p.state === 'discharged' ? 'exit' : (TENT_IC[p.location] || 'tent'), 'sm')}${where}</span></div><div class="small muted">Arrived ${fmtTime(p.createdAt)}</div></div>
+        <div class="pmeta" style="text-align:end"><span class="tri ${p.triage}">${p.triage === 'black' ? 'dead on arrival' : p.triage}</span><div class="mt"><span class="where">${ic(p.state === 'discharged' ? 'exit' : (TENT_IC[p.location] || 'tent'), 'sm')}${where}</span></div><div class="small muted">Arrived ${fmtTime(p.createdAt)}</div></div>
       </div>
       ${myAlerts(id).length ? `<div class="palerts">${myAlerts(id).map(a => alertRow(a, true)).join('')}</div>` : ''}
       ${p.unaccompanied ? `<div class="infobar">${ic('shield', 'sm')}Child without a parent or caregiver. Child protection informed.</div>` : p.carer ? `<div class="small muted mt">With: ${esc(p.carer)}</div>` : ''}
@@ -3283,7 +3288,7 @@ function wristband(id) {
   const p = pat(id);
   modal('Patient wristband', `<div class="band printable">
       <div><div class="mrn">${p.id}</div><div><b>${esc(p.name)}</b></div><div class="small muted">${ageTxt(p)} · ${p.sex || 'U'} · ${fmtTime(p.createdAt)}</div>${p.tempId ? `<div class="mrn" style="font-size:13px">${p.tempId}</div>` : ''}</div>
-      <div style="text-align:right"><img src="assets/brand/tent.png" alt=""><br><span class="tri ${p.triage}">${p.triage}</span></div></div>
+      <div style="text-align:end"><img src="assets/brand/tent.png" alt=""><br><span class="tri ${p.triage}">${p.triage}</span></div></div>
     <p class="small muted">Print on a wristband label, or write the file number on the patient's band. Staff search by this number.</p>
     <div class="row"><button class="btn primary" onclick="window.print()">Print</button><button class="btn" onclick="closeModal()">Done</button></div>`);
 }

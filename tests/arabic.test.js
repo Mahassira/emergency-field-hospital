@@ -49,7 +49,13 @@ const res = []; const check = (n, ok, x) => res.push((ok ? 'PASS ' : 'FAIL ') + 
   check('DHIS2 export has no Arabic interface text', csv && !/[؀-ۿ]/.test(csv.replace(/اختبار عربي/g, '')));
 
   await p.screenshot({ path: out + '/arabic-phone.png' });
-  await p.evaluate(() => setLang('en')); await p.waitForTimeout(100);
+  const sw = await p.evaluate(() => { const has = sel => [...document.querySelectorAll(sel)].some(b => /setLang/.test(b.getAttribute('onclick') || '')); const a = has('#app button'); accountSheet(); return a || has('.modal button'); });
+  check('No language switch inside the system', !sw);
+  check('Arabic font loaded', await p.evaluate(async () => { await document.fonts.ready; return document.fonts.check('16px "IBM Plex Sans Arabic"', 'حفظ') && getComputedStyle(document.body).fontFamily.includes('IBM Plex Sans Arabic'); }));
+  check('Text runs right to left', await p.evaluate(() => [...document.querySelectorAll('#app p, #app .card div')].slice(0, 200).every(e => getComputedStyle(e).direction === 'rtl' && ['right', 'start'].includes(getComputedStyle(e).textAlign))));
+  await p.evaluate(() => { closeModal(); logout(); }); await p.waitForTimeout(150);
+  check('Language switch is on the sign-in page', await p.isVisible('.langsw'));
+  await p.click('.langsw button[lang="en"]'); await p.waitForTimeout(100);
   check('Switching back to English', await p.evaluate(() => document.documentElement.dir === 'ltr') && !(await p.textContent('#app')).includes('تسجيل الدخول'));
 
   console.log(res.join('\n')); console.log('errors', errs);
